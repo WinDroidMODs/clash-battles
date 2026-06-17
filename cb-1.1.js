@@ -127,44 +127,52 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
 }
 
 // ==================== ADMIN ====================
-let cacheBatallas = null, cacheUsuarios = null, cacheMovimientos = [];
-let pendingCount = 0;
+let cacheBatallasAdmin = null, cacheUsuarios = null;
+let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
+let pendingRecargas = 0, pendingRetiros = 0;
 
 async function initAdmin() {
-  await updateSidebarStats();
-  cacheBatallas = await apiCall({ action: 'getBatallas' });
+  await updateSidebarStatsAdmin();
+  cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
-  cacheMovimientos = await apiCall({ action: 'getMovimientos' });
-  pendingCount = cacheMovimientos.filter(m => m.estado === 'Pendiente').length;
-  updatePendingBadge();
+  // Obtener todos los movimientos y separar recargas/retiros pendientes
+  const todosMovs = await apiCall({ action: 'getMovimientos' });
+  cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
+  cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+  cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente'); // historial (verificados/rechazados)
+  pendingRecargas = cacheRecargas.length;
+  pendingRetiros = cacheRetiros.length;
+  updateBadges();
   renderBatallasAdmin();
   renderUsuariosAdmin();
+  renderRecargasAdmin();
+  renderRetirosAdmin();
   renderMovimientosAdmin();
-  renderHistorial();
   renderAjustes();
 }
 
-async function updateSidebarStats() {
+async function updateSidebarStatsAdmin() {
   const batallas = await apiCall({ action: 'getBatallas' });
   const activas = batallas.filter(b => b.estado !== 'Finalizada').length;
-  const pendientes = batallas.filter(b => b.estado === 'Pendiente de pago').length;
   const finalizadas = batallas.filter(b => b.estado === 'Finalizada').length;
   document.getElementById('statActivas').textContent = activas;
-  document.getElementById('statPendientes').textContent = pendientes;
   document.getElementById('statFinalizadas').textContent = finalizadas;
   document.getElementById('statGanancia').textContent = '$' + (finalizadas * 0.30).toFixed(2);
+  // Ocultar stats de jugador
+  document.getElementById('statSaldo').parentElement.style.display = 'none';
+  document.getElementById('statGanadas').parentElement.style.display = 'none';
+  document.getElementById('statPendientes').parentElement.style.display = 'none';
 }
 
-function updatePendingBadge() {
-  const badge = document.getElementById('pendingBadge');
-  if (badge) {
-    badge.textContent = pendingCount;
-    badge.style.display = pendingCount > 0 ? 'inline' : 'none';
-  }
+function updateBadges() {
+  const badgeRec = document.getElementById('badgeRecargas');
+  const badgeRet = document.getElementById('badgeRetiros');
+  if (badgeRec) { badgeRec.textContent = pendingRecargas; badgeRec.style.display = pendingRecargas > 0 ? 'inline' : 'none'; }
+  if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
 function renderBatallasAdmin(filtro = '') {
-  let batallas = cacheBatallas || [];
+  let batallas = cacheBatallasAdmin || [];
   if (filtro) batallas = batallas.filter(b => b.estado === filtro);
   let html = `<div style='margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;'>
     <select onchange='renderBatallasAdmin(this.value)' style='padding:8px 12px; border-radius:8px; background:#1a1a3e; color:white; border:1px solid #2a2a5a;'>
@@ -174,117 +182,14 @@ function renderBatallasAdmin(filtro = '') {
       <option value='En revisión'>En revisión</option>
       <option value='Finalizada'>Finalizada</option>
     </select>
-    <button class='btn btn-gold btn-sm' onclick='abrirCrearBatallaAdmin()'>+ Nueva Batalla</button>
   </div>`;
-  html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>Pago</th><th>J2</th><th>Pago</th><th>Estado</th><th>Ganador</th><th>Acc</th></tr></thead><tbody>`;
+  html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
   batallas.forEach(b => {
     const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'En revisión' ? 'badge-review' : 'badge-done';
-    let acc = '';
-    if (b.estado === 'Pendiente de pago') acc = `<button class='btn btn-blue btn-sm' onclick='verificarPagos(${b.id})'>Verificar</button>`;
-    if (b.estado === 'En revisión') acc = `<button class='btn btn-gold btn-sm' onclick='verificarVictoria(${b.id})'>Revisar</button>`;
-    if (b.estado === 'Finalizada' && b.ganador && !b.premioEntregado) acc = `<button class='btn btn-green btn-sm' onclick='entregarPremio(${b.id})'>Entregar</button>`;
-    if (b.estado === 'Finalizada' && b.premioEntregado) acc = '✓';
-    const p1 = b.pagoJ1 ? '✅' : '❌';
-    const p2 = b.pagoJ2 ? '✅' : '❌';
-    html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} ${b.j1Tag}</td><td>${p1}</td><td>${b.j2Nombre} ${b.j2Tag}</td><td>${p2}</td><td><span class='badge ${badgeEstado}'>${b.estado}</span></td><td>${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td><td>${acc}</td></tr>`;
+    html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} ${b.j1Tag}</td><td>${b.j2Nombre} ${b.j2Tag}</td><td><span class='badge ${badgeEstado}'>${b.estado}</span></td><td>${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-batallas').innerHTML = html;
-}
-
-async function abrirCrearBatallaAdmin() {
-  const users = cacheUsuarios || await apiCall({ action: 'getUsuarios' });
-  const jugadores = users.filter(u => u.rol === 'jugador');
-  document.getElementById('selJ1').innerHTML = jugadores.map(u => `<option value='${u.id}'>${u.nombreJuego} (${u.tag})</option>`).join('');
-  document.getElementById('selJ2').innerHTML = document.getElementById('selJ1').innerHTML;
-  document.getElementById('modalCrearBatallaAdmin').classList.remove('hidden');
-}
-
-async function crearBatallaAdmin() {
-  const j1 = document.getElementById('selJ1').value;
-  const j2 = document.getElementById('selJ2').value;
-  if (j1 === j2) return toast('Los jugadores deben ser diferentes', 'error');
-  const res = await apiCall({ action: 'crearBatalla', j1Id: j1, j2Id: j2 });
-  if (res.success) {
-    toast('Batalla creada');
-    closeModal('modalCrearBatallaAdmin');
-    cacheBatallas = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-    updateSidebarStats();
-  }
-}
-
-let batallaVerificandoId = null;
-async function verificarPagos(batallaId) {
-  batallaVerificandoId = batallaId;
-  const b = cacheBatallas.find(x => x.id == batallaId);
-  if (!b) return;
-  document.getElementById('modalBatallaId').textContent = batallaId;
-  document.getElementById('verifyColumns').innerHTML = `
-    <div class='verify-player'>
-      <h4>${b.j1Nombre} (${b.j1Tag})</h4>
-      <p>${b.pagoJ1 ? '✅ Verificado' : '❌ Pendiente'}</p>
-      ${b.capturaPagoJ1 ? `<img src='${b.capturaPagoJ1}' onclick='ampliar("${b.capturaPagoJ1}")'/>` : '<p>Sin captura</p>'}
-      ${!b.pagoJ1 ? `<button class='btn btn-green btn-sm' onclick='confirmarPago(1)'>Verificar Pago</button>` : ''}
-    </div>
-    <div class='verify-player'>
-      <h4>${b.j2Nombre} (${b.j2Tag})</h4>
-      <p>${b.pagoJ2 ? '✅ Verificado' : '❌ Pendiente'}</p>
-      ${b.capturaPagoJ2 ? `<img src='${b.capturaPagoJ2}' onclick='ampliar("${b.capturaPagoJ2}")'/>` : '<p>Sin captura</p>'}
-      ${!b.pagoJ2 ? `<button class='btn btn-green btn-sm' onclick='confirmarPago(2)'>Verificar Pago</button>` : ''}
-    </div>`;
-  document.getElementById('verifyStatus').textContent = '';
-  document.getElementById('modalBatalla').classList.remove('hidden');
-}
-
-async function confirmarPago(jugador) {
-  const res = await apiCall({ action: 'confirmarPago', batallaId: batallaVerificandoId, jugador });
-  if (res.success) {
-    toast('Pago confirmado');
-    if (res.batallaActivada) {
-      toast('¡Batalla activada! Ambos pagos confirmados.');
-      document.getElementById('verifyStatus').innerHTML = '<span class="badge badge-ready">Batalla lista para jugar</span>';
-    }
-    cacheBatallas = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-    verificarPagos(batallaVerificandoId);
-  }
-}
-
-async function verificarVictoria(batallaId) {
-  batallaVerificandoId = batallaId;
-  const b = cacheBatallas.find(x => x.id == batallaId);
-  document.getElementById('modalVictoriaBatallaId').textContent = batallaId;
-  document.getElementById('victoryColumns').innerHTML = `
-    <div class='verify-player'>
-      <h4>${b.j1Nombre}</h4>
-      ${b.capturaVictoriaJ1 ? `<img src='${b.capturaVictoriaJ1}' onclick='ampliar("${b.capturaVictoriaJ1}")'/>` : '<p>Sin captura</p>'}
-    </div>
-    <div class='verify-player'>
-      <h4>${b.j2Nombre}</h4>
-      ${b.capturaVictoriaJ2 ? `<img src='${b.capturaVictoriaJ2}' onclick='ampliar("${b.capturaVictoriaJ2}")'/>` : '<p>Sin captura</p>'}
-    </div>`;
-  document.getElementById('modalVerificarVictoria').classList.remove('hidden');
-}
-
-async function declararGanador(jugador) {
-  const res = await apiCall({ action: 'declararGanador', batallaId: batallaVerificandoId, ganador: jugador });
-  if (res.success) {
-    toast('Ganador declarado');
-    closeModal('modalVerificarVictoria');
-    cacheBatallas = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-    updateSidebarStats();
-  }
-}
-
-async function entregarPremio(batallaId) {
-  const res = await apiCall({ action: 'entregarPremio', batallaId });
-  if (res.success) {
-    toast('Premio entregado');
-    cacheBatallas = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-  }
 }
 
 function renderUsuariosAdmin(users) {
@@ -297,52 +202,97 @@ function renderUsuariosAdmin(users) {
   document.getElementById('panel-jugadores').innerHTML = html;
 }
 
-function renderMovimientosAdmin(movs) {
-  if (!movs) movs = cacheMovimientos || [];
-  pendingCount = movs.filter(m => m.estado === 'Pendiente').length;
-  updatePendingBadge();
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
-  movs.forEach(m => {
-    const badge = m.estado === 'Pendiente' ? 'badge-pending' : m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    let acciones = '';
-    if (m.estado === 'Pendiente') {
-      acciones = `<button class='btn btn-green btn-sm' onclick='verificarMovimiento("${m.tipo}", ${m.id})'>✓ Verificar</button>
-                  <button class='btn btn-red btn-sm' onclick='rechazarMovimiento("${m.tipo}", ${m.id})'>✗ Rechazar</button>`;
-    }
-    html += `<tr><td>#${m.id}</td><td>${m.nombre} (${m.tag})</td><td>${m.tipo}</td><td>$${m.monto}</td><td>${m.referencia}</td><td><span class='badge ${badge}'>${m.estado}</span></td><td>${acciones}</td></tr>`;
+function renderRecargasAdmin() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
+  cacheRecargas.forEach(r => {
+    html += `<tr><td>#${r.id}</td><td>${r.nombre} (${r.tag})</td><td>$${r.monto}</td><td>${r.referencia}</td><td>
+      <button class='btn btn-green btn-sm' onclick='verificarRecarga(${r.id})'>✓</button>
+      <button class='btn btn-red btn-sm' onclick='rechazarRecarga(${r.id})'>✗</button>
+    </td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!cacheRecargas.length) html = '<p>No hay recargas pendientes.</p>';
+  document.getElementById('panel-recargas').innerHTML = html;
+}
+
+function renderRetirosAdmin() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
+  cacheRetiros.forEach(r => {
+    html += `<tr><td>#${r.id}</td><td>${r.nombre} (${r.tag})</td><td>$${r.monto}</td><td>${r.referencia}</td><td>
+      <button class='btn btn-green btn-sm' onclick='verificarRetiro(${r.id})'>✓</button>
+      <button class='btn btn-red btn-sm' onclick='rechazarRetiro(${r.id})'>✗</button>
+    </td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!cacheRetiros.length) html = '<p>No hay retiros pendientes.</p>';
+  document.getElementById('panel-retiros').innerHTML = html;
+}
+
+function renderMovimientosAdmin() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
+  cacheMovimientosAdmin.forEach(m => {
+    const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    html += `<tr><td>#${m.id}</td><td>${m.nombre} (${m.tag})</td><td>${m.tipo}</td><td>$${m.monto}</td><td>${m.referencia}</td><td><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-movimientos').innerHTML = html;
 }
 
-async function verificarMovimiento(tipo, id) {
-  const action = tipo === 'Recarga' ? 'verificarRecarga' : 'verificarRetiro';
-  const res = await apiCall({ action, movimientoId: id });
+async function verificarRecarga(id) {
+  const res = await apiCall({ action: 'verificarRecarga', movimientoId: id });
   if (res.success) {
-    toast(`${tipo} verificado.`);
-    cacheMovimientos = await apiCall({ action: 'getMovimientos' });
-    renderMovimientosAdmin(cacheMovimientos);
+    toast('Recarga verificada');
+    // Refrescar datos
+    const todosMovs = await apiCall({ action: 'getMovimientos' });
+    cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
+    cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
+    pendingRecargas = cacheRecargas.length;
+    updateBadges();
+    renderRecargasAdmin();
+    renderMovimientosAdmin();
   } else toast(res.error, 'error');
 }
 
-async function rechazarMovimiento(tipo, id) {
-  const action = tipo === 'Recarga' ? 'rechazarRecarga' : 'rechazarRetiro';
-  const res = await apiCall({ action, movimientoId: id });
+async function rechazarRecarga(id) {
+  const res = await apiCall({ action: 'rechazarRecarga', movimientoId: id });
   if (res.success) {
-    toast(`${tipo} rechazado.`);
-    cacheMovimientos = await apiCall({ action: 'getMovimientos' });
-    renderMovimientosAdmin(cacheMovimientos);
+    toast('Recarga rechazada');
+    const todosMovs = await apiCall({ action: 'getMovimientos' });
+    cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
+    cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
+    pendingRecargas = cacheRecargas.length;
+    updateBadges();
+    renderRecargasAdmin();
+    renderMovimientosAdmin();
   } else toast(res.error, 'error');
 }
 
-async function renderHistorial() {
-  const hist = await apiCall({ action: 'getHistorial' });
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Jugador 1</th><th>Jugador 2</th><th>Ganador</th><th>Premio Entregado</th><th>Fecha</th></tr></thead><tbody>`;
-  hist.forEach(h => {
-    html += `<tr><td>#${h.id}</td><td>${h.j1}</td><td>${h.j2}</td><td>${h.ganador}</td><td>${h.premioEntregado ? '✅' : '❌'}</td><td>${new Date(h.fecha).toLocaleDateString()}</td></tr>`;
-  });
-  html += '</tbody></table></div>';
-  document.getElementById('panel-historial').innerHTML = html;
+async function verificarRetiro(id) {
+  const res = await apiCall({ action: 'verificarRetiro', movimientoId: id });
+  if (res.success) {
+    toast('Retiro verificado');
+    const todosMovs = await apiCall({ action: 'getMovimientos' });
+    cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+    cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
+    pendingRetiros = cacheRetiros.length;
+    updateBadges();
+    renderRetirosAdmin();
+    renderMovimientosAdmin();
+  } else toast(res.error, 'error');
+}
+
+async function rechazarRetiro(id) {
+  const res = await apiCall({ action: 'rechazarRetiro', movimientoId: id });
+  if (res.success) {
+    toast('Retiro rechazado');
+    const todosMovs = await apiCall({ action: 'getMovimientos' });
+    cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+    cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
+    pendingRetiros = cacheRetiros.length;
+    updateBadges();
+    renderRetirosAdmin();
+    renderMovimientosAdmin();
+  } else toast(res.error, 'error');
 }
 
 function renderAjustes() {
@@ -384,7 +334,8 @@ async function guardarAjustes() {
 }
 
 // ==================== JUGADOR ====================
-let cachePerfil = null, cacheMisBatallas = null, cacheBatallasAbiertas = [];
+let cachePerfil = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
+let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
 async function initJugador() {
   await updateSidebarStatsJugador();
@@ -392,9 +343,18 @@ async function initJugador() {
   cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
   const todas = await apiCall({ action: 'getBatallas' });
   cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+  // Obtener mis movimientos (recargas y retiros del usuario)
+  const todosMovs = await apiCall({ action: 'getMovimientos' }); // admin endpoint; pero podemos filtrar por userId
+  const misMovs = todosMovs.filter(m => m.userId == userId);
+  cacheMisRecargas = misMovs.filter(m => m.tipo === 'Recarga');
+  cacheMisRetiros = misMovs.filter(m => m.tipo === 'Retiro');
+  cacheMiHistorial = misMovs.filter(m => m.estado !== 'Pendiente');
   renderPerfil();
   renderMisBatallas();
   renderBatallasAbiertas();
+  renderMisRecargas();
+  renderMisRetiros();
+  renderMiHistorial();
 }
 
 async function updateSidebarStatsJugador() {
@@ -404,7 +364,6 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statSaldo').textContent = '$' + parseFloat(perfil.saldo || 0).toFixed(2);
   document.getElementById('statGanadas').textContent = ganadas;
   document.getElementById('statActivas').textContent = mis.filter(b => b.estado !== 'Finalizada').length;
-  document.getElementById('statPendientes').textContent = mis.filter(b => b.estado === 'Pendiente de pago').length;
   document.getElementById('statFinalizadas').textContent = mis.filter(b => b.estado === 'Finalizada').length;
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
@@ -504,6 +463,39 @@ async function enviarRetiro() {
   } else toast(res.error, 'error');
 }
 
+function renderMisRecargas() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
+  cacheMisRecargas.forEach(r => {
+    const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    html += `<tr><td>#${r.id}</td><td>$${r.monto}</td><td>${r.referencia}</td><td><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!cacheMisRecargas.length) html = '<p>No tienes recargas.</p>';
+  document.getElementById('panel-misRecargas').innerHTML = html;
+}
+
+function renderMisRetiros() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
+  cacheMisRetiros.forEach(r => {
+    const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    html += `<tr><td>#${r.id}</td><td>$${r.monto}</td><td>${r.referencia}</td><td><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!cacheMisRetiros.length) html = '<p>No tienes retiros.</p>';
+  document.getElementById('panel-misRetiros').innerHTML = html;
+}
+
+function renderMiHistorial() {
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
+  cacheMiHistorial.forEach(m => {
+    const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    html += `<tr><td>#${m.id}</td><td>${m.tipo}</td><td>$${m.monto}</td><td>${m.referencia}</td><td><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('panel-miHistorial').innerHTML = html;
+}
+
+// Batallas (jugador)
 function renderMisBatallas() {
   const batallas = cacheMisBatallas || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
@@ -588,25 +580,31 @@ async function confirmarUnion() {
 // ==================== INIT APP ====================
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
+  // Cabecera sin usuario, solo título
+  document.getElementById('headerBtns').innerHTML = '';
+  // Sidebar user
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
-  document.getElementById('headerBtns').innerHTML = `<span style='color:#FFD700;'>${roleIcon} ${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span><button class='btn-header' onclick='logout()'>Cerrar sesión</button>`;
-  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span>`;
+  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
   let navItems = '';
   if (rol === 'admin') {
     navItems = `
       <button class='nav-item active' onclick='switchTab("batallas",this)'>⚔️ Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("recargas",this)'>💰 Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("retiros",this)'>💸 Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("movimientos",this)'>📋 Movimientos</button>
       <button class='nav-item' onclick='switchTab("jugadores",this)'>👥 Jugadores</button>
-      <button class='nav-item' onclick='switchTab("movimientos",this)'>💰 Movimientos <span class='admin-badge' id='pendingBadge' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("historial",this)'>🏆 Historial</button>
       <button class='nav-item' onclick='switchTab("ajustes",this)'>⚙️ Ajustes</button>`;
     initAdmin();
   } else {
     navItems = `
       <button class='nav-item active' onclick='switchTab("misBatallas",this)'>⚔️ Mis Batallas 1C1</button>
       <button class='nav-item' onclick='switchTab("batallasAbiertas",this)'>🔓 Batallas Abiertas</button>
+      <button class='nav-item' onclick='switchTab("misRecargas",this)'>💰 Recargas</button>
+      <button class='nav-item' onclick='switchTab("misRetiros",this)'>💸 Retiros</button>
+      <button class='nav-item' onclick='switchTab("miHistorial",this)'>📋 Historial</button>
       <button class='nav-item' onclick='switchTab("perfil",this)'>👤 Perfil</button>`;
     initJugador();
   }
@@ -617,12 +615,16 @@ async function initApp() {
 
 function onTabSwitch(tab) {
   if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
-  if (tab === 'jugadores') renderUsuariosAdmin();
+  if (tab === 'recargas') renderRecargasAdmin();
+  if (tab === 'retiros') renderRetirosAdmin();
   if (tab === 'movimientos') renderMovimientosAdmin();
-  if (tab === 'historial') renderHistorial();
+  if (tab === 'jugadores') renderUsuariosAdmin();
   if (tab === 'ajustes') renderAjustes();
   if (tab === 'misBatallas') renderMisBatallas();
   if (tab === 'batallasAbiertas') renderBatallasAbiertas();
+  if (tab === 'misRecargas') renderMisRecargas();
+  if (tab === 'misRetiros') renderMisRetiros();
+  if (tab === 'miHistorial') renderMiHistorial();
   if (tab === 'perfil') renderPerfil();
 }
 
