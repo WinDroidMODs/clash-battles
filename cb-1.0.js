@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbxIr34j5vxIbAw0r6I6-O-gDGY1fE2R0dYzgNqTHvKQZJLKfa_CUdpwcTr0fajwxa8/exec'; // ← Cambia por tu URL real
+const API = 'https://script.google.com/macros/s/AKfycbx8M5471anm7kRCBrMDJzm3dUpEpLkusmQOQxKG_vXfALmDZyGFKbzYCXmVRkMxZCXo/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
