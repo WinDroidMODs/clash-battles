@@ -398,7 +398,7 @@ function renderPerfil() {
         <div style='font-size:0.8rem; color:var(--text-secondary);'>SALDO DISPONIBLE</div>
         <div style='font-size:1.8rem; font-weight:900;'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
       </div>
-      <div class='balance-actions' style='margin-left:auto;'>
+      <div class='balance-actions'>
         <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()'>Recargar</button>
         <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()'>Retirar</button>
       </div>
@@ -525,7 +525,6 @@ function renderMisBatallas() {
     const oponente = soyJ1 ? b.j2Nombre : b.j1Nombre;
     let accion = '';
     if (b.estado === 'Lista para jugar') {
-      // Determinar si ya declaró
       const yaDeclaro = soyJ1 ? b.declaracionJ1 : b.declaracionJ2;
       if (!yaDeclaro) {
         accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
@@ -632,22 +631,22 @@ async function initApp() {
   let navItems = '';
   if (rol === 'admin') {
     navItems = `
-      <button class='nav-item active' onclick='switchTab("batallas",this)'>⚔️ Batallas 1C1</button>
-      <button class='nav-item' onclick='switchTab("disputas",this)'>⚠️ Disputas</button>
-      <button class='nav-item' onclick='switchTab("recargas",this)'>💰 Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("retiros",this)'>💸 Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("movimientos",this)'>📋 Movimientos</button>
-      <button class='nav-item' onclick='switchTab("jugadores",this)'>👥 Jugadores</button>
-      <button class='nav-item' onclick='switchTab("ajustes",this)'>⚙️ Ajustes</button>`;
+      <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs"></i> Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation"></i> Disputas</button>
+      <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list"></i> Movimientos</button>
+      <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users"></i> Jugadores</button>
+      <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears"></i> Ajustes</button>`;
     initAdmin();
   } else {
     navItems = `
-      <button class='nav-item active' onclick='switchTab("misBatallas",this)'>⚔️ Mis Batallas 1C1</button>
-      <button class='nav-item' onclick='switchTab("batallasAbiertas",this)'>🔓 Batallas Abiertas</button>
-      <button class='nav-item' onclick='switchTab("misRecargas",this)'>💰 Recargas</button>
-      <button class='nav-item' onclick='switchTab("misRetiros",this)'>💸 Retiros</button>
-      <button class='nav-item' onclick='switchTab("miHistorial",this)'>📋 Historial</button>
-      <button class='nav-item' onclick='switchTab("perfil",this)'>👤 Perfil</button>`;
+      <button class='nav-item active' onclick='switchTab("misBatallas",this)'><i class="fa-solid fa-crosshairs"></i> Mis Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("batallasAbiertas",this)'><i class="fa-solid fa-unlock-keyhole"></i> Batallas Abiertas</button>
+      <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar"></i> Recargas</button>
+      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave"></i> Retiros</button>
+      <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list"></i> Historial</button>
+      <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user"></i> Perfil</button>`;
     initJugador();
   }
   document.getElementById('sidebarNav').innerHTML = navItems;
