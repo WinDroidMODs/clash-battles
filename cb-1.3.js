@@ -135,11 +135,10 @@ async function initAdmin() {
   await updateSidebarStatsAdmin();
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
-  // Obtener todos los movimientos y separar recargas/retiros pendientes
   const todosMovs = await apiCall({ action: 'getMovimientos' });
   cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
   cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
-  cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente'); // historial (verificados/rechazados)
+  cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
   pendingRecargas = cacheRecargas.length;
   pendingRetiros = cacheRetiros.length;
   updateBadges();
@@ -158,7 +157,6 @@ async function updateSidebarStatsAdmin() {
   document.getElementById('statActivas').textContent = activas;
   document.getElementById('statFinalizadas').textContent = finalizadas;
   document.getElementById('statGanancia').textContent = '$' + (finalizadas * 0.30).toFixed(2);
-  // Ocultar stats de jugador
   document.getElementById('statSaldo').parentElement.style.display = 'none';
   document.getElementById('statGanadas').parentElement.style.display = 'none';
   document.getElementById('statPendientes').parentElement.style.display = 'none';
@@ -242,7 +240,6 @@ async function verificarRecarga(id) {
   const res = await apiCall({ action: 'verificarRecarga', movimientoId: id });
   if (res.success) {
     toast('Recarga verificada');
-    // Refrescar datos
     const todosMovs = await apiCall({ action: 'getMovimientos' });
     cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
     cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
@@ -343,8 +340,7 @@ async function initJugador() {
   cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
   const todas = await apiCall({ action: 'getBatallas' });
   cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
-  // Obtener mis movimientos (recargas y retiros del usuario)
-  const todosMovs = await apiCall({ action: 'getMovimientos' }); // admin endpoint; pero podemos filtrar por userId
+  const todosMovs = await apiCall({ action: 'getMovimientos' });
   const misMovs = todosMovs.filter(m => m.userId == userId);
   cacheMisRecargas = misMovs.filter(m => m.tipo === 'Recarga');
   cacheMisRetiros = misMovs.filter(m => m.tipo === 'Retiro');
@@ -384,10 +380,10 @@ function renderPerfil() {
     </div>
     <h3 style='margin-bottom:16px;'>Mis Datos</h3>
     <div class='perfil-grid'>
-      <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego}'/></div>
-      <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag}'/></div>
-      <div class='input-group'><label>Supercell ID</label><input id='perfilSupercell' value='${p.supercellId}'/></div>
-      <div class='input-group'><label>WhatsApp</label><input id='perfilTel' value='${p.telefono}'/></div>
+      <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego || ''}'/></div>
+      <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag || ''}'/></div>
+      <div class='input-group'><label>Supercell ID</label><input id='perfilSupercell' value='${p.supercellId || ''}'/></div>
+      <div class='input-group'><label>WhatsApp</label><input id='perfilTel' value='${p.telefono || ''}'/></div>
       <div class='input-group'><label>Banco para pagos</label><input id='perfilBanco' value='${p.banco || ''}'/></div>
       <div class='input-group'><label>Teléfono de pago</label><input id='perfilTelefonoPago' value='${p.telefonoPago || ''}'/></div>
       <div class='input-group'><label>Cédula</label><input id='perfilCedula' value='${p.cedula || ''}'/></div>
@@ -397,7 +393,7 @@ function renderPerfil() {
 }
 
 async function guardarPerfil() {
-  await apiCall({
+  const datos = {
     action: 'editarPerfil', userId,
     nombreJuego: document.getElementById('perfilNombre').value,
     tag: document.getElementById('perfilTag').value,
@@ -407,10 +403,15 @@ async function guardarPerfil() {
     telefonoPago: document.getElementById('perfilTelefonoPago').value,
     cedula: document.getElementById('perfilCedula').value,
     cuenta: document.getElementById('perfilCuenta').value
-  });
-  toast('Perfil actualizado');
-  cachePerfil = null;
-  renderPerfil();
+  };
+  const res = await apiCall(datos);
+  if (res.success) {
+    toast('Perfil actualizado');
+    cachePerfil = await apiCall({ action: 'getPerfil', userId });
+    renderPerfil();
+  } else {
+    toast(res.error || 'Error al guardar', 'error');
+  }
 }
 
 function recargarSaldoUI() {
@@ -495,7 +496,6 @@ function renderMiHistorial() {
   document.getElementById('panel-miHistorial').innerHTML = html;
 }
 
-// Batallas (jugador)
 function renderMisBatallas() {
   const batallas = cacheMisBatallas || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
@@ -580,9 +580,7 @@ async function confirmarUnion() {
 // ==================== INIT APP ====================
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
-  // Cabecera sin usuario, solo título
   document.getElementById('headerBtns').innerHTML = '';
-  // Sidebar user
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
@@ -628,7 +626,6 @@ function onTabSwitch(tab) {
   if (tab === 'perfil') renderPerfil();
 }
 
-// Auto-login
 if (token && rol) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authBox').classList.add('hidden');
