@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbx8M5471anm7kRCBrMDJzm3dUpEpLkusmQOQxKG_vXfALmDZyGFKbzYCXmVRkMxZCXo/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwXIlTVHpuIPZcT3ds8XNYv-es3-Hw961VtpfqGEfIdiZRL7ScTGRo1jc6PpwtqJza3/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -147,12 +147,13 @@ async function initAdmin() {
   renderRecargasAdmin();
   renderRetirosAdmin();
   renderMovimientosAdmin();
+  renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   renderAjustes();
 }
 
 async function updateSidebarStatsAdmin() {
   const batallas = await apiCall({ action: 'getBatallas' });
-  const activas = batallas.filter(b => b.estado !== 'Finalizada').length;
+  const activas = batallas.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length;
   const finalizadas = batallas.filter(b => b.estado === 'Finalizada').length;
   document.getElementById('statActivas').textContent = activas;
   document.getElementById('statFinalizadas').textContent = finalizadas;
@@ -178,16 +179,40 @@ function renderBatallasAdmin(filtro = '') {
       <option value='Pendiente de pago'>Pendiente de pago</option>
       <option value='Lista para jugar'>Lista para jugar</option>
       <option value='En revisión'>En revisión</option>
+      <option value='Disputa'>Disputa</option>
       <option value='Finalizada'>Finalizada</option>
     </select>
   </div>`;
   html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
   batallas.forEach(b => {
-    const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'En revisión' ? 'badge-review' : 'badge-done';
+    const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'En revisión' ? 'badge-review' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
     html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} ${b.j1Tag}</td><td>${b.j2Nombre} ${b.j2Tag}</td><td><span class='badge ${badgeEstado}'>${b.estado}</span></td><td>${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-batallas').innerHTML = html;
+}
+
+function renderDisputasAdmin(disputas) {
+  let html = '';
+  if (disputas.length > 0) {
+    html += `<h4>Disputas pendientes</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
+    disputas.forEach(b => {
+      html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} (${b.j1Tag})</td><td>${b.j2Nombre} (${b.j2Tag})</td><td><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('panel-disputas').innerHTML = html;
+}
+
+async function declararGanadorAdmin(batallaId, jugador) {
+  const res = await apiCall({ action: 'declararGanador', batallaId, ganador: jugador });
+  if (res.success) {
+    toast('Ganador actualizado');
+    cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+    renderBatallasAdmin();
+    renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
+    updateSidebarStatsAdmin();
+  }
 }
 
 function renderUsuariosAdmin(users) {
@@ -359,7 +384,7 @@ async function updateSidebarStatsJugador() {
   const ganadas = mis.filter(b => b.estado === 'Finalizada' && ((b.j1Id == userId && b.ganador === 'J1') || (b.j2Id == userId && b.ganador === 'J2'))).length;
   document.getElementById('statSaldo').textContent = '$' + parseFloat(perfil.saldo || 0).toFixed(2);
   document.getElementById('statGanadas').textContent = ganadas;
-  document.getElementById('statActivas').textContent = mis.filter(b => b.estado !== 'Finalizada').length;
+  document.getElementById('statActivas').textContent = mis.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length;
   document.getElementById('statFinalizadas').textContent = mis.filter(b => b.estado === 'Finalizada').length;
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
@@ -393,7 +418,7 @@ function renderPerfil() {
 }
 
 async function guardarPerfil() {
-  const datos = {
+  await apiCall({
     action: 'editarPerfil', userId,
     nombreJuego: document.getElementById('perfilNombre').value,
     tag: document.getElementById('perfilTag').value,
@@ -403,15 +428,10 @@ async function guardarPerfil() {
     telefonoPago: document.getElementById('perfilTelefonoPago').value,
     cedula: document.getElementById('perfilCedula').value,
     cuenta: document.getElementById('perfilCuenta').value
-  };
-  const res = await apiCall(datos);
-  if (res.success) {
-    toast('Perfil actualizado');
-    cachePerfil = await apiCall({ action: 'getPerfil', userId });
-    renderPerfil();
-  } else {
-    toast(res.error || 'Error al guardar', 'error');
-  }
+  });
+  toast('Perfil actualizado');
+  cachePerfil = null;
+  renderPerfil();
 }
 
 function recargarSaldoUI() {
@@ -496,6 +516,7 @@ function renderMiHistorial() {
   document.getElementById('panel-miHistorial').innerHTML = html;
 }
 
+// Batallas del jugador
 function renderMisBatallas() {
   const batallas = cacheMisBatallas || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
@@ -503,21 +524,44 @@ function renderMisBatallas() {
     const soyJ1 = b.j1Id == userId;
     const oponente = soyJ1 ? b.j2Nombre : b.j1Nombre;
     let accion = '';
-    if (b.estado === 'Lista para jugar') accion = `<button class='btn btn-gold btn-sm' onclick='subirCapturaVictoria(${b.id})'>Subir Victoria</button>`;
-    if (b.estado === 'En revisión') accion = '⏳';
-    if (b.estado === 'Finalizada') accion = b.ganador === (soyJ1 ? 'J1' : 'J2') ? '🏆 Ganaste' : '😞 Perdiste';
+    if (b.estado === 'Lista para jugar') {
+      // Determinar si ya declaró
+      const yaDeclaro = soyJ1 ? b.declaracionJ1 : b.declaracionJ2;
+      if (!yaDeclaro) {
+        accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
+      } else {
+        accion = 'Esperando al oponente...';
+      }
+    } else if (b.estado === 'Disputa') {
+      accion = `<a href='https://wa.me/584120000000?text=Disputa batalla #${b.id}' target='_blank' class='btn btn-red btn-sm'>Contactar admin</a>`;
+    } else if (b.estado === 'Finalizada') {
+      accion = b.ganador === (soyJ1 ? 'J1' : 'J2') ? '🏆 Ganaste' : '😞 Perdiste';
+    } else {
+      accion = b.estado;
+    }
     html += `<tr><td>#${b.id}</td><td>${oponente}</td><td>${b.estado}</td><td>${b.ganador || '-'}</td><td>${accion}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-misBatallas').innerHTML = html;
 }
 
-function subirCapturaVictoria(batallaId) {
-  const url = prompt('Pega el enlace de la captura de tu victoria (Imgur, Drive, etc.):');
-  if (url) {
-    apiCall({ action: 'subirCapturaVictoria', batallaId, userId, url }).then(res => {
-      if (res.success) { toast('Captura subida. El admin revisará.'); renderMisBatallas(); }
-    });
+let batallaDeclaracionId = null;
+function mostrarDeclararResultado(batallaId) {
+  batallaDeclaracionId = batallaId;
+  document.getElementById('modalDeclararResultado').classList.remove('hidden');
+}
+
+async function enviarDeclaracion(resultado) {
+  if (!batallaDeclaracionId) return;
+  const res = await apiCall({ action: 'declararResultado', batallaId: batallaDeclaracionId, resultado });
+  closeModal('modalDeclararResultado');
+  if (res.success) {
+    toast('Declaración enviada');
+    cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
+    renderMisBatallas();
+    updateSidebarStatsJugador();
+  } else {
+    toast(res.error, 'error');
   }
 }
 
@@ -580,7 +624,6 @@ async function confirmarUnion() {
 // ==================== INIT APP ====================
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
-  document.getElementById('headerBtns').innerHTML = '';
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
@@ -590,6 +633,7 @@ async function initApp() {
   if (rol === 'admin') {
     navItems = `
       <button class='nav-item active' onclick='switchTab("batallas",this)'>⚔️ Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("disputas",this)'>⚠️ Disputas</button>
       <button class='nav-item' onclick='switchTab("recargas",this)'>💰 Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
       <button class='nav-item' onclick='switchTab("retiros",this)'>💸 Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
       <button class='nav-item' onclick='switchTab("movimientos",this)'>📋 Movimientos</button>
@@ -613,6 +657,7 @@ async function initApp() {
 
 function onTabSwitch(tab) {
   if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
+  if (tab === 'disputas') renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   if (tab === 'recargas') renderRecargasAdmin();
   if (tab === 'retiros') renderRetirosAdmin();
   if (tab === 'movimientos') renderMovimientosAdmin();
@@ -626,6 +671,7 @@ function onTabSwitch(tab) {
   if (tab === 'perfil') renderPerfil();
 }
 
+// Auto-login
 if (token && rol) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authBox').classList.add('hidden');
