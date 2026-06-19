@@ -1,11 +1,10 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbz103R2_VjDIpNge-cl7yfDoG7_cSADINhnwMaqkqUYA3bwRsfPAU-7X55hIjqJSXRF/exec';
+const API = 'https://script.google.com/macros/s/AKfycbx8M5471anm7kRCBrMDJzm3dUpEpLkusmQOQxKG_vXfALmDZyGFKbzYCXmVRkMxZCXo/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
-// ==================== API ====================
 async function apiCall(body) {
   if (token) body.token = token;
   const r = await fetch(API, { method: 'POST', body: JSON.stringify(body) });
@@ -130,10 +129,10 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
+let kpisRendered = false;
 
 async function initAdmin() {
   await updateSidebarStatsAdmin();
-  await renderAdminStats(); // Nuevos KPIs de plataforma
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
   const todosMovs = await apiCall({ action: 'getMovimientos' });
@@ -150,16 +149,6 @@ async function initAdmin() {
   renderMovimientosAdmin();
   renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   renderAjustes();
-}
-
-async function renderAdminStats() {
-  const stats = await apiCall({ action: 'getAdminStats' });
-  if (stats.totalSaldo !== undefined) {
-    document.getElementById('kpi-total-saldo').textContent = '$' + stats.totalSaldo.toFixed(2);
-    document.getElementById('kpi-total-recargas').textContent = '$' + stats.totalRecargas.toFixed(2);
-    document.getElementById('kpi-total-retiros').textContent = '$' + stats.totalRetiros.toFixed(2);
-    document.getElementById('kpi-total-comisiones').textContent = '$' + stats.gananciasCasa.toFixed(2);
-  }
 }
 
 async function updateSidebarStatsAdmin() {
@@ -181,6 +170,20 @@ function updateBadges() {
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
+// ✅ CORRECCIÓN V1.9: Solo renderizar KPIs cuando la pestaña esté activa
+async function renderAdminStats() {
+  if (!kpisRendered) {
+    kpisRendered = true;
+    const stats = await apiCall({ action: 'getAdminStats' });
+    if (stats.totalSaldo !== undefined) {
+      document.getElementById('kpi-total-saldo').textContent = '$' + stats.totalSaldo.toFixed(2);
+      document.getElementById('kpi-total-recargas').textContent = '$' + stats.totalRecargas.toFixed(2);
+      document.getElementById('kpi-total-retiros').textContent = '$' + stats.totalRetiros.toFixed(2);
+      document.getElementById('kpi-total-comisiones').textContent = '$' + stats.gananciasCasa.toFixed(2);
+    }
+  }
+}
+
 function renderBatallasAdmin(filtro = '') {
   let batallas = cacheBatallasAdmin || [];
   if (filtro) batallas = batallas.filter(b => b.estado === filtro);
@@ -197,7 +200,7 @@ function renderBatallasAdmin(filtro = '') {
   html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
   batallas.forEach(b => {
     const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'En revisión' ? 'badge-review' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
-    html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} ${b.j1Tag}</td><td>${b.j2Nombre} ${b.j2Tag}</td><td><span class='badge ${badgeEstado}'>${b.estado}</span></td><td>${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
+    html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} ${b.j1Tag}</td><td data-label="J2">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-batallas').innerHTML = html;
@@ -208,7 +211,7 @@ function renderDisputasAdmin(disputas) {
   if (disputas.length > 0) {
     html += `<h4>Disputas pendientes</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
     disputas.forEach(b => {
-      html += `<tr><td>#${b.id}</td><td>${b.j1Nombre} (${b.j1Tag})</td><td>${b.j2Nombre} (${b.j2Tag})</td><td><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
+      html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción"><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
     });
     html += '</tbody></table></div>';
   }
@@ -231,7 +234,7 @@ function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Rol</th><th>Saldo</th></tr></thead><tbody>`;
   users.forEach(u => {
-    html += `<tr><td>${u.id}</td><td>${u.email}</td><td>${u.nombreJuego}</td><td>${u.tag}</td><td>${u.supercellId}</td><td>${u.telefono}</td><td>${u.rol}</td><td>$${parseFloat(u.saldo || 0).toFixed(2)}</td></tr>`;
+    html += `<tr><td data-label="ID">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Rol">${u.rol}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-jugadores').innerHTML = html;
@@ -240,7 +243,7 @@ function renderUsuariosAdmin(users) {
 function renderRecargasAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRecargas.forEach(r => {
-    html += `<tr><td>#${r.id}</td><td>${r.nombre} (${r.tag})</td><td>$${r.monto}</td><td>${r.referencia}</td><td>
+    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRecarga(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRecarga(${r.id})'>✗</button>
     </td></tr>`;
@@ -253,7 +256,7 @@ function renderRecargasAdmin() {
 function renderRetirosAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRetiros.forEach(r => {
-    html += `<tr><td>#${r.id}</td><td>${r.nombre} (${r.tag})</td><td>$${r.monto}</td><td>${r.referencia}</td><td>
+    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRetiro(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRetiro(${r.id})'>✗</button>
     </td></tr>`;
@@ -267,7 +270,7 @@ function renderMovimientosAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMovimientosAdmin.forEach(m => {
     const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td>#${m.id}</td><td>${m.nombre} (${m.tag})</td><td>${m.tipo}</td><td>$${m.monto}</td><td>${m.referencia}</td><td><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID">#${m.id}</td><td data-label="Usuario">${m.nombre} (${m.tag})</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-movimientos').innerHTML = html;
@@ -384,13 +387,13 @@ async function initJugador() {
   cachePerfil = await apiCall({ action: 'getPerfil', userId });
   cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
   const todas = await apiCall({ action: 'getBatallas' });
-  cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+  cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
   const todosMovs = await apiCall({ action: 'getMovimientos' });
   const misMovs = todosMovs.filter(m => m.userId == userId);
   cacheMisRecargas = misMovs.filter(m => m.tipo === 'Recarga');
   cacheMisRetiros = misMovs.filter(m => m.tipo === 'Retiro');
   cacheMiHistorial = misMovs.filter(m => m.estado !== 'Pendiente');
-  renderDesafios(); // ✅ Nueva función unificada de desafíos
+  renderDesafios();
   renderMisRecargas();
   renderMisRetiros();
   renderMiHistorial();
@@ -408,34 +411,43 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
-// ✅ NUEVA FUNCIÓN UNIFICADA: Desafíos 1C1 (Reemplaza a misBatallas y batallasAbiertas)
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
-  // Combinar ambas listas en una sola
-  let combined = [...abiertas, ...misBatallas];
+  let all = [...abiertas, ...misBatallas];
   const uniqueIds = new Set();
-  combined = combined.filter(b => {
-    if (uniqueIds.has(b.id)) return false;
-    uniqueIds.add(b.id); return true;
-  });
-  // Ordenar: Desafíos abiertos primero, luego activos, luego finalizados
-  combined.sort((a,b) => a.estado.localeCompare(b.estado));
+  all = all.filter(b => { if (uniqueIds.has(b.id)) return false; uniqueIds.add(b.id); return true; });
+  all.sort((a,b) => b.id - a.id);
 
   let html = `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
     <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
-  </div>`;
-  html += `<div class="table-wrapper"><table><thead><tr><th>ID</th><th>Retador / Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
+  </div>
+  <div class='table-wrapper'><table><thead><tr>
+    <th data-label="ID">ID</th>
+    <th data-label="Retador / Oponente">Retador / Oponente</th>
+    <th data-label="Estado">Estado</th>
+    <th data-label="Ganador">Ganador</th>
+    <th data-label="Acción">Acción</th>
+  </tr></thead><tbody>`;
 
-  combined.forEach(b => {
+  all.forEach(b => {
     const soyCreador = b.j1Id == userId;
     const soyOponente = b.j2Id == userId;
-    let oponente = soyCreador ? b.j2Nombre : b.j1Nombre;
-    if (!oponente) oponente = 'En espera...';
+    
+    let nombres = soyCreador ? '<strong>Tú</strong>' : (b.j1Nombre || 'Desconocido');
+    if (soyOponente) {
+      nombres += ' vs <strong>Tú</strong>';
+    } else if (b.j2Id) {
+      nombres += ' vs ' + b.j2Nombre;
+    } else if (b.estado === 'Pendiente de pago' && soyCreador) {
+      nombres = '<strong>Tú</strong> estás desafiando';
+    } else if (b.estado === 'Pendiente de pago') {
+      nombres += ' está desafiando';
+    }
 
     let estadoTexto = b.estado;
     let badgeClass = 'badge-pending';
-    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.pagoJ1) {
+    if (b.estado === 'Pendiente de pago' && !b.j2Id) {
        estadoTexto = '🔓 Desafío abierto';
        badgeClass = 'badge-ready';
     } else if (b.estado === 'Lista para jugar') {
@@ -450,7 +462,7 @@ function renderDesafios() {
     }
 
     let accion = '';
-    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id && b.j1Id != userId) {
+    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id != userId) {
        accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
     } else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
        const yaDeclaro = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
@@ -459,6 +471,8 @@ function renderDesafios() {
        } else {
          accion = '⏳ Esperando al oponente...';
        }
+    } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
+       accion = '⏳ Esperando oponente...';
     } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
       accion = `<a href='https://wa.me/584120000000?text=Disputa batalla #${b.id}' target='_blank' class='btn btn-red btn-sm'>Contactar admin</a>`;
     } else if (b.estado === 'Finalizada') {
@@ -466,25 +480,19 @@ function renderDesafios() {
       accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
     }
 
-    // Caso especial: El creador ve su propio desafío abierto
-    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id == userId) {
-       accion = '⏳ Esperando oponente...';
-    }
-
-    // Mostrar nombres
-    let nombres = soyCreador ? `<strong>Tú</strong>` : b.j1Nombre || '?';
-    if (soyOponente) nombres += ` vs <strong>Tú</strong>`;
-    else if (b.j2Id) nombres += ` vs ${b.j2Nombre}`;
-    else nombres += ` está desafiando`;
-
-    html += `<tr><td>#${b.id}</td><td>${nombres}</td><td><span class='badge ${badgeClass}'>${estadoTexto}</span></td><td>${b.ganador || '-'}</td><td>${accion}</td></tr>`;
+    html += `<tr>
+      <td data-label="ID">#${b.id}</td>
+      <td data-label="Retador / Oponente">${nombres}</td>
+      <td data-label="Estado"><span class='badge ${badgeClass}'>${estadoTexto}</span></td>
+      <td data-label="Ganador">${b.ganador || '-'}</td>
+      <td data-label="Acción">${accion}</td>
+    </tr>`;
   });
   html += '</tbody></table></div>';
-  if (!combined.length) html += '<p style="color:var(--text-secondary); text-align:center;">No hay desafíos activos en este momento. ¡Crea uno!</p>';
+  if (!all.length) html += '<p style="color:var(--text-secondary); text-align:center; margin-top:16px;">No hay desafíos activos en este momento. ¡Crea uno!</p>';
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ CORRECCIÓN DEL GUARDADO DE PERFIL (Evita que los campos queden vacíos)
 function renderPerfil() {
   const p = cachePerfil || {};
   document.getElementById('panel-perfil').innerHTML = `
@@ -526,13 +534,11 @@ async function guardarPerfil() {
     cuenta: document.getElementById('perfilCuenta').value
   });
   toast('Perfil actualizado');
-  // ✅ Clave: Volver a pedir los datos a Google Sheets para que no queden vacíos
   cachePerfil = await apiCall({ action: 'getPerfil', userId });
   renderPerfil();
   updateSidebarStatsJugador();
 }
 
-// ✅ NUEVO: Tasa de cambio automática en Recarga
 function recargarSaldoUI() {
   const a = window.ajustes || {};
   const min = parseFloat(a.minRecarga || 2);
@@ -545,7 +551,6 @@ function recargarSaldoUI() {
   document.getElementById('pagoCedula').textContent = a.pagoCedula || '';
   document.getElementById('pagoCuenta').textContent = a.pagoCuenta || '';
   
-  // Lógica para calcular en Bs
   const montoInput = document.getElementById('montoRecarga');
   const bsOutput = document.getElementById('montoRecargaBs');
   const tasa = parseFloat(a.tasaRecarga || 0);
@@ -569,7 +574,6 @@ async function enviarRecarga() {
   } else toast(res.error, 'error');
 }
 
-// ✅ NUEVO: Tasa de cambio automática en Retiro
 function retirarSaldoUI() {
   const a = window.ajustes || {};
   const min = parseFloat(a.minRetiro || 2);
@@ -581,7 +585,6 @@ function retirarSaldoUI() {
   const datos = [perfil.banco, perfil.telefonoPago, perfil.cuenta].filter(Boolean).join(' - ');
   document.getElementById('datosRetiro').value = datos;
 
-  // Lógica para calcular en Bs
   const montoInput = document.getElementById('montoRetiro');
   const bsOutput = document.getElementById('montoRetiroBs');
   const tasa = parseFloat(a.tasaRetiro || 0);
@@ -612,7 +615,7 @@ function renderMisRecargas() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMisRecargas.forEach(r => {
     const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td>#${r.id}</td><td>$${r.monto}</td><td>${r.referencia}</td><td><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   if (!cacheMisRecargas.length) html = '<p>No tienes recargas.</p>';
@@ -623,7 +626,7 @@ function renderMisRetiros() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
     const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td>#${r.id}</td><td>$${r.monto}</td><td>${r.referencia}</td><td><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   if (!cacheMisRetiros.length) html = '<p>No tienes retiros.</p>';
@@ -634,13 +637,12 @@ function renderMiHistorial() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMiHistorial.forEach(m => {
     const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td>#${m.id}</td><td>${m.tipo}</td><td>$${m.monto}</td><td>${m.referencia}</td><td><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID">#${m.id}</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-miHistorial').innerHTML = html;
 }
 
-// ---------- Lógica de Batallas (Ahora usada por renderDesafios) ----------
 let batallaDeclaracionId = null;
 function mostrarDeclararResultado(batallaId) {
   batallaDeclaracionId = batallaId;
@@ -655,7 +657,7 @@ async function enviarDeclaracion(resultado) {
     toast('Declaración enviada');
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
     const todas = await apiCall({ action: 'getBatallas' });
-    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
     renderDesafios();
     updateSidebarStatsJugador();
   } else {
@@ -674,7 +676,7 @@ async function crearBatallaAbierta() {
     closeModal('modalCrearBatallaAbierta');
     cachePerfil = await apiCall({ action: 'getPerfil', userId });
     const todas = await apiCall({ action: 'getBatallas' });
-    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
     renderDesafios();
     updateSidebarStatsJugador();
@@ -699,7 +701,7 @@ async function confirmarUnion() {
     closeModal('modalUnirseBatalla');
     cachePerfil = await apiCall({ action: 'getPerfil', userId });
     const todas = await apiCall({ action: 'getBatallas' });
-    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
     renderDesafios();
     updateSidebarStatsJugador();
@@ -710,62 +712,59 @@ async function confirmarUnion() {
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
-  // Sidebar User
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
-  // Navigation Items
   let navItems = '';
+  // ✅ APLICACIÓN DE COLORES DE KPI A LOS ICONOS DEL MENÚ
   if (rol === 'admin') {
     navItems = `
-      <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs"></i> Batallas 1C1</button>
-      <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation"></i> Disputas</button>
-      <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list"></i> Movimientos</button>
-      <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users"></i> Jugadores</button>
-      <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears"></i> Ajustes</button>`;
+      <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation" style="color: #FF4655;"></i> Disputas</button>
+      <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #FF4655;"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Movimientos</button>
+      <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users" style="color: #4F8EF7;"></i> Jugadores</button>
+      <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears" style="color: #FFD700;"></i> Ajustes</button>`;
     initAdmin();
   } else {
-    // ✅ Sección UNIFICADA para jugadores: Desafíos 1C1
     navItems = `
-      <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs"></i> Desafíos 1C1</button>
-      <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar"></i> Recargas</button>
-      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave"></i> Retiros</button>
-      <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list"></i> Historial</button>
-      <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user"></i> Perfil</button>`;
+      <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Desafíos 1C1</button>
+      <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas</button>
+      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #FF4655;"></i> Retiros</button>
+      <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Historial</button>
+      <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user" style="color: #4F8EF7;"></i> Perfil</button>`;
     initJugador();
   }
   document.getElementById('sidebarNav').innerHTML = navItems;
   document.getElementById('heroSection').classList.add('hidden');
   document.getElementById('featuresSection').classList.add('hidden');
 
-  // Mostrar menú hamburguesa en sesión iniciada
   document.getElementById('menuBtn').classList.add('active');
-
-  // Cargar la primera pestaña automáticamente
   const firstNavItem = document.querySelector('#sidebarNav .nav-item.active');
   if (firstNavItem) firstNavItem.click();
 }
 
 function onTabSwitch(tab) {
-  if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
+  if (tab === 'batallas' && rol === 'admin') {
+    renderAdminStats(); // ✅ Carga bajo demanda para evitar el "flash"
+    renderBatallasAdmin();
+  }
   if (tab === 'disputas') renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   if (tab === 'recargas') renderRecargasAdmin();
   if (tab === 'retiros') renderRetirosAdmin();
   if (tab === 'movimientos') renderMovimientosAdmin();
   if (tab === 'jugadores') renderUsuariosAdmin();
   if (tab === 'ajustes') renderAjustes();
-  if (tab === 'desafios') renderDesafios(); // Nueva pestaña unificada
+  if (tab === 'desafios') renderDesafios();
   if (tab === 'misRecargas') renderMisRecargas();
   if (tab === 'misRetiros') renderMisRetiros();
   if (tab === 'miHistorial') renderMiHistorial();
   if (tab === 'perfil') renderPerfil();
 }
 
-// Auto-login
 if (token && rol) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authBox').classList.add('hidden');
