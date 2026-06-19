@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbx8M5471anm7kRCBrMDJzm3dUpEpLkusmQOQxKG_vXfALmDZyGFKbzYCXmVRkMxZCXo/exec';
+const API = 'https://script.google.com/macros/s/AKfycbz103R2_VjDIpNge-cl7yfDoG7_cSADINhnwMaqkqUYA3bwRsfPAU-7X55hIjqJSXRF/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
