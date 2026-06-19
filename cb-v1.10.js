@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbxEUaTSZzw1a2wyLV2MDD_CdO2HwmiOskGhJSDj9HM7jAwyYAMlg209W0unSL9kqoE/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxlhYceT-rfsf8QhFPVH6AnGGeQIfmghA5HOJtcODNFIr5_uF7uD7dPz-CRVG9J42Hw/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -125,11 +125,20 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
   });
 }
 
+// ✅ NUEVO: Botón de WhatsApp a los 5 segundos
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const wabtn = document.getElementById('whatsapp-btn');
+        if (wabtn) {
+            wabtn.classList.add('show');
+        }
+    }, 5000);
+});
+
 // ==================== ADMIN ====================
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
-let kpisRendered = false;
 
 async function initAdmin() {
   await updateSidebarStatsAdmin();
@@ -151,16 +160,17 @@ async function initAdmin() {
   renderAjustes();
 }
 
+// ✅ CORRECCIÓN V1.10: Se reemplazan las estadísticas individuales por los 4 KPIs Globales en el menú
 async function updateSidebarStatsAdmin() {
-  const batallas = await apiCall({ action: 'getBatallas' });
-  const activas = batallas.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length;
-  const finalizadas = batallas.filter(b => b.estado === 'Finalizada').length;
-  document.getElementById('statActivas').textContent = activas;
-  document.getElementById('statFinalizadas').textContent = finalizadas;
-  document.getElementById('statGanancia').textContent = '$' + (finalizadas * 0.30).toFixed(2);
-  document.getElementById('statSaldo').parentElement.style.display = 'none';
-  document.getElementById('statGanadas').parentElement.style.display = 'none';
-  document.getElementById('statPendientes').parentElement.style.display = 'none';
+    const gStats = await apiCall({ action: 'getAdminStats' });
+    if (gStats.totalSaldo !== undefined) {
+        document.getElementById('sidebarStats').innerHTML = `
+            <div class='sidebar-stat'><div class='val gold' id='gStatSaldo'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+            <div class='sidebar-stat'><div class='val green' id='gStatRecargas'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+            <div class='sidebar-stat'><div class='val red' id='gStatRetiros'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+            <div class='sidebar-stat'><div class='val gold' id='gStatGanancia'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+        `;
+    }
 }
 
 function updateBadges() {
@@ -168,20 +178,6 @@ function updateBadges() {
   const badgeRet = document.getElementById('badgeRetiros');
   if (badgeRec) { badgeRec.textContent = pendingRecargas; badgeRec.style.display = pendingRecargas > 0 ? 'inline' : 'none'; }
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
-}
-
-// ✅ CORRECCIÓN V1.9: Solo renderizar KPIs cuando la pestaña esté activa
-async function renderAdminStats() {
-  if (!kpisRendered) {
-    kpisRendered = true;
-    const stats = await apiCall({ action: 'getAdminStats' });
-    if (stats.totalSaldo !== undefined) {
-      document.getElementById('kpi-total-saldo').textContent = '$' + stats.totalSaldo.toFixed(2);
-      document.getElementById('kpi-total-recargas').textContent = '$' + stats.totalRecargas.toFixed(2);
-      document.getElementById('kpi-total-retiros').textContent = '$' + stats.totalRetiros.toFixed(2);
-      document.getElementById('kpi-total-comisiones').textContent = '$' + stats.gananciasCasa.toFixed(2);
-    }
-  }
 }
 
 function renderBatallasAdmin(filtro = '') {
@@ -226,7 +222,6 @@ async function declararGanadorAdmin(batallaId, jugador) {
     renderBatallasAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
     updateSidebarStatsAdmin();
-    renderAdminStats();
   }
 }
 
@@ -287,7 +282,7 @@ async function verificarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    renderAdminStats();
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -302,7 +297,7 @@ async function rechazarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    renderAdminStats();
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -317,7 +312,7 @@ async function verificarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    renderAdminStats();
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -332,7 +327,7 @@ async function rechazarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    renderAdminStats();
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -715,16 +710,18 @@ async function initApp() {
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
-  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
+  
+  // ✅ CORRECCIÓN V1.10: El nombre del Admin siempre se muestra como 'admin'
+  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
   let navItems = '';
-  // ✅ APLICACIÓN DE COLORES DE KPI A LOS ICONOS DEL MENÚ
+  // ✅ CORRECCIÓN V1.10: Icono de retiros en color verde (#00E676) y KPIs integrados en el menú
   if (rol === 'admin') {
     navItems = `
       <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Batallas 1C1</button>
       <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation" style="color: #FF4655;"></i> Disputas</button>
       <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #FF4655;"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #00E676;"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
       <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Movimientos</button>
       <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users" style="color: #4F8EF7;"></i> Jugadores</button>
       <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears" style="color: #FFD700;"></i> Ajustes</button>`;
@@ -733,7 +730,7 @@ async function initApp() {
     navItems = `
       <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Desafíos 1C1</button>
       <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas</button>
-      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #FF4655;"></i> Retiros</button>
+      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #00E676;"></i> Retiros</button>
       <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Historial</button>
       <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user" style="color: #4F8EF7;"></i> Perfil</button>`;
     initJugador();
@@ -748,10 +745,7 @@ async function initApp() {
 }
 
 function onTabSwitch(tab) {
-  if (tab === 'batallas' && rol === 'admin') {
-    renderAdminStats(); // ✅ Carga bajo demanda para evitar el "flash"
-    renderBatallasAdmin();
-  }
+  if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
   if (tab === 'disputas') renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   if (tab === 'recargas') renderRecargasAdmin();
   if (tab === 'retiros') renderRetirosAdmin();
