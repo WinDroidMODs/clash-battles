@@ -36,7 +36,9 @@ body {
 }
 .btn-header:hover { background: #6BA3FF; box-shadow: 0 6px 20px rgba(79,142,247,0.5); transform: translateY(-1px); }
 
-.hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: flex; align-items: center; }
+/* ✅ CORRECCIÓN V1.6: Menú oculto por defecto, visible solo con la clase .active */
+.hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: none !important; align-items: center; }
+.hamburger.active { display: flex !important; }
 .hamburger svg { stroke: var(--text); width: 28px; height: 28px; transition: all 0.4s; }
 .hamburger .line { transition: all 0.4s; transform-origin: 50% 50%; }
 .hamburger.open .line.top { transform: rotate(45deg) translateY(6px); }
@@ -93,7 +95,6 @@ body {
 .nav-item:hover { background: rgba(79,142,247,0.1); color: var(--text); }
 .nav-item.active { background: linear-gradient(135deg, var(--blue), #6BA3FF); color: white; box-shadow: 0 4px 15px rgba(79,142,247,0.4); }
 
-/* ✅ NUEVO: Flexbox para estirar el contenido y empujar el Footer */
 .main-content { padding: 20px; transition: margin-left 0.3s; flex: 1; }
 
 .tab-panel { display: none; }
@@ -164,7 +165,6 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 @media (max-width: 600px) { .landing-features { grid-template-columns: 1fr; } }
 .landing-feature { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
 
-/* ✅ NUEVO: Cookie Banner pegado al borde */
 .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 1001; gap: 16px; flex-wrap: wrap; }
 .cookie-banner p { color: var(--text-secondary); font-size: 0.8rem; flex: 1; min-width: 200px; }
 
