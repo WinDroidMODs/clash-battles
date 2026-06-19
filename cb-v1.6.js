@@ -652,6 +652,15 @@ async function initApp() {
   document.getElementById('sidebarNav').innerHTML = navItems;
   document.getElementById('heroSection').classList.add('hidden');
   document.getElementById('featuresSection').classList.add('hidden');
+
+  // ✅ CORRECCIÓN V1.6: Mostrar el menú hamburguesa después de iniciar sesión
+  document.getElementById('menuBtn').classList.add('active');
+
+  // ✅ CORRECCIÓN V1.6: Activar la primera pestaña para evitar que la página cargue vacía
+  const firstNavItem = document.querySelector('#sidebarNav .nav-item.active');
+  if (firstNavItem) {
+    firstNavItem.click();
+  }
 }
 
 function onTabSwitch(tab) {
