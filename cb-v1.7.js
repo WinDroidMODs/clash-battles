@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbwXIlTVHpuIPZcT3ds8XNYv-es3-Hw961VtpfqGEfIdiZRL7ScTGRo1jc6PpwtqJza3/exec';
+const API = 'https://script.google.com/macros/s/AKfycbx8M5471anm7kRCBrMDJzm3dUpEpLkusmQOQxKG_vXfALmDZyGFKbzYCXmVRkMxZCXo/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -133,6 +133,7 @@ let pendingRecargas = 0, pendingRetiros = 0;
 
 async function initAdmin() {
   await updateSidebarStatsAdmin();
+  await renderAdminStats(); // Nuevos KPIs de plataforma
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
   const todosMovs = await apiCall({ action: 'getMovimientos' });
@@ -149,6 +150,16 @@ async function initAdmin() {
   renderMovimientosAdmin();
   renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
   renderAjustes();
+}
+
+async function renderAdminStats() {
+  const stats = await apiCall({ action: 'getAdminStats' });
+  if (stats.totalSaldo !== undefined) {
+    document.getElementById('kpi-total-saldo').textContent = '$' + stats.totalSaldo.toFixed(2);
+    document.getElementById('kpi-total-recargas').textContent = '$' + stats.totalRecargas.toFixed(2);
+    document.getElementById('kpi-total-retiros').textContent = '$' + stats.totalRetiros.toFixed(2);
+    document.getElementById('kpi-total-comisiones').textContent = '$' + stats.gananciasCasa.toFixed(2);
+  }
 }
 
 async function updateSidebarStatsAdmin() {
@@ -212,6 +223,7 @@ async function declararGanadorAdmin(batallaId, jugador) {
     renderBatallasAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
     updateSidebarStatsAdmin();
+    renderAdminStats();
   }
 }
 
@@ -272,6 +284,7 @@ async function verificarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
+    renderAdminStats();
   } else toast(res.error, 'error');
 }
 
@@ -286,6 +299,7 @@ async function rechazarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
+    renderAdminStats();
   } else toast(res.error, 'error');
 }
 
@@ -300,6 +314,7 @@ async function verificarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
+    renderAdminStats();
   } else toast(res.error, 'error');
 }
 
@@ -314,6 +329,7 @@ async function rechazarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
+    renderAdminStats();
   } else toast(res.error, 'error');
 }
 
@@ -332,6 +348,8 @@ function renderAjustes() {
       <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
       <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
       <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
+      <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
+      <div class='input-group'><label>Tasa $ (Retiros) [Bs]</label><input id='ajTasaRetiro' value='${a.tasaRetiro || 0}'/></div>
     </div>
     <button class='btn btn-gold' onclick='guardarAjustes()' style='margin-top:16px;'>Guardar Ajustes</button>`;
 }
@@ -348,7 +366,9 @@ async function guardarAjustes() {
     pagoBanco: document.getElementById('ajBanco').value,
     pagoTelefono: document.getElementById('ajTel').value,
     pagoCedula: document.getElementById('ajCedula').value,
-    pagoCuenta: document.getElementById('ajCuenta').value
+    pagoCuenta: document.getElementById('ajCuenta').value,
+    tasaRecarga: document.getElementById('ajTasaRecarga').value,
+    tasaRetiro: document.getElementById('ajTasaRetiro').value
   };
   await apiCall({ action: 'saveAjustes', ajustes: a });
   window.ajustes = await apiCall({ action: 'getAjustes' });
@@ -370,12 +390,11 @@ async function initJugador() {
   cacheMisRecargas = misMovs.filter(m => m.tipo === 'Recarga');
   cacheMisRetiros = misMovs.filter(m => m.tipo === 'Retiro');
   cacheMiHistorial = misMovs.filter(m => m.estado !== 'Pendiente');
-  renderPerfil();
-  renderMisBatallas();
-  renderBatallasAbiertas();
+  renderDesafios(); // ✅ Nueva función unificada de desafíos
   renderMisRecargas();
   renderMisRetiros();
   renderMiHistorial();
+  renderPerfil();
 }
 
 async function updateSidebarStatsJugador() {
@@ -389,6 +408,83 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
+// ✅ NUEVA FUNCIÓN UNIFICADA: Desafíos 1C1 (Reemplaza a misBatallas y batallasAbiertas)
+function renderDesafios() {
+  const misBatallas = cacheMisBatallas || [];
+  const abiertas = cacheBatallasAbiertas || [];
+  // Combinar ambas listas en una sola
+  let combined = [...abiertas, ...misBatallas];
+  const uniqueIds = new Set();
+  combined = combined.filter(b => {
+    if (uniqueIds.has(b.id)) return false;
+    uniqueIds.add(b.id); return true;
+  });
+  // Ordenar: Desafíos abiertos primero, luego activos, luego finalizados
+  combined.sort((a,b) => a.estado.localeCompare(b.estado));
+
+  let html = `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
+    <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
+  </div>`;
+  html += `<div class="table-wrapper"><table><thead><tr><th>ID</th><th>Retador / Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
+
+  combined.forEach(b => {
+    const soyCreador = b.j1Id == userId;
+    const soyOponente = b.j2Id == userId;
+    let oponente = soyCreador ? b.j2Nombre : b.j1Nombre;
+    if (!oponente) oponente = 'En espera...';
+
+    let estadoTexto = b.estado;
+    let badgeClass = 'badge-pending';
+    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.pagoJ1) {
+       estadoTexto = '🔓 Desafío abierto';
+       badgeClass = 'badge-ready';
+    } else if (b.estado === 'Lista para jugar') {
+       estadoTexto = '⚔️ En juego';
+       badgeClass = 'badge-review';
+    } else if (b.estado === 'Disputa') {
+       estadoTexto = '⚠️ Disputa';
+       badgeClass = 'badge-pending';
+    } else if (b.estado === 'Finalizada') {
+       estadoTexto = '✅ Finalizada';
+       badgeClass = 'badge-done';
+    }
+
+    let accion = '';
+    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id && b.j1Id != userId) {
+       accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
+    } else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
+       const yaDeclaro = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
+       if (!yaDeclaro) {
+         accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
+       } else {
+         accion = '⏳ Esperando al oponente...';
+       }
+    } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
+      accion = `<a href='https://wa.me/584120000000?text=Disputa batalla #${b.id}' target='_blank' class='btn btn-red btn-sm'>Contactar admin</a>`;
+    } else if (b.estado === 'Finalizada') {
+      const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
+      accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
+    }
+
+    // Caso especial: El creador ve su propio desafío abierto
+    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id == userId) {
+       accion = '⏳ Esperando oponente...';
+    }
+
+    // Mostrar nombres
+    let nombres = soyCreador ? `<strong>Tú</strong>` : b.j1Nombre || '?';
+    if (soyOponente) nombres += ` vs <strong>Tú</strong>`;
+    else if (b.j2Id) nombres += ` vs ${b.j2Nombre}`;
+    else nombres += ` está desafiando`;
+
+    html += `<tr><td>#${b.id}</td><td>${nombres}</td><td><span class='badge ${badgeClass}'>${estadoTexto}</span></td><td>${b.ganador || '-'}</td><td>${accion}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!combined.length) html += '<p style="color:var(--text-secondary); text-align:center;">No hay desafíos activos en este momento. ¡Crea uno!</p>';
+  document.getElementById('panel-desafios').innerHTML = html;
+}
+
+// ✅ CORRECCIÓN DEL GUARDADO DE PERFIL (Evita que los campos queden vacíos)
 function renderPerfil() {
   const p = cachePerfil || {};
   document.getElementById('panel-perfil').innerHTML = `
@@ -430,20 +526,35 @@ async function guardarPerfil() {
     cuenta: document.getElementById('perfilCuenta').value
   });
   toast('Perfil actualizado');
-  cachePerfil = null;
+  // ✅ Clave: Volver a pedir los datos a Google Sheets para que no queden vacíos
+  cachePerfil = await apiCall({ action: 'getPerfil', userId });
   renderPerfil();
+  updateSidebarStatsJugador();
 }
 
+// ✅ NUEVO: Tasa de cambio automática en Recarga
 function recargarSaldoUI() {
-  const min = (window.ajustes && window.ajustes.minRecarga) ? window.ajustes.minRecarga : 2;
-  const max = (window.ajustes && window.ajustes.maxRecarga) ? window.ajustes.maxRecarga : 50;
+  const a = window.ajustes || {};
+  const min = parseFloat(a.minRecarga || 2);
+  const max = parseFloat(a.maxRecarga || 50);
   document.getElementById('rangoRecarga').textContent = `(mín $${min} - máx $${max})`;
   document.getElementById('montoRecarga').min = min;
   document.getElementById('montoRecarga').max = max;
-  document.getElementById('pagoBanco').textContent = (window.ajustes && window.ajustes.pagoBanco) || '';
-  document.getElementById('pagoTelefono').textContent = (window.ajustes && window.ajustes.pagoTelefono) || '';
-  document.getElementById('pagoCedula').textContent = (window.ajustes && window.ajustes.pagoCedula) || '';
-  document.getElementById('pagoCuenta').textContent = (window.ajustes && window.ajustes.pagoCuenta) || '';
+  document.getElementById('pagoBanco').textContent = a.pagoBanco || '';
+  document.getElementById('pagoTelefono').textContent = a.pagoTelefono || '';
+  document.getElementById('pagoCedula').textContent = a.pagoCedula || '';
+  document.getElementById('pagoCuenta').textContent = a.pagoCuenta || '';
+  
+  // Lógica para calcular en Bs
+  const montoInput = document.getElementById('montoRecarga');
+  const bsOutput = document.getElementById('montoRecargaBs');
+  const tasa = parseFloat(a.tasaRecarga || 0);
+  montoInput.oninput = function() {
+    const amount = parseFloat(this.value) || 0;
+    bsOutput.textContent = (amount * tasa).toFixed(2);
+  };
+  if(montoInput.value) montoInput.oninput();
+
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
@@ -458,15 +569,28 @@ async function enviarRecarga() {
   } else toast(res.error, 'error');
 }
 
+// ✅ NUEVO: Tasa de cambio automática en Retiro
 function retirarSaldoUI() {
-  const min = (window.ajustes && window.ajustes.minRetiro) ? window.ajustes.minRetiro : 2;
-  const max = (window.ajustes && window.ajustes.maxRetiro) ? window.ajustes.maxRetiro : 50;
+  const a = window.ajustes || {};
+  const min = parseFloat(a.minRetiro || 2);
+  const max = parseFloat(a.maxRetiro || 50);
   document.getElementById('rangoRetiro').textContent = `(mín $${min} - máx $${max})`;
   document.getElementById('montoRetiro').min = min;
   document.getElementById('montoRetiro').max = max;
   const perfil = cachePerfil || {};
   const datos = [perfil.banco, perfil.telefonoPago, perfil.cuenta].filter(Boolean).join(' - ');
   document.getElementById('datosRetiro').value = datos;
+
+  // Lógica para calcular en Bs
+  const montoInput = document.getElementById('montoRetiro');
+  const bsOutput = document.getElementById('montoRetiroBs');
+  const tasa = parseFloat(a.tasaRetiro || 0);
+  montoInput.oninput = function() {
+    const amount = parseFloat(this.value) || 0;
+    bsOutput.textContent = (amount * tasa).toFixed(2);
+  };
+  if(montoInput.value) montoInput.oninput();
+
   document.getElementById('modalRetiro').classList.remove('hidden');
 }
 
@@ -516,34 +640,7 @@ function renderMiHistorial() {
   document.getElementById('panel-miHistorial').innerHTML = html;
 }
 
-// Batallas del jugador
-function renderMisBatallas() {
-  const batallas = cacheMisBatallas || [];
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Oponente</th><th>Estado</th><th>Ganador</th><th>Acción</th></tr></thead><tbody>`;
-  batallas.forEach(b => {
-    const soyJ1 = b.j1Id == userId;
-    const oponente = soyJ1 ? b.j2Nombre : b.j1Nombre;
-    let accion = '';
-    if (b.estado === 'Lista para jugar') {
-      const yaDeclaro = soyJ1 ? b.declaracionJ1 : b.declaracionJ2;
-      if (!yaDeclaro) {
-        accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
-      } else {
-        accion = 'Esperando al oponente...';
-      }
-    } else if (b.estado === 'Disputa') {
-      accion = `<a href='https://wa.me/584120000000?text=Disputa batalla #${b.id}' target='_blank' class='btn btn-red btn-sm'>Contactar admin</a>`;
-    } else if (b.estado === 'Finalizada') {
-      accion = b.ganador === (soyJ1 ? 'J1' : 'J2') ? '🏆 Ganaste' : '😞 Perdiste';
-    } else {
-      accion = b.estado;
-    }
-    html += `<tr><td>#${b.id}</td><td>${oponente}</td><td>${b.estado}</td><td>${b.ganador || '-'}</td><td>${accion}</td></tr>`;
-  });
-  html += '</tbody></table></div>';
-  document.getElementById('panel-misBatallas').innerHTML = html;
-}
-
+// ---------- Lógica de Batallas (Ahora usada por renderDesafios) ----------
 let batallaDeclaracionId = null;
 function mostrarDeclararResultado(batallaId) {
   batallaDeclaracionId = batallaId;
@@ -557,24 +654,13 @@ async function enviarDeclaracion(resultado) {
   if (res.success) {
     toast('Declaración enviada');
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
-    renderMisBatallas();
+    const todas = await apiCall({ action: 'getBatallas' });
+    cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
+    renderDesafios();
     updateSidebarStatsJugador();
   } else {
     toast(res.error, 'error');
   }
-}
-
-function renderBatallasAbiertas() {
-  const abiertas = cacheBatallasAbiertas || [];
-  let html = '<div class="table-wrapper"><table><thead><tr><th>ID</th><th>Creador</th><th>Pago</th><th>Acción</th></tr></thead><tbody>';
-  abiertas.forEach(b => {
-    const pagoIcon = b.pagoJ1 ? '✅' : '❌';
-    html += `<tr><td>#${b.id}</td><td>${b.j1Nombre || b.j2Nombre} (${b.j1Tag || b.j2Tag})</td><td>${pagoIcon}</td><td><button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Unirse</button></td></tr>`;
-  });
-  html += '</tbody></table></div>';
-  if (!abiertas.length) html = '<p>No hay batallas abiertas.</p>';
-  html += `<button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()' style='margin-top:12px;'>Crear Desafío</button>`;
-  document.getElementById('panel-batallasAbiertas').innerHTML = html;
 }
 
 function mostrarCrearBatallaAbierta() {
@@ -589,7 +675,8 @@ async function crearBatallaAbierta() {
     cachePerfil = await apiCall({ action: 'getPerfil', userId });
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
-    renderBatallasAbiertas();
+    cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
+    renderDesafios();
     updateSidebarStatsJugador();
   } else toast(res.error || 'Error', 'error');
 }
@@ -614,8 +701,7 @@ async function confirmarUnion() {
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && ((b.pagoJ1 && !b.j2Id) || (b.pagoJ2 && !b.j1Id)));
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
-    renderMisBatallas();
-    renderBatallasAbiertas();
+    renderDesafios();
     updateSidebarStatsJugador();
   } else toast(res.error || 'Error', 'error');
 }
@@ -623,11 +709,14 @@ async function confirmarUnion() {
 // ==================== INIT APP ====================
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
+  
+  // Sidebar User
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'Admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
+  // Navigation Items
   let navItems = '';
   if (rol === 'admin') {
     navItems = `
@@ -640,9 +729,9 @@ async function initApp() {
       <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears"></i> Ajustes</button>`;
     initAdmin();
   } else {
+    // ✅ Sección UNIFICADA para jugadores: Desafíos 1C1
     navItems = `
-      <button class='nav-item active' onclick='switchTab("misBatallas",this)'><i class="fa-solid fa-crosshairs"></i> Mis Batallas 1C1</button>
-      <button class='nav-item' onclick='switchTab("batallasAbiertas",this)'><i class="fa-solid fa-unlock-keyhole"></i> Batallas Abiertas</button>
+      <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs"></i> Desafíos 1C1</button>
       <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar"></i> Recargas</button>
       <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave"></i> Retiros</button>
       <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list"></i> Historial</button>
@@ -653,14 +742,12 @@ async function initApp() {
   document.getElementById('heroSection').classList.add('hidden');
   document.getElementById('featuresSection').classList.add('hidden');
 
-  // ✅ CORRECCIÓN V1.6: Mostrar el menú hamburguesa después de iniciar sesión
+  // Mostrar menú hamburguesa en sesión iniciada
   document.getElementById('menuBtn').classList.add('active');
 
-  // ✅ CORRECCIÓN V1.6: Activar la primera pestaña para evitar que la página cargue vacía
+  // Cargar la primera pestaña automáticamente
   const firstNavItem = document.querySelector('#sidebarNav .nav-item.active');
-  if (firstNavItem) {
-    firstNavItem.click();
-  }
+  if (firstNavItem) firstNavItem.click();
 }
 
 function onTabSwitch(tab) {
@@ -671,8 +758,7 @@ function onTabSwitch(tab) {
   if (tab === 'movimientos') renderMovimientosAdmin();
   if (tab === 'jugadores') renderUsuariosAdmin();
   if (tab === 'ajustes') renderAjustes();
-  if (tab === 'misBatallas') renderMisBatallas();
-  if (tab === 'batallasAbiertas') renderBatallasAbiertas();
+  if (tab === 'desafios') renderDesafios(); // Nueva pestaña unificada
   if (tab === 'misRecargas') renderMisRecargas();
   if (tab === 'misRetiros') renderMisRetiros();
   if (tab === 'miHistorial') renderMiHistorial();
