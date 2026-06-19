@@ -36,7 +36,6 @@ body {
 }
 .btn-header:hover { background: #6BA3FF; box-shadow: 0 6px 20px rgba(79,142,247,0.5); transform: translateY(-1px); }
 
-/* Menú hamburguesa corregido (oculto por defecto) */
 .hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: none !important; align-items: center; }
 .hamburger.active { display: flex !important; }
 .hamburger svg { stroke: var(--text); width: 28px; height: 28px; transition: all 0.4s; }
@@ -96,10 +95,11 @@ body {
 .nav-item.active { background: linear-gradient(135deg, var(--blue), #6BA3FF); color: white; box-shadow: 0 4px 15px rgba(79,142,247,0.4); }
 
 .main-content { padding: 20px; transition: margin-left 0.3s; flex: 1; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
 
-/* KPI Grid - Para los nuevos datos del Admin y Jugador */
+/* ✅ CORRECCIÓN V1.9: Ocultar paneles por defecto con !important para evitar el flash */
+.tab-panel { display: none !important; }
+.tab-panel.active { display: block !important; }
+
 .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
 @media (min-width: 600px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 16px; box-shadow: var(--shadow); text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
@@ -111,11 +111,18 @@ body {
 .kpi-value.red { color: var(--red); }
 
 .table-wrapper { border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
+@media (max-width: 600px) {
+  .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; }
+  .table-wrapper thead tr { position: absolute; top: -9999px; left: -9999px; }
+  .table-wrapper tr { border: 1px solid var(--border); margin-bottom: 12px; border-radius: 12px; padding: 16px; background: var(--bg-card); }
+  .table-wrapper td { border: none; position: relative; padding: 8px 0 8px 50%; text-align: right; white-space: normal; word-break: break-word; }
+  .table-wrapper td:before { position: absolute; top: 8px; left: 0; width: 45%; padding-right: 10px; text-align: left; font-weight: 700; color: var(--text-secondary); content: attr(data-label); }
+}
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
 th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
 tr:hover td { background: rgba(79,142,247,0.03); }
-.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; }
 .badge-pending { background: rgba(255,70,85,0.15); color: var(--red); }
 .badge-ready { background: rgba(0,230,118,0.15); color: var(--green); }
 .badge-review { background: rgba(255,215,0,0.15); color: var(--gold); }
