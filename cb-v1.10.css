@@ -96,7 +96,6 @@ body {
 
 .main-content { padding: 20px; transition: margin-left 0.3s; flex: 1; }
 
-/* ✅ CORRECCIÓN V1.9: Ocultar paneles por defecto con !important para evitar el flash */
 .tab-panel { display: none !important; }
 .tab-panel.active { display: block !important; }
 
@@ -185,3 +184,65 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 .admin-badge { background: var(--red); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: auto; }
 .notification-dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ✅ NUEVO V1.10: Botón Flotante de WhatsApp */
+.whatsapp-float {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #25D366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    z-index: 9999;
+    text-decoration: none;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.whatsapp-float.show {
+    opacity: 1;
+    transform: scale(1);
+}
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    background-color: #20b858;
+    color: white;
+}
+.whatsapp-float .tooltip-text {
+    position: absolute;
+    right: 75px;
+    background: var(--bg-card);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+.whatsapp-float:hover .tooltip-text {
+    opacity: 1;
+    visibility: visible;
+}
+.whatsapp-float .tooltip-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    margin-top: -6px;
+    border-width: 6px 0 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--border);
+}
