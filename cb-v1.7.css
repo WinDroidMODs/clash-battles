@@ -36,7 +36,7 @@ body {
 }
 .btn-header:hover { background: #6BA3FF; box-shadow: 0 6px 20px rgba(79,142,247,0.5); transform: translateY(-1px); }
 
-/* ✅ CORRECCIÓN V1.6: Menú oculto por defecto, visible solo con la clase .active */
+/* Menú hamburguesa corregido (oculto por defecto) */
 .hamburger { background: none; border: none; cursor: pointer; padding: 8px; display: none !important; align-items: center; }
 .hamburger.active { display: flex !important; }
 .hamburger svg { stroke: var(--text); width: 28px; height: 28px; transition: all 0.4s; }
@@ -96,15 +96,14 @@ body {
 .nav-item.active { background: linear-gradient(135deg, var(--blue), #6BA3FF); color: white; box-shadow: 0 4px 15px rgba(79,142,247,0.4); }
 
 .main-content { padding: 20px; transition: margin-left 0.3s; flex: 1; }
-
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
+/* KPI Grid - Para los nuevos datos del Admin y Jugador */
 .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-@media (min-width: 600px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 600px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 16px; box-shadow: var(--shadow); text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
 .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); border-color: var(--blue); }
-.kpi-icon { width: 32px; height: 32px; margin: 0 auto 10px; stroke: currentColor; fill: none; stroke-width: 2; }
 .kpi-title { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
 .kpi-value { font-size: 1.8rem; font-weight: 900; }
 .kpi-value.gold { background: linear-gradient(135deg, #FFD700, #FFA000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
