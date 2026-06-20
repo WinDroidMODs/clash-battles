@@ -109,7 +109,7 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
-/* ✅ V1.14: Grid completamente responsivo */
+/* ✅ V1.15: Rediseño total de tarjetas móviles (Sin desbordes y con recuadro VS) */
 .table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 600px) {
   .table-wrapper { border: none; box-shadow: none; background: transparent; }
@@ -124,38 +124,68 @@ body {
     box-shadow: var(--shadow);
   }
   .table-wrapper td {
-    display: grid;
-    grid-template-columns: 40% 60%; /* Etiqueta 40%, Contenido 60% */
-    gap: 8px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.8rem;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.75rem;
+    gap: 10px;
   }
-  .table-wrapper td:last-child { border-bottom: none; }
   .table-wrapper td:before {
     content: attr(data-label);
     font-weight: 700;
     color: var(--text-secondary);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    flex-shrink: 0;
     text-transform: uppercase;
-    text-align: left;
-    white-space: nowrap;
   }
   .table-wrapper td > *:not(:before) {
     text-align: right;
-    word-break: break-word;
+    flex: 1;
+    min-width: 0; /* CRUCIAL: Evita que los textos largos se desborden */
+    word-break: break-all;
     display: flex;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 4px;
   }
+  /* Ocultar etiqueta y ajustar diseño para el mini recuadro de Retador vs Oponente */
+  .table-wrapper td.vs-row:before { display: none; }
+  .table-wrapper td.vs-row { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .table-wrapper td:last-child { border-bottom: none; }
+  
+  /* Mini recuadro Retador 🆚 Oponente */
+  .vs-box {
+    display: flex; flex-direction: column; width: 100%;
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 4px 10px; background: rgba(255,255,255,0.02);
+  }
+  .vs-header {
+    display: flex; justify-content: space-between;
+    font-size: 0.5rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding-bottom: 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+  }
+  .vs-body {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vs-player { font-weight: 600; font-size: 0.8rem; color: var(--text); }
+  .vs-icon { color: var(--gold); font-size: 0.9rem; font-weight: 900; }
+  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.75rem; font-style: italic; }
 }
+
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
 th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
 tr:hover td { background: rgba(79,142,247,0.03); }
+
+/* ✅ V1.15: Colores de estados restaurados y vibrantes */
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; }
+.badge-pending { background: rgba(255, 70, 85, 0.25); color: #FF4655; } /* Rojo */
+.badge-ready { background: rgba(0, 230, 118, 0.25); color: #00E676; } /* Verde */
+.badge-review { background: rgba(255, 215, 0, 0.25); color: #FFD700; } /* Dorado */
+.badge-done { background: rgba(187, 134, 252, 0.25); color: #BB86FC; } /* Púrpura */
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); position: relative; }
@@ -216,80 +246,27 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 .whatsapp-float {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #25D366;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 32px;
-    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-    z-index: 9999;
-    text-decoration: none;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: fixed; bottom: 20px; right: 20px;
+    width: 60px; height: 60px; background-color: #25D366; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: white; font-size: 32px;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); z-index: 9999; text-decoration: none;
+    opacity: 0; transform: scale(0.8); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.whatsapp-float.show {
-    opacity: 1;
-    transform: scale(1);
-}
-.whatsapp-float:hover {
-    transform: scale(1.1);
-    background-color: #20b858;
-    color: white;
-}
+.whatsapp-float.show { opacity: 1; transform: scale(1); }
+.whatsapp-float:hover { transform: scale(1.1); background-color: #20b858; color: white; }
 .whatsapp-float .tooltip-text {
-    position: absolute;
-    right: 75px;
-    background: var(--bg-card);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    white-space: nowrap;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
+    position: absolute; right: 75px; background: var(--bg-card); color: var(--text);
+    padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    opacity: 0; visibility: hidden; transition: opacity 0.3s ease; pointer-events: none;
 }
-.whatsapp-float.tooltip-active .tooltip-text {
-    opacity: 1;
-    visibility: visible;
-}
-.whatsapp-float:hover .tooltip-text {
-    opacity: 1;
-    visibility: visible;
-}
+.whatsapp-float.tooltip-active .tooltip-text { opacity: 1; visibility: visible; }
+.whatsapp-float:hover .tooltip-text { opacity: 1; visibility: visible; }
 .whatsapp-float .tooltip-text::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -6px;
-    margin-top: -6px;
-    border-width: 6px 0 6px 6px;
-    border-style: solid;
-    border-color: transparent transparent transparent var(--border);
+    content: ''; position: absolute; top: 50%; right: -6px; margin-top: -6px;
+    border-width: 6px 0 6px 6px; border-style: solid; border-color: transparent transparent transparent var(--border);
 }
 
-.modal-dispute .modal-content {
-    border: 2px solid var(--red);
-    box-shadow: 0 0 25px rgba(255, 70, 85, 0.4);
-}
-.modal-dispute h3 {
-    color: var(--red);
-}
-.modal-dispute .warning-text {
-    color: #ffaaaf;
-    font-size: 0.85rem;
-    margin-bottom: 16px;
-    line-height: 1.4;
-}
+.modal-dispute .modal-content { border: 2px solid var(--red); box-shadow: 0 0 25px rgba(255, 70, 85, 0.4); }
+.modal-dispute h3 { color: var(--red); }
+.modal-dispute .warning-text { color: #ffaaaf; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
