@@ -109,13 +109,16 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
+/* ✅ V1.11: Diseño compacto para moviles */
 .table-wrapper { border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 600px) {
+  .table-wrapper { padding: 0; }
   .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; }
   .table-wrapper thead tr { position: absolute; top: -9999px; left: -9999px; }
-  .table-wrapper tr { border: 1px solid var(--border); margin-bottom: 12px; border-radius: 12px; padding: 16px; background: var(--bg-card); }
-  .table-wrapper td { border: none; position: relative; padding: 8px 0 8px 50%; text-align: right; white-space: normal; word-break: break-word; }
-  .table-wrapper td:before { position: absolute; top: 8px; left: 0; width: 45%; padding-right: 10px; text-align: left; font-weight: 700; color: var(--text-secondary); content: attr(data-label); }
+  .table-wrapper tr { border: 1px solid var(--border); margin-bottom: 8px; border-radius: 8px; padding: 10px 12px; background: var(--bg-card); }
+  .table-wrapper td { border: none; position: relative; padding: 4px 0 4px 45%; text-align: right; white-space: normal; word-break: break-word; font-size: 0.75rem; }
+  .table-wrapper td:before { position: absolute; top: 4px; left: 0; width: 40%; padding-right: 8px; text-align: left; font-weight: 700; color: var(--text-secondary); font-size: 0.65rem; content: attr(data-label); }
+  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; }
 }
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
@@ -185,10 +188,10 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 .notification-dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* ✅ NUEVO V1.10: Botón Flotante de WhatsApp */
+/* ✅ NUEVO V1.11: Botón Flotante de WhatsApp (Más abajo) y Modal de Disputa Rojo */
 .whatsapp-float {
     position: fixed;
-    bottom: 90px;
+    bottom: 110px; /* Ajustado para que baje un poco más */
     right: 20px;
     width: 60px;
     height: 60px;
@@ -245,4 +248,19 @@ tr:hover td { background: rgba(79,142,247,0.03); }
     border-width: 6px 0 6px 6px;
     border-style: solid;
     border-color: transparent transparent transparent var(--border);
+}
+
+/* Estilos para el Modal Rojo de Disputa */
+.modal-dispute .modal-content {
+    border: 2px solid var(--red);
+    box-shadow: 0 0 25px rgba(255, 70, 85, 0.4);
+}
+.modal-dispute h3 {
+    color: var(--red);
+}
+.modal-dispute .warning-text {
+    color: #ffaaaf;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.4;
 }
