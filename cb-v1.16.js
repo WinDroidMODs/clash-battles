@@ -11,7 +11,6 @@ async function apiCall(body) {
   return await r.json();
 }
 
-// ==================== AUTH ====================
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
@@ -65,7 +64,6 @@ function logout() {
   location.reload();
 }
 
-// ==================== UI ====================
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -138,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ==================== ADMIN ====================
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
@@ -379,7 +376,6 @@ async function guardarAjustes() {
   toast('Ajustes guardados');
 }
 
-// ==================== JUGADOR ====================
 let cachePerfil = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
@@ -412,7 +408,6 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
-// ✅ V1.15: Renderizado con el mini recuadro de Retador vs Oponente
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -436,7 +431,6 @@ function renderDesafios() {
     const soyCreador = b.j1Id == userId;
     const soyOponente = b.j2Id == userId;
     
-    // Construir nombres para el mini recuadro
     let p1Name = b.j1Nombre || '?';
     let p2Name = b.j2Nombre || '';
     if (soyCreador) p1Name = '<strong>Tú</strong>';
@@ -757,7 +751,6 @@ async function confirmarUnion() {
   } else toast(res.error || 'Error', 'error');
 }
 
-// ==================== INIT APP ====================
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
