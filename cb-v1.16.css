@@ -109,28 +109,30 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
-/* ✅ V1.15: Rediseño total de tarjetas móviles (Sin desbordes y con recuadro VS) */
+/* ✅ V1.16: Diseño de tarjetas 100% ajustado (Sin espacios vacíos y sin desbordes) */
 .table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
-@media (max-width: 600px) {
+@media (max-width: 820px) {
   .table-wrapper { border: none; box-shadow: none; background: transparent; }
-  .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; }
+  .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; width: 100%; }
   .table-wrapper thead tr { display: none; }
   .table-wrapper tr {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 12px 16px;
+    padding: 10px 14px;
     margin-bottom: 14px;
     box-shadow: var(--shadow);
+    width: 100%;
   }
   .table-wrapper td {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 5px 0;
     border-bottom: 1px solid rgba(255,255,255,0.03);
     font-size: 0.75rem;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
   }
   .table-wrapper td:before {
     content: attr(data-label);
@@ -139,53 +141,72 @@ body {
     font-size: 0.65rem;
     flex-shrink: 0;
     text-transform: uppercase;
+    margin-top: 2px;
   }
   .table-wrapper td > *:not(:before) {
     text-align: right;
     flex: 1;
-    min-width: 0; /* CRUCIAL: Evita que los textos largos se desborden */
-    word-break: break-all;
+    min-width: 0;
+    word-break: break-word;
     display: flex;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 4px;
   }
-  /* Ocultar etiqueta y ajustar diseño para el mini recuadro de Retador vs Oponente */
-  .table-wrapper td.vs-row:before { display: none; }
-  .table-wrapper td.vs-row { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .table-wrapper td:last-child { border-bottom: none; }
   
-  /* Mini recuadro Retador 🆚 Oponente */
+  /* Contenedor de Retador 🆚 Oponente */
+  .table-wrapper td.vs-row:before { display: none; }
+  .table-wrapper td.vs-row {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    align-items: center;
+  }
   .vs-box {
     display: flex; flex-direction: column; width: 100%;
-    border: 1px solid var(--border); border-radius: 8px;
-    padding: 4px 10px; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 8px; background: rgba(255,255,255,0.02);
+    overflow: hidden; /* Evita desbordes */
   }
   .vs-header {
-    display: flex; justify-content: space-between;
-    font-size: 0.5rem; font-weight: 700; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    padding-bottom: 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+    display: flex; justify-content: space-between; width: 100%;
+    font-size: 0.55rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; padding-bottom: 2px; border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
   }
   .vs-body {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
   }
-  .vs-player { font-weight: 600; font-size: 0.8rem; color: var(--text); }
-  .vs-icon { color: var(--gold); font-size: 0.9rem; font-weight: 900; }
-  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.75rem; font-style: italic; }
+  .vs-player {
+    font-weight: 600; font-size: 0.8rem; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%;
+  }
+  .vs-icon { color: var(--gold); font-size: 0.8rem; font-weight: 900; flex-shrink: 0; }
+  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.7rem; font-style: italic; }
+  
+  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; flex-shrink: 0; }
+  .table-wrapper td .badge { font-size: 0.65rem; padding: 2px 8px; flex-shrink: 0; }
 }
 
-table { width: 100%; min-width: 600px; border-collapse: collapse; }
-th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
-th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
-tr:hover td { background: rgba(79,142,247,0.03); }
+/* Versión de escritorio y horizontal (Tabla fija para que no se aplaste) */
+@media (min-width: 821px) {
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
+  th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
+  tr:hover td { background: rgba(79,142,247,0.03); }
+  /* Anchos fijos para evitar desbordes en horizontal */
+  th:nth-child(1), td:nth-child(1) { width: 15%; }
+  th:nth-child(2), td:nth-child(2) { width: 35%; }
+  th:nth-child(3), td:nth-child(3) { width: 20%; }
+  th:nth-child(4), td:nth-child(4) { width: 15%; }
+  th:nth-child(5), td:nth-child(5) { width: 15%; }
+}
 
-/* ✅ V1.15: Colores de estados restaurados y vibrantes */
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; }
-.badge-pending { background: rgba(255, 70, 85, 0.25); color: #FF4655; } /* Rojo */
-.badge-ready { background: rgba(0, 230, 118, 0.25); color: #00E676; } /* Verde */
-.badge-review { background: rgba(255, 215, 0, 0.25); color: #FFD700; } /* Dorado */
-.badge-done { background: rgba(187, 134, 252, 0.25); color: #BB86FC; } /* Púrpura */
+.badge-pending { background: rgba(255, 70, 85, 0.25); color: #FF4655; }
+.badge-ready { background: rgba(0, 230, 118, 0.25); color: #00E676; }
+.badge-review { background: rgba(255, 215, 0, 0.25); color: #FFD700; }
+.badge-done { background: rgba(187, 134, 252, 0.25); color: #BB86FC; }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); position: relative; }
