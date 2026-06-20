@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbxlhYceT-rfsf8QhFPVH6AnGGeQIfmghA5HOJtcODNFIr5_uF7uD7dPz-CRVG9J42Hw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbzJeg6gdXxYT_yMKJ8hN4fFcSn2seak1fFzC_99faFFbzHnjTbK5HPWe60KnCJwjZ6D/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -125,14 +125,14 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
   });
 }
 
-// ✅ NUEVO: Botón de WhatsApp a los 5 segundos
+// ✅ NUEVO: Botón de WhatsApp a los 7 segundos (Cambiado de 5000 a 7000)
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const wabtn = document.getElementById('whatsapp-btn');
         if (wabtn) {
             wabtn.classList.add('show');
         }
-    }, 5000);
+    }, 7000);
 });
 
 // ==================== ADMIN ====================
@@ -160,7 +160,6 @@ async function initAdmin() {
   renderAjustes();
 }
 
-// ✅ CORRECCIÓN V1.10: Se reemplazan las estadísticas individuales por los 4 KPIs Globales en el menú
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
     if (gStats.totalSaldo !== undefined) {
@@ -205,11 +204,13 @@ function renderBatallasAdmin(filtro = '') {
 function renderDisputasAdmin(disputas) {
   let html = '';
   if (disputas.length > 0) {
-    html += `<h4>Disputas pendientes</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
+    html += `<h4>Disputas pendientes por trampa</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
     disputas.forEach(b => {
       html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción"><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
     });
     html += '</tbody></table></div>';
+  } else {
+    html = '<p style="color:var(--text-secondary);">No hay disputas abiertas en este momento.</p>';
   }
   document.getElementById('panel-disputas').innerHTML = html;
 }
@@ -406,6 +407,7 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
+// ✅ V1.11: Se añadió el trofeo 🏆 al ganador
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -456,6 +458,7 @@ function renderDesafios() {
        badgeClass = 'badge-done';
     }
 
+    let ganadorDisplay = b.ganador || '-';
     let accion = '';
     if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id != userId) {
        accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
@@ -469,17 +472,19 @@ function renderDesafios() {
     } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
        accion = '⏳ Esperando oponente...';
     } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
-      accion = `<a href='https://wa.me/584120000000?text=Disputa batalla #${b.id}' target='_blank' class='btn btn-red btn-sm'>Contactar admin</a>`;
+      accion = `<span style='color:var(--red); font-weight:bold;'>En revisión por admin</span>`;
     } else if (b.estado === 'Finalizada') {
       const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
       accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
+      if (b.ganador === 'J1') ganadorDisplay = b.j1Nombre + ' 🏆';
+      else if (b.ganador === 'J2') ganadorDisplay = b.j2Nombre + ' 🏆';
     }
 
     html += `<tr>
       <td data-label="ID">#${b.id}</td>
       <td data-label="Retador / Oponente">${nombres}</td>
       <td data-label="Estado"><span class='badge ${badgeClass}'>${estadoTexto}</span></td>
-      <td data-label="Ganador">${b.ganador || '-'}</td>
+      <td data-label="Ganador">${ganadorDisplay}</td>
       <td data-label="Acción">${accion}</td>
     </tr>`;
   });
@@ -644,12 +649,22 @@ function mostrarDeclararResultado(batallaId) {
   document.getElementById('modalDeclararResultado').classList.remove('hidden');
 }
 
+// ✅ NUEVO V1.11: Lógica de detección de trampas y envío a WhatsApp
 async function enviarDeclaracion(resultado) {
   if (!batallaDeclaracionId) return;
   const res = await apiCall({ action: 'declararResultado', batallaId: batallaDeclaracionId, resultado });
   closeModal('modalDeclararResultado');
   if (res.success) {
-    toast('Declaración enviada');
+    if (res.estado === 'Disputa') {
+      toast('⚠️ ¡Alerta de trampa detectada! Se ha abierto un proceso de verificación.', 'error');
+      // Abrir el modal rojo de disputa
+      document.getElementById('disputaBatallaId').textContent = batallaDeclaracionId;
+      document.getElementById('modalDisputa').classList.remove('hidden');
+    } else if (res.estado === 'Finalizada') {
+      toast('🏆 Batalla finalizada. ¡Revisa tu saldo!');
+    } else {
+      toast('Declaración enviada. Esperando al oponente.');
+    }
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -658,6 +673,27 @@ async function enviarDeclaracion(resultado) {
   } else {
     toast(res.error, 'error');
   }
+}
+
+// ✅ V1.11: Acción del botón de enviar pruebas en el modal rojo de disputa
+function enviarPruebasDisputa() {
+  const batallaId = document.getElementById('disputaBatallaId').textContent;
+  const datos = document.getElementById('disputaDatos').value.trim();
+  const imagen = document.getElementById('disputaImagen').value.trim();
+  
+  if (!datos || !imagen) {
+    toast('Por favor, llena tus datos y el enlace a la captura.', 'error');
+    return;
+  }
+
+  const mensaje = `Adjunta una captura de pantalla donde se demuestre tu victoria o derrota. A continuación se te enviará a WhatsApp para la verificación de tu partida por intento de trampa donde debes enviar una captura de pantalla, la captura de tu victoria o derrota debe coincidir con la de tu rival de lo contrario perderás el importe estimado de esta partida ID de la partida (#${batallaId}). Datos del jugador: ${datos}. Captura: ${imagen}.`;
+
+  // El link exacto que me diste
+  const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
+  
+  window.open(waLink, '_blank');
+  closeModal('modalDisputa');
+  toast('📩 Pruebas enviadas al Admin para verificación.');
 }
 
 function mostrarCrearBatallaAbierta() {
@@ -711,11 +747,9 @@ async function initApp() {
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   
-  // ✅ CORRECCIÓN V1.10: El nombre del Admin siempre se muestra como 'admin'
   document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
   let navItems = '';
-  // ✅ CORRECCIÓN V1.10: Icono de retiros en color verde (#00E676) y KPIs integrados en el menú
   if (rol === 'admin') {
     navItems = `
       <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Batallas 1C1</button>
