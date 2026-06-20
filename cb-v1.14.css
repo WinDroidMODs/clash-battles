@@ -109,7 +109,7 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
-/* ✅ V1.13: REDISEÑO COMPLETO DE TARJETAS EN MÓVILES */
+/* ✅ V1.14: Grid completamente responsivo */
 .table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 600px) {
   .table-wrapper { border: none; box-shadow: none; background: transparent; }
@@ -124,11 +124,11 @@ body {
     box-shadow: var(--shadow);
   }
   .table-wrapper td {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 40% 60%; /* Etiqueta 40%, Contenido 60% */
+    gap: 8px;
     align-items: center;
     padding: 6px 0;
-    border: none;
     border-bottom: 1px solid rgba(255,255,255,0.04);
     font-size: 0.8rem;
   }
@@ -138,20 +138,17 @@ body {
     font-weight: 700;
     color: var(--text-secondary);
     font-size: 0.7rem;
-    flex-shrink: 0;
-    margin-right: 12px;
     text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
   }
-  .table-wrapper td > .badge {
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: 0.65rem;
-  }
-  .table-wrapper td > .btn-sm {
-    padding: 4px 8px;
-    font-size: 0.6rem;
-    margin-left: auto;
-    flex-shrink: 0;
+  .table-wrapper td > *:not(:before) {
+    text-align: right;
+    word-break: break-word;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
   }
 }
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
