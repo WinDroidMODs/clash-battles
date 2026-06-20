@@ -109,52 +109,56 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
-/* ✅ V1.12: Diseño compacto para móviles (sin scroll lateral) */
-.table-wrapper { border-radius: var(--radius); overflow-x: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
+/* ✅ V1.13: REDISEÑO COMPLETO DE TARJETAS EN MÓVILES */
+.table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 600px) {
+  .table-wrapper { border: none; box-shadow: none; background: transparent; }
   .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; }
-  .table-wrapper thead tr { position: absolute; top: -9999px; left: -9999px; }
+  .table-wrapper thead tr { display: none; }
   .table-wrapper tr {
-      border: 1px solid var(--border);
-      margin-bottom: 8px;
-      border-radius: 8px;
-      padding: 10px 12px;
-      background: var(--bg-card);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
   }
   .table-wrapper td {
-      border: none;
-      padding: 3px 0;
-      text-align: right;
-      white-space: normal;
-      word-break: break-word;
-      font-size: 0.7rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.8rem;
   }
   .table-wrapper td:last-child { border-bottom: none; }
   .table-wrapper td:before {
-      position: relative;
-      width: 45%;
-      padding-right: 8px;
-      text-align: left;
-      font-weight: 700;
-      color: var(--text-secondary);
-      font-size: 0.65rem;
-      content: attr(data-label);
-      flex-shrink: 0;
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    margin-right: 12px;
+    text-transform: uppercase;
   }
-  .table-wrapper td .btn-sm { padding: 3px 8px; font-size: 0.6rem; }
-  .badge { padding: 2px 8px; font-size: 0.6rem; }
+  .table-wrapper td > .badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 0.65rem;
+  }
+  .table-wrapper td > .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
 }
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
 th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
 tr:hover td { background: rgba(79,142,247,0.03); }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); position: relative; }
@@ -214,10 +218,9 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 .notification-dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* ✅ NUEVO V1.12: Botón Flotante de WhatsApp (Más abajo) y Tooltip automático */
 .whatsapp-float {
     position: fixed;
-    bottom: 20px; /* Ajustado al borde inferior */
+    bottom: 20px;
     right: 20px;
     width: 60px;
     height: 60px;
@@ -261,7 +264,6 @@ tr:hover td { background: rgba(79,142,247,0.03); }
     transition: opacity 0.3s ease;
     pointer-events: none;
 }
-/* Clase para mostrar el tooltip automáticamente desde JS */
 .whatsapp-float.tooltip-active .tooltip-text {
     opacity: 1;
     visibility: visible;
@@ -281,7 +283,6 @@ tr:hover td { background: rgba(79,142,247,0.03); }
     border-color: transparent transparent transparent var(--border);
 }
 
-/* Estilos para el Modal Rojo de Disputa */
 .modal-dispute .modal-content {
     border: 2px solid var(--red);
     box-shadow: 0 0 25px rgba(255, 70, 85, 0.4);
