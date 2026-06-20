@@ -200,7 +200,7 @@ function renderBatallasAdmin(filtro = '') {
   html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
   batallas.forEach(b => {
     const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
-    html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} ${b.j1Tag}</td><td data-label="J2">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
+    html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="Retador">${b.j1Nombre} ${b.j1Tag}</td><td data-label="Oponente">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-batallas').innerHTML = html;
@@ -211,7 +211,7 @@ function renderDisputasAdmin(disputas) {
   if (disputas.length > 0) {
     html += `<h4>Disputas pendientes por trampa</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
     disputas.forEach(b => {
-      html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción"><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
+      html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción"><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
     });
     html += '</tbody></table></div>';
   } else {
@@ -235,7 +235,7 @@ function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Rol</th><th>Saldo</th></tr></thead><tbody>`;
   users.forEach(u => {
-    html += `<tr><td data-label="ID">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Rol">${u.rol}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td></tr>`;
+    html += `<tr><td data-label="ID:">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Rol">${u.rol}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-jugadores').innerHTML = html;
@@ -244,7 +244,7 @@ function renderUsuariosAdmin(users) {
 function renderRecargasAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRecargas.forEach(r => {
-    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRecarga(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRecarga(${r.id})'>✗</button>
     </td></tr>`;
@@ -257,7 +257,7 @@ function renderRecargasAdmin() {
 function renderRetirosAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRetiros.forEach(r => {
-    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRetiro(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRetiro(${r.id})'>✗</button>
     </td></tr>`;
@@ -271,7 +271,7 @@ function renderMovimientosAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMovimientosAdmin.forEach(m => {
     const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td data-label="ID">#${m.id}</td><td data-label="Usuario">${m.nombre} (${m.tag})</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID:">#${m.id}</td><td data-label="Usuario">${m.nombre} (${m.tag})</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-movimientos').innerHTML = html;
@@ -412,6 +412,7 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
+// ✅ V1.15: Renderizado con el mini recuadro de Retador vs Oponente
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -424,7 +425,7 @@ function renderDesafios() {
     <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
   </div>
   <div class='table-wrapper'><table><thead><tr>
-    <th data-label="ID">ID</th>
+    <th data-label="ID:">ID</th>
     <th data-label="Retador / Oponente">Retador / Oponente</th>
     <th data-label="Estado">Estado</th>
     <th data-label="Ganador">Ganador</th>
@@ -435,15 +436,32 @@ function renderDesafios() {
     const soyCreador = b.j1Id == userId;
     const soyOponente = b.j2Id == userId;
     
-    let nombres = soyCreador ? '<strong>Tú</strong>' : (b.j1Nombre || 'Desconocido');
-    if (soyOponente) {
-      nombres += ' vs <strong>Tú</strong>';
-    } else if (b.j2Id) {
-      nombres += ' vs ' + b.j2Nombre;
-    } else if (b.estado === 'Pendiente de pago' && soyCreador) {
-      nombres = '<strong>Tú</strong> estás desafiando';
-    } else if (b.estado === 'Pendiente de pago') {
-      nombres += ' está desafiando';
+    // Construir nombres para el mini recuadro
+    let p1Name = b.j1Nombre || '?';
+    let p2Name = b.j2Nombre || '';
+    if (soyCreador) p1Name = '<strong>Tú</strong>';
+    if (soyOponente) p2Name = '<strong>Tú</strong>';
+
+    let vsHtml = '';
+    if (b.j2Id) {
+        vsHtml = `<div class="vs-box">
+            <div class="vs-header"><span>Retador</span><span>🆚</span><span>Oponente</span></div>
+            <div class="vs-body">
+                <span class="vs-player">${p1Name}</span>
+                <span class="vs-icon">🆚</span>
+                <span class="vs-player">${p2Name}</span>
+            </div>
+        </div>`;
+    } else {
+        let emptyLabel = (b.j1Id == userId) ? 'Esperando oponente...' : 'Esperando...';
+        vsHtml = `<div class="vs-box">
+            <div class="vs-header"><span>Retador</span><span>🆚</span><span>Oponente</span></div>
+            <div class="vs-body">
+                <span class="vs-player">${p1Name}</span>
+                <span class="vs-icon">🆚</span>
+                <span class="vs-empty">${emptyLabel}</span>
+            </div>
+        </div>`;
     }
 
     let estadoTexto = b.estado;
@@ -476,7 +494,7 @@ function renderDesafios() {
     } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
        accion = '⏳ Esperando oponente...';
     } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
-      accion = `<span style='color:var(--red); font-weight:bold;'>En revisión por admin</span>`;
+      accion = `<span style='color:#FF4655; font-weight:bold;'>En revisión por admin</span>`;
     } else if (b.estado === 'Finalizada') {
       const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
       accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
@@ -485,8 +503,8 @@ function renderDesafios() {
     }
 
     html += `<tr>
-      <td data-label="ID">#${b.id}</td>
-      <td data-label="Retador / Oponente">${nombres}</td>
+      <td data-label="ID:">#${b.id}</td>
+      <td class="vs-row">${vsHtml}</td>
       <td data-label="Estado"><span class='badge ${badgeClass}'>${estadoTexto}</span></td>
       <td data-label="Ganador">${ganadorDisplay}</td>
       <td data-label="Acción">${accion}</td>
@@ -619,7 +637,7 @@ function renderMisRecargas() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMisRecargas.forEach(r => {
     const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   if (!cacheMisRecargas.length) html = '<p>No tienes recargas.</p>';
@@ -630,7 +648,7 @@ function renderMisRetiros() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
     const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td data-label="ID">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   if (!cacheMisRetiros.length) html = '<p>No tienes retiros.</p>';
@@ -641,7 +659,7 @@ function renderMiHistorial() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMiHistorial.forEach(m => {
     const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td data-label="ID">#${m.id}</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
+    html += `<tr><td data-label="ID:">#${m.id}</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-miHistorial').innerHTML = html;
