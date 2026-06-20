@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbxshGeLtQjJLnijU6GsYxOzTC-I9iIPMwxAw0y1zVqRaIPPapJRpwy_yKR2XXCemY8w/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxdMqnUBq_FmDKKw2XzeQAzTWXhI351z8Yr6KLm4AKYYpJCYGR7RhzurEkP6LlCv7Sz/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -125,15 +125,14 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
   });
 }
 
-// ✅ V1.12: Tooltip automático a los 10 segundos (visible 2 segundos)
 document.addEventListener('DOMContentLoaded', () => {
     const wabtn = document.getElementById('whatsapp-btn');
     if (wabtn) {
-        wabtn.classList.add('show'); // Mostrar botón inmediatamente
+        wabtn.classList.add('show');
         setTimeout(() => {
-            wabtn.classList.add('tooltip-active'); // Mostrar tooltip a los 10 segundos
+            wabtn.classList.add('tooltip-active');
             setTimeout(() => {
-                wabtn.classList.remove('tooltip-active'); // Ocultar tooltip a los 12 segundos
+                wabtn.classList.remove('tooltip-active');
             }, 2000);
         }, 10000);
     }
@@ -678,7 +677,6 @@ async function enviarDeclaracion(resultado) {
   }
 }
 
-// ✅ V1.12: Nueva acción del botón anti-trampas
 function enviarPruebasDisputa() {
   const batallaId = document.getElementById('disputaBatallaId').textContent;
   const motivo = document.getElementById('disputaMotivo').value.trim();
@@ -688,10 +686,7 @@ function enviarPruebasDisputa() {
     return;
   }
 
-  // Obtener datos del perfil desde la caché del jugador
   const p = cachePerfil || {};
-
-  // Generar mensaje predefinido
   const mensaje = `Motivo de verificación: ${motivo}\n\nDatos del jugador:\nNombre en el juego: ${p.nombreJuego || 'No definido'}\nTag: ${p.tag || 'No definido'}\nSupercell ID: ${p.supercellId || 'No definido'}\nTeléfono: ${p.telefono || 'No definido'}\n\nCaptura de pantalla adjunta de mi victoria 🏆 o derrota ❌: (el usuario debe colocar una imagen también en el mensaje o captura en WhatsApp)`;
 
   const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
