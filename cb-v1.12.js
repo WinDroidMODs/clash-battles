@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbx1qYMzrxvY2_wmp-E5yf_WNMyJ0k-qMbSutdWuYK9A44R2af9WCq35qhokYlQxfQwA/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxshGeLtQjJLnijU6GsYxOzTC-I9iIPMwxAw0y1zVqRaIPPapJRpwy_yKR2XXCemY8w/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -125,14 +125,18 @@ if (localStorage.getItem('cookiesAccepted') === '1') {
   });
 }
 
-// ✅ NUEVO: Botón de WhatsApp a los 7 segundos (Cambiado de 5000 a 7000)
+// ✅ V1.12: Tooltip automático a los 10 segundos (visible 2 segundos)
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const wabtn = document.getElementById('whatsapp-btn');
-        if (wabtn) {
-            wabtn.classList.add('show');
-        }
-    }, 7000);
+    const wabtn = document.getElementById('whatsapp-btn');
+    if (wabtn) {
+        wabtn.classList.add('show'); // Mostrar botón inmediatamente
+        setTimeout(() => {
+            wabtn.classList.add('tooltip-active'); // Mostrar tooltip a los 10 segundos
+            setTimeout(() => {
+                wabtn.classList.remove('tooltip-active'); // Ocultar tooltip a los 12 segundos
+            }, 2000);
+        }, 10000);
+    }
 });
 
 // ==================== ADMIN ====================
@@ -163,12 +167,15 @@ async function initAdmin() {
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
     if (gStats.totalSaldo !== undefined) {
-        document.getElementById('sidebarStats').innerHTML = `
-            <div class='sidebar-stat'><div class='val gold' id='gStatSaldo'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-            <div class='sidebar-stat'><div class='val green' id='gStatRecargas'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-            <div class='sidebar-stat'><div class='val red' id='gStatRetiros'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-            <div class='sidebar-stat'><div class='val gold' id='gStatGanancia'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-        `;
+        const statsContainer = document.getElementById('sidebarStats');
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <div class='sidebar-stat'><div class='val gold'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+                <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+                <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+                <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+            `;
+        }
     }
 }
 
@@ -187,14 +194,13 @@ function renderBatallasAdmin(filtro = '') {
       <option value=''>Todos</option>
       <option value='Pendiente de pago'>Pendiente de pago</option>
       <option value='Lista para jugar'>Lista para jugar</option>
-      <option value='En revisión'>En revisión</option>
       <option value='Disputa'>Disputa</option>
       <option value='Finalizada'>Finalizada</option>
     </select>
   </div>`;
   html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
   batallas.forEach(b => {
-    const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'En revisión' ? 'badge-review' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
+    const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
     html += `<tr><td data-label="ID">#${b.id}</td><td data-label="J1">${b.j1Nombre} ${b.j1Tag}</td><td data-label="J2">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
   });
   html += '</tbody></table></div>';
@@ -407,7 +413,6 @@ async function updateSidebarStatsJugador() {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
-// ✅ V1.11: Se añadió el trofeo 🏆 al ganador
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -649,7 +654,6 @@ function mostrarDeclararResultado(batallaId) {
   document.getElementById('modalDeclararResultado').classList.remove('hidden');
 }
 
-// ✅ NUEVO V1.11: Lógica de detección de trampas y envío a WhatsApp
 async function enviarDeclaracion(resultado) {
   if (!batallaDeclaracionId) return;
   const res = await apiCall({ action: 'declararResultado', batallaId: batallaDeclaracionId, resultado });
@@ -657,7 +661,6 @@ async function enviarDeclaracion(resultado) {
   if (res.success) {
     if (res.estado === 'Disputa') {
       toast('⚠️ ¡Alerta de trampa detectada! Se ha abierto un proceso de verificación.', 'error');
-      // Abrir el modal rojo de disputa
       document.getElementById('disputaBatallaId').textContent = batallaDeclaracionId;
       document.getElementById('modalDisputa').classList.remove('hidden');
     } else if (res.estado === 'Finalizada') {
@@ -675,25 +678,27 @@ async function enviarDeclaracion(resultado) {
   }
 }
 
-// ✅ V1.11: Acción del botón de enviar pruebas en el modal rojo de disputa
+// ✅ V1.12: Nueva acción del botón anti-trampas
 function enviarPruebasDisputa() {
   const batallaId = document.getElementById('disputaBatallaId').textContent;
-  const datos = document.getElementById('disputaDatos').value.trim();
-  const imagen = document.getElementById('disputaImagen').value.trim();
+  const motivo = document.getElementById('disputaMotivo').value.trim();
   
-  if (!datos || !imagen) {
-    toast('Por favor, llena tus datos y el enlace a la captura.', 'error');
+  if (!motivo) {
+    toast('Por favor, escribe el motivo por el que estás verificando.', 'error');
     return;
   }
 
-  const mensaje = `Adjunta una captura de pantalla donde se demuestre tu victoria o derrota. A continuación se te enviará a WhatsApp para la verificación de tu partida por intento de trampa donde debes enviar una captura de pantalla, la captura de tu victoria o derrota debe coincidir con la de tu rival de lo contrario perderás el importe estimado de esta partida ID de la partida (#${batallaId}). Datos del jugador: ${datos}. Captura: ${imagen}.`;
+  // Obtener datos del perfil desde la caché del jugador
+  const p = cachePerfil || {};
 
-  // El link exacto que me diste
+  // Generar mensaje predefinido
+  const mensaje = `Motivo de verificación: ${motivo}\n\nDatos del jugador:\nNombre en el juego: ${p.nombreJuego || 'No definido'}\nTag: ${p.tag || 'No definido'}\nSupercell ID: ${p.supercellId || 'No definido'}\nTeléfono: ${p.telefono || 'No definido'}\n\nCaptura de pantalla adjunta de mi victoria 🏆 o derrota ❌: (el usuario debe colocar una imagen también en el mensaje o captura en WhatsApp)`;
+
   const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
   
   window.open(waLink, '_blank');
   closeModal('modalDisputa');
-  toast('📩 Pruebas enviadas al Admin para verificación.');
+  toast('📩 Verificación enviada al Admin.');
 }
 
 function mostrarCrearBatallaAbierta() {
