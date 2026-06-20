@@ -109,26 +109,52 @@ body {
 .kpi-value.green { color: var(--green); }
 .kpi-value.red { color: var(--red); }
 
-/* ✅ V1.11: Diseño compacto para moviles */
-.table-wrapper { border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
+/* ✅ V1.12: Diseño compacto para móviles (sin scroll lateral) */
+.table-wrapper { border-radius: var(--radius); overflow-x: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 600px) {
-  .table-wrapper { padding: 0; }
   .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; }
   .table-wrapper thead tr { position: absolute; top: -9999px; left: -9999px; }
-  .table-wrapper tr { border: 1px solid var(--border); margin-bottom: 8px; border-radius: 8px; padding: 10px 12px; background: var(--bg-card); }
-  .table-wrapper td { border: none; position: relative; padding: 4px 0 4px 45%; text-align: right; white-space: normal; word-break: break-word; font-size: 0.75rem; }
-  .table-wrapper td:before { position: absolute; top: 4px; left: 0; width: 40%; padding-right: 8px; text-align: left; font-weight: 700; color: var(--text-secondary); font-size: 0.65rem; content: attr(data-label); }
-  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; }
+  .table-wrapper tr {
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+  }
+  .table-wrapper td {
+      border: none;
+      padding: 3px 0;
+      text-align: right;
+      white-space: normal;
+      word-break: break-word;
+      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .table-wrapper td:last-child { border-bottom: none; }
+  .table-wrapper td:before {
+      position: relative;
+      width: 45%;
+      padding-right: 8px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 0.65rem;
+      content: attr(data-label);
+      flex-shrink: 0;
+  }
+  .table-wrapper td .btn-sm { padding: 3px 8px; font-size: 0.6rem; }
+  .badge { padding: 2px 8px; font-size: 0.6rem; }
 }
 table { width: 100%; min-width: 600px; border-collapse: collapse; }
 th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.82rem; }
 th { background: rgba(255,255,255,0.03); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
 tr:hover td { background: rgba(79,142,247,0.03); }
-.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; }
-.badge-pending { background: rgba(255,70,85,0.15); color: var(--red); }
-.badge-ready { background: rgba(0,230,118,0.15); color: var(--green); }
-.badge-review { background: rgba(255,215,0,0.15); color: var(--gold); }
-.badge-done { background: rgba(187,134,252,0.15); color: var(--purple); }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid var(--border); position: relative; }
@@ -188,10 +214,10 @@ tr:hover td { background: rgba(79,142,247,0.03); }
 .notification-dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* ✅ NUEVO V1.11: Botón Flotante de WhatsApp (Más abajo) y Modal de Disputa Rojo */
+/* ✅ NUEVO V1.12: Botón Flotante de WhatsApp (Más abajo) y Tooltip automático */
 .whatsapp-float {
     position: fixed;
-    bottom: 110px; /* Ajustado para que baje un poco más */
+    bottom: 20px; /* Ajustado al borde inferior */
     right: 20px;
     width: 60px;
     height: 60px;
@@ -234,6 +260,11 @@ tr:hover td { background: rgba(79,142,247,0.03); }
     visibility: hidden;
     transition: opacity 0.3s ease;
     pointer-events: none;
+}
+/* Clase para mostrar el tooltip automáticamente desde JS */
+.whatsapp-float.tooltip-active .tooltip-text {
+    opacity: 1;
+    visibility: visible;
 }
 .whatsapp-float:hover .tooltip-text {
     opacity: 1;
