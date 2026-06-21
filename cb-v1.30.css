@@ -1,14 +1,14 @@
-/* ✅ V1.29: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+/* ✅ V1.30: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
-    font-weight: 400; /* Regular */
+    font-weight: 400;
     font-display: swap;
 }
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Bold.otf') format('opentype');
-    font-weight: 700; /* Bold */
+    font-weight: 700;
     font-display: swap;
 }
 
@@ -28,8 +28,6 @@ body {
   background-image: radial-gradient(ellipse at 50% 0%, rgba(139, 79, 205, 0.15) 0%, transparent 60%),
                     radial-gradient(ellipse at 80% 100%, rgba(255, 70, 85, 0.05) 0%, transparent 50%);
   display: flex; flex-direction: column; min-height: 100vh;
-  
-  /* Estilo del scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--gold) var(--bg-secondary);
 }
@@ -50,22 +48,22 @@ b, strong { font-weight: 700; }
   .app-wrapper { margin: 20px auto; border-radius: 24px; box-shadow: var(--shadow); } 
 }
 
-/* ⚔️ LOGO CON IMAGEN REEMPLAZABLE (Lógica EmuBox) */
 .app-header {
   padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
   border-bottom: 2px solid var(--gold-border); background: linear-gradient(180deg, #31194a 0%, #20102e 100%);
-  height: 60px; position: sticky; /* ✅ STICKY SIEMPRE VISIBLE */
-  top: 0; z-index: 1000; backdrop-filter: blur(10px);
+  height: 60px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
+.logo-wrapper { display: flex; align-items: center; gap: 10px; margin:0; padding:0; background: transparent !important; border: none !important; box-shadow: none !important; }
+.logo-wrapper .widget { background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important; }
 .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; z-index: 1001; line-height: 1; }
 .logo__img { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-.logo__text { font-weight: 700; font-size: 1.2rem; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-.logo.has-image::before { display: none !important; } /* Oculta el emoji si hay imagen */
+.logo__text { font-weight: 700; font-size: 1.2rem; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin:0; line-height:1; }
+/* ⚔️ LOGO EMOJI LOGIC: Se muestra si NO hay imagen en el widget */
+.logo.has-image::before { display: none !important; } 
 .logo::before { content: "⚔️"; font-size: 1.8rem; line-height: 1; display: inline-block; }
 
-.app-title { font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255, 215, 0, 0.3); }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .btn-header {
   padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 0.78rem;
@@ -93,12 +91,9 @@ b, strong { font-weight: 700; }
 .auth-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #FFD700, #DAA520); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(255,215,0,0.3); font-size: 2rem; }
 .auth-card h2 { font-weight: 700; font-size: 1.5rem; margin: 0 0 4px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 .auth-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; }
-
-/* ✅ CORRECCIÓN EN PESTAÑAS DE LOGIN (Sin romper palabras) */
 .auth-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
 .auth-tab { flex: 1; padding: 8px 4px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: all 0.3s; border: none; background: transparent; color: var(--text-secondary); white-space: nowrap; min-width: 0; text-overflow: ellipsis; overflow: hidden; }
 .auth-tab.active { background: var(--blue); color: white; box-shadow: 0 4px 0 #1e4a7a; transform: translateY(-2px); }
-
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-weight: 700; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -150,7 +145,6 @@ b, strong { font-weight: 700; }
 .sidebar-stat { text-align: center; padding: 8px 4px; background: rgba(255,255,255,0.03); border-radius: 8px; }
 .sidebar-stat .val { font-size: 1.2rem; font-weight: 700; color: var(--text); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .sidebar-stat .lbl { font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); }
-/* ✅ ORGANIZACIÓN DEL MENÚ DE USUARIO */
 .sidebar-user { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
 .sidebar-user svg, .sidebar-user i { width: 20px; height: 20px; flex-shrink: 0; }
 .sidebar-user span { font-size: 0.9rem; flex: 1; min-width: 0; word-break: break-word; }
@@ -238,16 +232,19 @@ b, strong { font-weight: 700; }
   .table-wrapper td .badge { font-size: 0.6rem; padding: 2px 8px; flex-shrink: 0; }
 }
 @media (min-width: 821px) {
+  /* ✅ V1.30: CORRECCIÓN DE TABLAS EN PC (Row display compacto) */
   .app-wrapper { border-radius: 20px; }
-  table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-  th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
+  .table-wrapper table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  .table-wrapper tr { display: table-row !important; }
+  .table-wrapper th, .table-wrapper td { display: table-cell !important; padding: 10px 8px !important; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
   th:nth-child(1), td:nth-child(1) { width: 15%; }
-  th:nth-child(2), td:nth-child(2) { width: 35%; }
-  th:nth-child(3), td:nth-child(3) { width: 20%; }
+  th:nth-child(2), td:nth-child(2) { width: 30%; }
+  th:nth-child(3), td:nth-child(3) { width: 15%; }
   th:nth-child(4), td:nth-child(4) { width: 15%; }
   th:nth-child(5), td:nth-child(5) { width: 15%; }
+  th:nth-child(6), td:nth-child(6) { width: 10%; }
 }
 
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
@@ -262,7 +259,6 @@ b, strong { font-weight: 700; }
 .modal-close:hover { background: #ff6b7a; transform: translateY(-2px); }
 .modal-close:active { transform: translateY(2px); box-shadow: 0 2px 0 #971f2d; }
 
-/* ✅ TARJETA DE SALDO CORREGIDA (Botones iguales y alineación de saldos) */
 .balance-card { 
   background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; 
   display: flex; flex-direction: column; gap: 12px; 
@@ -275,8 +271,9 @@ b, strong { font-weight: 700; }
 .balance-amounts { display: flex; align-items: baseline; gap: 10px; }
 .usd-amount { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .bs-amount { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); }
+/* ✅ V1.30: BOTONES DEL MISMO TAMAÑO (Alto fijo) */
 .balance-actions { display: flex; flex-direction: row; gap: 8px; width: 100%; }
-.balance-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; padding: 8px 12px; }
+.balance-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; padding: 8px 12px; height: 44px !important; }
 
 .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .perfil-grid { grid-template-columns: 1fr; } }
@@ -291,23 +288,29 @@ b, strong { font-weight: 700; }
 .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 2px solid var(--gold-border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; gap: 16px; flex-wrap: wrap; }
 .cookie-banner p { color: var(--text-secondary); font-size: 0.8rem; flex: 1; min-width: 200px; }
 
-/* ✅ FOOTER ESTILO EMUBOX (Links y Logo) */
-.footer { background: var(--bg-secondary); border-top: 2px solid var(--gold-border); color: var(--text-secondary); width: 100%; padding: 20px 0; margin-top: auto; }
+/* ✅ V1.30: FOOTER CON WIDGETS Y TAMAÑOS REDUCIDOS EN MÓVILES */
+.footer { background: var(--bg-secondary); border-top: 2px solid var(--gold-border); width: 100%; padding: 20px 0; margin-top: auto; }
 .footer-container { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; max-width: 1200px; margin: 0 auto; padding: 0 16px; }
-.footer-left { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.footer-left { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; }
+.footer-wrapper-links { width: 100%; display: flex; justify-content: center; }
+.footer-wrapper-links .widget { background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100%; display: flex; justify-content: center; }
 .footer__copy { font-size: 0.8rem; }
 .footer__copy a { color: var(--gold); text-decoration: none; }
 .footer__copy a:hover { text-decoration: underline; }
 .footer__trademarks { font-size: 0.75rem; }
 .footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 0.8rem; }
-.footer__links a { color: #b0bec5; text-decoration: none; }
+.footer__links a { color: #b0bec5; text-decoration: none; transition: color 0.2s; }
 .footer__links a:hover { color: var(--gold); }
 .footer-separator { color: #9e9e9e; pointer-events: none; user-select: none; }
 .footer-right { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.footer-right .logo { text-decoration: none; display: flex; align-items: center; gap: 8px; }
-.footer-right .logo__img { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; }
 .footer-right .logo__text { font-weight: 700; color: var(--gold); font-size: 1.2rem; }
-.footer-right .logo.has-image::before { display: none; }
+
+@media (max-width: 600px) {
+  .footer__copy { font-size: 0.65rem !important; }
+  .footer__trademarks { font-size: 0.6rem !important; }
+  .footer__links a { font-size: 0.7rem !important; }
+  .footer-right .logo__text { font-size: 1rem !important; }
+}
 
 .toast-container { position: fixed; top: 16px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
 .toast { background: var(--bg-card); border-left: 6px solid var(--blue); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 12px 20px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; animation: slideIn 0.3s ease; border: 1px solid var(--border); }
@@ -350,44 +353,30 @@ b, strong { font-weight: 700; }
 .bank-option:hover { color: var(--text); }
 .bank-option input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
 
-/* ✅ V1.29: MEDIA QUERY PARA CELULARES MUY PEQUEÑOS (Menos de 380px) */
+/* ✅ V1.30: TAMAÑO DE FUENTES EN CELULARES MUY PEQUEÑOS */
 @media (max-width: 380px) {
     body, .app-wrapper { font-size: 13px; }
     .app-header { height: 50px; padding: 6px 12px; }
-    .app-title { font-size: 0.9rem !important; }
-    .logo__text { font-size: 0.9rem !important; }
+    .app-title, .logo__text { font-size: 0.9rem !important; }
     .hamburger svg { width: 22px; height: 22px; }
     .header-right .btn-header { font-size: 0.6rem; padding: 4px 10px; }
-    
     .sidebar { width: 250px; padding: 12px; }
-    .sidebar-user { flex-wrap: wrap; gap: 4px; }
     .sidebar-user span { font-size: 0.7rem; }
     .sidebar-user .btn { font-size: 0.5rem; }
     .sidebar-stat .val { font-size: 0.9rem; }
-    .sidebar-stat .lbl { font-size: 0.5rem; }
     .nav-item { padding: 8px 12px; font-size: 0.7rem; }
-    .nav-item i { font-size: 0.8rem; width: 16px; }
-
     .input-group label { font-size: 0.6rem; }
     .input-group input, .input-group select, .input-group textarea { font-size: 0.8rem; padding: 8px 12px; }
     .btn-gold { font-size: 0.8rem; padding: 10px; }
     .btn { padding: 8px 14px; font-size: 0.7rem; }
-    .btn-sm { padding: 4px 8px; font-size: 0.6rem; }
-    
-    /* Ajustes tarjeta de saldo */
-    .balance-card { padding: 14px; }
     .balance-icon { width: 36px; height: 36px; font-size: 1rem; }
     .usd-amount { font-size: 1.4rem; }
     .bs-amount { font-size: 0.9rem; }
-    .balance-actions .btn { font-size: 0.6rem !important; padding: 6px 8px; }
-
-    /* ⚠️ FORZAR TAMAÑO DE FUENTE DE LAS TARJETAS DE BATALLA PARA QUE NO SE REDUZCAN */
+    .balance-actions .btn { font-size: 0.6rem !important; padding: 6px 8px; height: 36px !important;}
     .table-wrapper td { font-size: 0.7rem !important; }
     .table-wrapper td:before { font-size: 0.6rem !important; }
     .vs-player { font-size: 0.7rem !important; }
     .vs-empty { font-size: 0.6rem !important; }
     .table-wrapper td .btn-sm { font-size: 0.6rem !important; }
-    .table-wrapper td .badge { font-size: 0.6rem !important; }
-
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
 }
