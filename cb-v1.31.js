@@ -1,4 +1,5 @@
 // ==================== CONFIG ====================
+// ✅ V1.31: VERSIÓN ACTUALIZADA
 const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -848,7 +849,6 @@ async function confirmarUnion() {
   } else toast(res.error || 'Error', 'error');
 }
 
-// ✅ CORREGIDO: Función initApp con el menú de usuario reordenado (Nombre arriba, Cerrar sesión abajo)
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
@@ -856,7 +856,6 @@ async function initApp() {
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   
-  // Reemplazada la estructura por una columna vertical
   document.getElementById('sidebarUser').innerHTML = `
       <div style='display:flex; flex-direction:column; gap:10px; width:100%;'>
           <div style='display:flex; align-items:center; gap:10px;'>
