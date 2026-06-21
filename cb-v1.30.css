@@ -31,7 +31,8 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--gold) var(--bg-secondary);
 }
-::-webkit-scrollbar { width: 8px; }
+/* ✅ SCROLLBAR MÁS ANCHO (Estilo PC Nativo) */
+::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 10px; border: 2px solid var(--bg-secondary); }
 ::-webkit-scrollbar-thumb:hover { background-color: #e6c300; }
@@ -39,9 +40,10 @@ body {
 input, select, textarea, button { font-family: 'Clash Royale', 'Inter', sans-serif !important; }
 b, strong { font-weight: 700; }
 
+/* ✅ CORREGIDO: overflow: visible para permitir el sticky del header */
 .app-wrapper { 
   flex: 1; max-width: 1400px; margin: 0 auto; 
-  background: var(--bg-secondary); border-radius: 0; overflow: hidden; width: 100%; 
+  background: var(--bg-secondary); border-radius: 0; overflow: visible !important; width: 100%; 
   display: flex; flex-direction: column; min-height: 100vh; 
 }
 @media (min-width: 900px) { 
@@ -60,7 +62,6 @@ b, strong { font-weight: 700; }
 .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; z-index: 1001; line-height: 1; }
 .logo__img { width: 35px; height: 35px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .logo__text { font-weight: 700; font-size: 1.2rem; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin:0; line-height:1; }
-/* ⚔️ LOGO EMOJI LOGIC: Se muestra si NO hay imagen en el widget */
 .logo.has-image::before { display: none !important; } 
 .logo::before { content: "⚔️"; font-size: 1.8rem; line-height: 1; display: inline-block; }
 
@@ -190,7 +191,7 @@ b, strong { font-weight: 700; }
   .table-wrapper td {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
-    font-size: 0.75rem; gap: 8px; width: 100%;
+    font-size: 0.75rem; line-height: 1.2; gap: 8px; width: 100%;
   }
   .table-wrapper td:before {
     content: attr(data-label); font-weight: 700; color: var(--text-secondary);
@@ -232,19 +233,21 @@ b, strong { font-weight: 700; }
   .table-wrapper td .badge { font-size: 0.6rem; padding: 2px 8px; flex-shrink: 0; }
 }
 @media (min-width: 821px) {
-  /* ✅ V1.30: CORRECCIÓN DE TABLAS EN PC (Row display compacto) */
   .app-wrapper { border-radius: 20px; }
   .table-wrapper table { width: 100%; table-layout: fixed; border-collapse: collapse; }
   .table-wrapper tr { display: table-row !important; }
-  .table-wrapper th, .table-wrapper td { display: table-cell !important; padding: 10px 8px !important; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
+  /* ✅ REDUCIDO EL ESPACIO EN TABLAS DE ADMIN */
+  .table-wrapper th, .table-wrapper td { display: table-cell !important; padding: 8px 6px !important; line-height: 1.2 !important; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
-  th:nth-child(1), td:nth-child(1) { width: 15%; }
-  th:nth-child(2), td:nth-child(2) { width: 30%; }
+  th:nth-child(1), td:nth-child(1) { width: 10%; }
+  th:nth-child(2), td:nth-child(2) { width: 15%; }
   th:nth-child(3), td:nth-child(3) { width: 15%; }
-  th:nth-child(4), td:nth-child(4) { width: 15%; }
+  th:nth-child(4), td:nth-child(4) { width: 10%; }
   th:nth-child(5), td:nth-child(5) { width: 15%; }
   th:nth-child(6), td:nth-child(6) { width: 10%; }
+  th:nth-child(7), td:nth-child(7) { width: 10%; }
+  th:nth-child(8), td:nth-child(8) { width: 15%; }
 }
 
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
@@ -253,6 +256,7 @@ b, strong { font-weight: 700; }
 .badge-review { background: rgba(255, 215, 0, 0.2); color: #FFD700; border-color: #FFD700; }
 .badge-done { background: rgba(187, 134, 252, 0.2); color: #BB86FC; border-color: #BB86FC; }
 
+/* ✅ MODALES SIEMPRE ENCIMA (Z-INDEX ALTO) */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); border: 2px solid var(--gold-border); position: relative; }
 .modal-close { position: absolute; top: 12px; right: 16px; background: var(--red); border: 2px solid #ff9ba3; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: white; transition: all 0.2s; box-shadow: 0 4px 0 #971f2d; }
@@ -271,7 +275,6 @@ b, strong { font-weight: 700; }
 .balance-amounts { display: flex; align-items: baseline; gap: 10px; }
 .usd-amount { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .bs-amount { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); }
-/* ✅ V1.30: BOTONES DEL MISMO TAMAÑO (Alto fijo) */
 .balance-actions { display: flex; flex-direction: row; gap: 8px; width: 100%; }
 .balance-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; padding: 8px 12px; height: 44px !important; }
 
@@ -288,8 +291,8 @@ b, strong { font-weight: 700; }
 .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 2px solid var(--gold-border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; gap: 16px; flex-wrap: wrap; }
 .cookie-banner p { color: var(--text-secondary); font-size: 0.8rem; flex: 1; min-width: 200px; }
 
-/* ✅ V1.30: FOOTER CON WIDGETS Y TAMAÑOS REDUCIDOS EN MÓVILES */
-.footer { background: var(--bg-secondary); border-top: 2px solid var(--gold-border); width: 100%; padding: 20px 0; margin-top: auto; }
+/* ✅ FOOTER CORREGIDO (Z-INDEX BAJO Y POSICIÓN RELATIVA PARA NO TAPAR MODALES) */
+.footer { background: var(--bg-secondary); border-top: 2px solid var(--gold-border); width: 100%; padding: 20px 0; margin-top: auto; position: relative; z-index: 1; }
 .footer-container { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 .footer-left { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; }
 .footer-wrapper-links { width: 100%; display: flex; justify-content: center; }
@@ -353,7 +356,6 @@ b, strong { font-weight: 700; }
 .bank-option:hover { color: var(--text); }
 .bank-option input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
 
-/* ✅ V1.30: TAMAÑO DE FUENTES EN CELULARES MUY PEQUEÑOS */
 @media (max-width: 380px) {
     body, .app-wrapper { font-size: 13px; }
     .app-header { height: 50px; padding: 6px 12px; }
