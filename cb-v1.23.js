@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ✅ V1.22: Formateador de moneda venezolana (Bs)
+// Formateador de moneda venezolana (Bs)
 function formatVES(amount) {
     if (isNaN(amount)) return '0,00';
     return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
@@ -342,12 +342,12 @@ async function rechazarRetiro(id) {
   } else toast(res.error, 'error');
 }
 
-// ✅ V1.22: Organización de Ajustes (Mis Datos y Datos para Retiros)
+// ✅ V1.23: Ajustes del Admin restaurados, con gestión de bancos activos
 function renderAjustes() {
   const a = window.ajustes || {};
   const p = cachePerfil || {};
 
-  const banks = [
+  const allBanks = [
     '0102 - BANCO DE VENEZUELA',
     '0104 - BANCO VENEZOLANO DE CREDITO',
     '0105 - BANCO MERCANTIL',
@@ -374,33 +374,21 @@ function renderAjustes() {
     '0601 - INSTITUTO MUNICIPAL DE CREDITO POPULAR'
   ];
 
+  const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
+  
+  // Opciones para Mi Banco (filtrado por activos)
   let bankOptions = `<option value="">Selecciona un banco</option>`;
-  banks.forEach(b => {
-    bankOptions += `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`;
-  });
+  if (activeBanks.length > 0) {
+    bankOptions = activeBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
+  } else {
+    bankOptions = `<option value="" disabled>Primero activa bancos abajo</option>`;
+  }
+
+  // Opciones para Bancos Activos (todos los bancos)
+  let activeBankOptions = allBanks.map(b => `<option value="${b}" ${activeBanks.includes(b) ? 'selected' : ''}>${b}</option>`).join('');
 
   document.getElementById('panel-ajustes').innerHTML = `
-    <h3 style='color:var(--gold); margin-bottom:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Mis Datos</h3>
-    <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;'>
-      <div class='input-group'><label>Nombre en el juego</label><input id='ajNombre' value='${p.nombreJuego || ''}'/></div>
-      <div class='input-group'><label>Tag (#)</label><input id='ajTag' value='${p.tag || ''}'/></div>
-      <div class='input-group'><label>Supercell ID</label><input id='ajSupercell' value='${p.supercellId || ''}'/></div>
-      <div class='input-group'><label>WhatsApp</label><input id='ajWhatsApp' value='${p.telefono || ''}'/></div>
-    </div>
-
-    <h3 style='color:var(--gold); margin-bottom:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Datos para Retiros</h3>
     <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px;'>
-      <div class='input-group'>
-        <label>Banco</label>
-        <select id='ajBanco'>${bankOptions}</select>
-      </div>
-      <div class='input-group'><label>Teléfono de pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
-      <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
-      <div class='input-group'><label>Número de cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
-      <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
-      <div class='input-group'><label>Tasa $ (Retiros) [Bs]</label><input id='ajTasaRetiro' value='${a.tasaRetiro || 0}'/></div>
-    </div>
-    <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;'>
       <div class='input-group'><label>Comisión casa ($)</label><input id='ajComision' value='${a.comisionCasa || 0.30}'/></div>
       <div class='input-group'><label>Premio ganador ($)</label><input id='ajPremio' value='${a.premioGanador || 1.70}'/></div>
       <div class='input-group'><label>Costo inscripción ($)</label><input id='ajCosto' value='${a.costoInscripcion || 1.00}'/></div>
@@ -408,11 +396,28 @@ function renderAjustes() {
       <div class='input-group'><label>Recarga máxima ($)</label><input id='ajMaxRecarga' value='${a.maxRecarga || 50}'/></div>
       <div class='input-group'><label>Retiro mínimo ($)</label><input id='ajMinRetiro' value='${a.minRetiro || 2}'/></div>
       <div class='input-group'><label>Retiro máximo ($)</label><input id='ajMaxRetiro' value='${a.maxRetiro || 50}'/></div>
+      <div class='input-group'><label>Mi Banco</label><select id='ajBanco'>${bankOptions}</select></div>
+      <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
+      <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
+      <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
+      <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
+      <div class='input-group'><label>Tasa $ (Retiros) [Bs]</label><input id='ajTasaRetiro' value='${a.tasaRetiro || 0}'/></div>
+    </div>
+    <div style='margin-top:16px; border-top: 1px solid var(--border); padding-top:16px;'>
+      <div class='input-group'>
+         <label>Gestión de Bancos Activos (Ctrl + Click para seleccionar varios)</label>
+         <select id='ajBancosActivos' multiple style='height:100px; width:100%; background:rgba(255,255,255,0.05); border:2px solid var(--border); border-radius:12px; color:white; padding:8px;'>
+           ${activeBankOptions}
+         </select>
+      </div>
     </div>
     <button class='btn btn-gold' onclick='guardarAjustes()' style='margin-top:16px;'>Guardar Ajustes</button>`;
 }
 
 async function guardarAjustes() {
+  const selectActive = document.getElementById('ajBancosActivos');
+  const selectedBanks = Array.from(selectActive.selectedOptions).map(option => option.value);
+  
   const a = {
     comisionCasa: document.getElementById('ajComision').value,
     premioGanador: document.getElementById('ajPremio').value,
@@ -426,24 +431,11 @@ async function guardarAjustes() {
     pagoCedula: document.getElementById('ajCedula').value,
     pagoCuenta: document.getElementById('ajCuenta').value,
     tasaRecarga: document.getElementById('ajTasaRecarga').value,
-    tasaRetiro: document.getElementById('ajTasaRetiro').value
+    tasaRetiro: document.getElementById('ajTasaRetiro').value,
+    bancos_activos: selectedBanks.join(',')
   };
   await apiCall({ action: 'saveAjustes', ajustes: a });
-
-  await apiCall({
-    action: 'editarPerfil', userId,
-    nombreJuego: document.getElementById('ajNombre').value,
-    tag: document.getElementById('ajTag').value,
-    supercellId: document.getElementById('ajSupercell').value,
-    telefono: document.getElementById('ajWhatsApp').value,
-    banco: document.getElementById('ajBanco').value,
-    telefonoPago: document.getElementById('ajTel').value,
-    cedula: document.getElementById('ajCedula').value,
-    cuenta: document.getElementById('ajCuenta').value
-  });
-
   window.ajustes = await apiCall({ action: 'getAjustes' });
-  cachePerfil = await apiCall({ action: 'getPerfil', userId });
   toast('Ajustes guardados');
 }
 
@@ -643,7 +635,7 @@ function recargarSaldoUI() {
   const tasa = parseFloat(a.tasaRecarga || 0);
   montoInput.oninput = function() {
     const amount = parseFloat(this.value) || 0;
-    bsOutput.textContent = formatVES(amount * tasa); // ✅ Formato corregido
+    bsOutput.textContent = formatVES(amount * tasa);
   };
   if(montoInput.value) montoInput.oninput();
 
@@ -661,7 +653,7 @@ async function enviarRecarga() {
   } else toast(res.error, 'error');
 }
 
-// ✅ V1.22: Datos estructurados para retiro
+// ✅ V1.23: Modal de Retiro sin textarea y referencia automática
 function retirarSaldoUI() {
   const a = window.ajustes || {};
   const min = parseFloat(a.minRetiro || 2);
@@ -669,22 +661,18 @@ function retirarSaldoUI() {
   document.getElementById('rangoRetiro').textContent = `(mín $${min} - máx $${max})`;
   document.getElementById('montoRetiro').min = min;
   document.getElementById('montoRetiro').max = max;
-  const perfil = cachePerfilJugador || {};
-
-  // Mostrar datos organizados exactamente como en Recargar
-  document.getElementById('retiroBanco').textContent = perfil.banco || 'No definido';
-  document.getElementById('retiroTelefono').textContent = perfil.telefonoPago || 'No definido';
-  document.getElementById('retiroCedula').textContent = perfil.cedula || 'No definido';
-  document.getElementById('retiroCuenta').textContent = perfil.cuenta || 'No definido';
-  // Mantener el textarea por si quiere añadir cambios adicionales
-  document.getElementById('datosRetiro').value = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
+  
+  document.getElementById('retiroBanco').textContent = a.pagoBanco || 'No definido';
+  document.getElementById('retiroTelefono').textContent = a.pagoTelefono || 'No definido';
+  document.getElementById('retiroCedula').textContent = a.pagoCedula || 'No definido';
+  document.getElementById('retiroCuenta').textContent = a.pagoCuenta || 'No definido';
 
   const montoInput = document.getElementById('montoRetiro');
   const bsOutput = document.getElementById('montoRetiroBs');
   const tasa = parseFloat(a.tasaRetiro || 0);
   montoInput.oninput = function() {
     const amount = parseFloat(this.value) || 0;
-    bsOutput.textContent = formatVES(amount * tasa); // ✅ Formato corregido
+    bsOutput.textContent = formatVES(amount * tasa);
   };
   if(montoInput.value) montoInput.oninput();
 
@@ -693,8 +681,13 @@ function retirarSaldoUI() {
 
 async function enviarRetiro() {
   const monto = document.getElementById('montoRetiro').value;
-  const datos = document.getElementById('datosRetiro').value.trim();
-  if (!monto || !datos) return toast('Completa todos los campos', 'error');
+  const perfil = cachePerfilJugador || {};
+  // Tomamos los datos bancarios del jugador automáticamente
+  const datos = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
+  
+  if (!monto) return toast('Ingresa un monto válido', 'error');
+  if (!datos) return toast('Faltan tus datos bancarios en tu perfil.', 'error');
+  
   const res = await apiCall({ action: 'solicitarRetiro', monto, referencia: datos });
   if (res.success) {
     toast('Solicitud de retiro enviada. El admin la procesará.');
