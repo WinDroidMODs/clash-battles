@@ -342,7 +342,7 @@ async function rechazarRetiro(id) {
   } else toast(res.error, 'error');
 }
 
-// ✅ V1.23: Ajustes del Admin restaurados, con gestión de bancos activos
+// ✅ V1.24: Gestión de Bancos con Checkboxes
 function renderAjustes() {
   const a = window.ajustes || {};
   const p = cachePerfil || {};
@@ -376,16 +376,21 @@ function renderAjustes() {
 
   const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
   
-  // Opciones para Mi Banco (filtrado por activos)
-  let bankOptions = `<option value="">Selecciona un banco</option>`;
+  // Admin's own bank dropdown (filtrar por activos)
+  let myBankOptions = `<option value="">Selecciona un banco</option>`;
   if (activeBanks.length > 0) {
-    bankOptions = activeBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
+    myBankOptions = activeBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
   } else {
-    bankOptions = `<option value="" disabled>Primero activa bancos abajo</option>`;
+    myBankOptions = `<option value="" disabled>Primero activa bancos abajo</option>`;
   }
 
-  // Opciones para Bancos Activos (todos los bancos)
-  let activeBankOptions = allBanks.map(b => `<option value="${b}" ${activeBanks.includes(b) ? 'selected' : ''}>${b}</option>`).join('');
+  // Checkbox UI para activar/desactivar bancos
+  let bankCheckboxes = allBanks.map(b => `
+    <label class="bank-option">
+      <input type="checkbox" class="bank-checkbox" value="${b}" ${activeBanks.includes(b) ? 'checked' : ''} />
+      <span>${b}</span>
+    </label>
+  `).join('');
 
   document.getElementById('panel-ajustes').innerHTML = `
     <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px;'>
@@ -396,7 +401,7 @@ function renderAjustes() {
       <div class='input-group'><label>Recarga máxima ($)</label><input id='ajMaxRecarga' value='${a.maxRecarga || 50}'/></div>
       <div class='input-group'><label>Retiro mínimo ($)</label><input id='ajMinRetiro' value='${a.minRetiro || 2}'/></div>
       <div class='input-group'><label>Retiro máximo ($)</label><input id='ajMaxRetiro' value='${a.maxRetiro || 50}'/></div>
-      <div class='input-group'><label>Mi Banco</label><select id='ajBanco'>${bankOptions}</select></div>
+      <div class='input-group'><label>Mi Banco</label><select id='ajBanco'>${myBankOptions}</select></div>
       <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
       <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
       <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
@@ -405,18 +410,17 @@ function renderAjustes() {
     </div>
     <div style='margin-top:16px; border-top: 1px solid var(--border); padding-top:16px;'>
       <div class='input-group'>
-         <label>Gestión de Bancos Activos (Ctrl + Click para seleccionar varios)</label>
-         <select id='ajBancosActivos' multiple style='height:100px; width:100%; background:rgba(255,255,255,0.05); border:2px solid var(--border); border-radius:12px; color:white; padding:8px;'>
-           ${activeBankOptions}
-         </select>
+         <label>Gestión de Bancos Activos (Marca y desmarca para activar/desactivar)</label>
+         <div class="banks-checkbox-list">${bankCheckboxes}</div>
       </div>
     </div>
     <button class='btn btn-gold' onclick='guardarAjustes()' style='margin-top:16px;'>Guardar Ajustes</button>`;
 }
 
 async function guardarAjustes() {
-  const selectActive = document.getElementById('ajBancosActivos');
-  const selectedBanks = Array.from(selectActive.selectedOptions).map(option => option.value);
+  // Leer checkboxes activos
+  const checkedBoxes = document.querySelectorAll('.bank-checkbox:checked');
+  const selectedBanks = Array.from(checkedBoxes).map(el => el.value);
   
   const a = {
     comisionCasa: document.getElementById('ajComision').value,
@@ -572,8 +576,20 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
+// ✅ V1.24: Organización del Perfil del Jugador en "Mis Datos" y "Datos de retiro"
 function renderPerfil() {
   const p = cachePerfilJugador || {};
+  const a = window.ajustes || {};
+  const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
+
+  // Opciones de banco filtradas por bancos activos
+  let bankOptions = `<option value="">Selecciona un banco</option>`;
+  if (activeBanks.length > 0) {
+    bankOptions = activeBanks.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('');
+  } else {
+    bankOptions = `<option value="" disabled>No hay bancos disponibles</option>`;
+  }
+
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
       <div class='balance-icon'>$</div>
@@ -586,17 +602,26 @@ function renderPerfil() {
         <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()'>Retirar</button>
       </div>
     </div>
+    
     <h3 style='margin-bottom:16px; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Mis Datos</h3>
-    <div class='perfil-grid'>
+    <div class='perfil-grid' style='margin-bottom:24px;'>
       <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego || ''}'/></div>
       <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag || ''}'/></div>
       <div class='input-group'><label>Supercell ID</label><input id='perfilSupercell' value='${p.supercellId || ''}'/></div>
       <div class='input-group'><label>WhatsApp</label><input id='perfilTel' value='${p.telefono || ''}'/></div>
-      <div class='input-group'><label>Banco para pagos</label><input id='perfilBanco' value='${p.banco || ''}'/></div>
+    </div>
+
+    <h3 style='margin-bottom:16px; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Datos de retiro</h3>
+    <div class='perfil-grid'>
+      <div class='input-group'>
+        <label>Banco</label>
+        <select id='perfilBanco'>${bankOptions}</select>
+      </div>
       <div class='input-group'><label>Teléfono de pago</label><input id='perfilTelefonoPago' value='${p.telefonoPago || ''}'/></div>
       <div class='input-group'><label>Cédula</label><input id='perfilCedula' value='${p.cedula || ''}'/></div>
       <div class='input-group'><label>Número de cuenta</label><input id='perfilCuenta' value='${p.cuenta || ''}'/></div>
     </div>
+    
     <button class='btn btn-gold' onclick='guardarPerfil()' style='margin-top:16px;'>Guardar Cambios</button>`;
 }
 
@@ -653,7 +678,6 @@ async function enviarRecarga() {
   } else toast(res.error, 'error');
 }
 
-// ✅ V1.23: Modal de Retiro sin textarea y referencia automática
 function retirarSaldoUI() {
   const a = window.ajustes || {};
   const min = parseFloat(a.minRetiro || 2);
