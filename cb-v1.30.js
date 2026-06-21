@@ -572,7 +572,6 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ V1.29: Nueva Tarjeta de Saldo con etiquetas de clase actualizadas
 function renderPerfil() {
   const p = cachePerfilJugador || {};
   const a = window.ajustes || {};
