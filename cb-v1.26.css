@@ -1,3 +1,18 @@
+/* ✅ V1.26: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+@font-face {
+    font-family: 'Clash Royale';
+    src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
+    font-weight: 400; /* Regular */
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Clash Royale';
+    src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Bold.otf') format('opentype');
+    font-weight: 700; /* Bold */
+    font-display: swap;
+}
+/* ------------------------------------------------- */
+
 :root {
   --bg-primary: #150621; --bg-secondary: #23103a; --bg-card: #33164d; --bg-card-hover: #462069;
   --blue: #4F8EF7; --blue-glow: #7ba9ff; --gold: #FFD700; --gold-dark: #D4AF37;
@@ -7,28 +22,35 @@
   --shadow: 0 4px 20px rgba(0,0,0,0.6); --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.15);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ✅ V1.26: ESTILOS DE SCROLLBAR PERSONALIZADOS (Funciona en Chrome, Edge, Safari y Firefox) */
-/* Firefox */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: var(--gold) rgba(255,255,255,0.05);
-}
-/* Webkit (Chrome, Edge, Safari) */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 10px; }
-::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; border: 2px solid var(--bg-primary); }
-::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
-/* ----------------------------------------------------- */
-
 body {
   margin: 0; padding: 0; background: var(--bg-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--text); font-size: 15px; line-height: 1.6;
+  font-family: 'Clash Royale', 'Inter', system-ui, -apple-system, sans-serif; /* ✅ Fuente aplicada a todo el cuerpo */
+  color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
   background-image: radial-gradient(ellipse at 50% 0%, rgba(139, 79, 205, 0.15) 0%, transparent 60%),
                     radial-gradient(ellipse at 80% 100%, rgba(255, 70, 85, 0.05) 0%, transparent 50%);
   display: flex; flex-direction: column; min-height: 100vh;
+  
+  /* ✅ V1.26: ESTILO DEL SCROLLBAR (Funciona en Chrome, Edge, Safari y Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--bg-secondary);
 }
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--gold);
+  border-radius: 10px;
+  border: 2px solid var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #e6c300;
+}
+/* ----------------------------------------------------------- */
+
 .app-wrapper { flex: 1; max-width: 1400px; margin: 0 auto; background: var(--bg-secondary); border-radius: 0; overflow: hidden; width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
 @media (min-width: 768px) { .app-wrapper { margin: 12px auto; border-radius: 24px; box-shadow: var(--shadow); } }
 
@@ -39,15 +61,7 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
-
-/* ✅ V1.26: FUENTE ESTILO SUPERCELL */
-.app-title, h1, h2, h3, h4, .auth-card h2, .hero-description {
-  font-family: 'Bubblegum Sans', 'Luckiest Guy', cursive;
-  letter-spacing: 1px;
-}
-.app-title { font-weight: 900; font-size: 1.2rem; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255, 215, 0, 0.3); }
-/* ----------------------------------------------------- */
-
+.app-title { font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255, 215, 0, 0.3); }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .btn-header {
   padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 0.78rem;
@@ -73,30 +87,33 @@ body {
   text-align: center; position: relative;
 }
 .auth-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #FFD700, #DAA520); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(255,215,0,0.3); font-size: 2rem; }
-.auth-card h2 { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.auth-card h2 { font-weight: 700; font-size: 1.5rem; margin: 0 0 4px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 .auth-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; }
 .auth-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
 .auth-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.82rem; transition: all 0.3s; border: none; background: transparent; color: var(--text-secondary); }
 .auth-tab.active { background: var(--blue); color: white; box-shadow: 0 4px 0 #1e4a7a; transform: translateY(-2px); }
 .input-group { margin-bottom: 14px; text-align: left; }
-.input-group label { font-weight: 600; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-.input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+.input-group label { font-weight: 700; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* ✅ V1.26: SELECTOR DE BANCOS CON EL MORADO DE LA PÁGINA (A juego con los inputs) */
+/* ✅ V1.26: SELECTORES E INPUTS CON EL MISMO FONDO MORADO (var(--bg-card)) */
+.input-group input, .input-group select, .input-group textarea {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border); border-radius: 12px;
+  color: var(--text); font-size: 0.9rem; transition: all 0.3s;
+  font-family: 'Clash Royale', 'Inter', sans-serif;
+}
 select, select option {
-  background-color: var(--bg-card) !important;
-  color: #ffffff !important;
+  background: var(--bg-card) !important;
+  color: var(--text) !important;
+  font-family: 'Clash Royale', 'Inter', sans-serif;
 }
-select:focus, select:active {
-  outline: none;
-  border-color: var(--gold-border);
-}
-/* ----------------------------------------------------- */
+/* --------------------------------------------- */
 
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
 .btn-gold {
-  padding: 13px; border-radius: 14px; font-weight: 800; font-size: 0.9rem; width: 100%; margin-top: 8px;
+  padding: 13px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; width: 100%; margin-top: 8px;
   letter-spacing: 0.5px; cursor: pointer;
   background: linear-gradient(180deg, #FFD700, #D4AF37); color: #2b1a2b;
   border: 2px solid #FFF5CC; text-shadow: 0 1px 0 rgba(255,255,255,0.5);
@@ -134,7 +151,7 @@ select:focus, select:active {
   border: 1px solid var(--gold-border); box-shadow: inset 0 0 15px rgba(255,215,0,0.05);
 }
 .sidebar-stat { text-align: center; padding: 8px 4px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-.sidebar-stat .val { font-size: 1.2rem; font-weight: 900; color: var(--text); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.sidebar-stat .val { font-size: 1.2rem; font-weight: 700; color: var(--text); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .sidebar-stat .lbl { font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); }
 .sidebar-user { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
 .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
@@ -158,7 +175,7 @@ select:focus, select:active {
 .kpi-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: var(--radius); padding: 20px 16px; box-shadow: var(--shadow); text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
 .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); }
 .kpi-title { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
-.kpi-value { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.kpi-value { font-size: 1.8rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
 .table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--gold-border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 820px) {
@@ -212,12 +229,12 @@ select:focus, select:active {
     display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 4px;
   }
   .vs-player {
-    font-weight: 600; font-size: 0.75rem; color: var(--text);
+    font-weight: 700; font-size: 0.75rem; color: var(--text);
     text-align: center; word-break: break-word;
     flex: 1; min-width: 0;
   }
   .vs-icon { color: var(--gold); font-size: 0.75rem; font-weight: 900; flex-shrink: 0; }
-  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.7rem; font-style: italic; text-align: center; flex: 1; word-break: break-word; }
+  .vs-empty { color: var(--text-secondary); font-weight: 700; font-size: 0.7rem; font-style: italic; text-align: center; flex: 1; word-break: break-word; }
   
   .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; flex-shrink: 0; }
   .table-wrapper td .badge { font-size: 0.65rem; padding: 2px 8px; flex-shrink: 0; }
@@ -242,14 +259,14 @@ select:focus, select:active {
 .modal-close:active { transform: translateY(2px); box-shadow: 0 2px 0 #971f2d; }
 
 .balance-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; box-shadow: 0 0 20px rgba(255,215,0,0.1); flex-wrap: wrap; }
-.balance-icon { background: var(--gold); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: #1a1a2e; font-weight: 800; font-size: 1.5rem; box-shadow: 0 4px 0 #997A00; flex-shrink: 0; }
+.balance-icon { background: var(--gold); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: #1a1a2e; font-weight: 700; font-size: 1.5rem; box-shadow: 0 4px 0 #997A00; flex-shrink: 0; }
 .balance-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-left: auto; min-width: 65px; flex-shrink: 0; }
 .balance-actions .btn { width: 100%; justify-content: center; white-space: nowrap; padding: 6px 8px; font-size: 0.65rem; border-radius: 8px; }
 .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .perfil-grid { grid-template-columns: 1fr; } }
 
 .hero-text { padding: 80px 20px 20px; text-align: center; }
-.hero-description { font-size: 2.2rem; font-weight: 900; line-height: 1.3; color: #FFF; text-shadow: 0 4px 10px rgba(0,0,0,0.8); max-width: 700px; margin: 0 auto; }
+.hero-description { font-size: 2.2rem; font-weight: 700; line-height: 1.3; color: #FFF; text-shadow: 0 4px 10px rgba(0,0,0,0.8); max-width: 700px; margin: 0 auto; }
 
 .landing-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 800px; margin: 20px auto 40px; }
 @media (max-width: 600px) { .landing-features { grid-template-columns: 1fr; } }
@@ -259,7 +276,7 @@ select:focus, select:active {
 .cookie-banner p { color: var(--text-secondary); font-size: 0.8rem; flex: 1; min-width: 200px; }
 .footer { background: var(--bg-secondary); border-top: 2px solid var(--gold-border); color: var(--text-secondary); font-size: 0.75rem; text-align: center; padding: 20px; margin-top: auto; }
 .toast-container { position: fixed; top: 16px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
-.toast { background: var(--bg-card); border-left: 6px solid var(--blue); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 12px 20px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; animation: slideIn 0.3s ease; border: 1px solid var(--border); }
+.toast { background: var(--bg-card); border-left: 6px solid var(--blue); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); padding: 12px 20px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; animation: slideIn 0.3s ease; border: 1px solid var(--border); }
 .toast.success { border-left-color: var(--green); }
 .toast.error { border-left-color: var(--red); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -279,7 +296,7 @@ select:focus, select:active {
 .whatsapp-float:hover { transform: scale(1.05); background: linear-gradient(180deg, #4cd137, #128C7E); }
 .whatsapp-float .tooltip-text {
     position: absolute; right: 75px; background: var(--bg-card); color: var(--text);
-    padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;
+    padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; white-space: nowrap;
     box-shadow: var(--shadow); border: 1px solid var(--gold-border);
     opacity: 0; visibility: hidden; transition: opacity 0.3s ease; pointer-events: none;
 }
@@ -290,14 +307,31 @@ select:focus, select:active {
 .modal-dispute h3 { color: var(--red); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .modal-dispute .warning-text { color: #ffaaaf; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
 
+/* ✅ V1.26: SCROLLBAR PERSONALIZADO PARA CONTENEDORES INTERNOS (LISTA DE BANCOS) */
 .banks-checkbox-list {
-    background: rgba(255,255,255,0.03);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 8px 12px;
     max-height: 200px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--bg-secondary);
 }
+.banks-checkbox-list::-webkit-scrollbar {
+  width: 6px;
+}
+.banks-checkbox-list::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+.banks-checkbox-list::-webkit-scrollbar-thumb {
+  background-color: var(--gold);
+  border-radius: 10px;
+  border: 2px solid var(--bg-secondary);
+}
+/* ------------------------------------------------------------ */
+
 .bank-option {
     display: flex; align-items: center; padding: 6px 0;
     border-bottom: 1px solid rgba(255,255,255,0.04);
