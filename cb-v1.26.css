@@ -7,9 +7,32 @@
   --shadow: 0 4px 20px rgba(0,0,0,0.6); --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.15);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ✅ V1.26: NUEVO DISEÑO DE SCROLLBAR (Dorado y Morado) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--bg-primary);
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dark);
+}
+/* --------------------------------------------- */
+
 body {
   margin: 0; padding: 0; background: var(--bg-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--text); font-size: 15px; line-height: 1.6;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif; /* ✅ Fuente estilo Supercell */
+  color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
   background-image: radial-gradient(ellipse at 50% 0%, rgba(139, 79, 205, 0.15) 0%, transparent 60%),
                     radial-gradient(ellipse at 80% 100%, rgba(255, 70, 85, 0.05) 0%, transparent 50%);
@@ -58,16 +81,19 @@ body {
 .auth-tab.active { background: var(--blue); color: white; box-shadow: 0 4px 0 #1e4a7a; transform: translateY(-2px); }
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-weight: 600; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-.input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+.input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Nunito', sans-serif; }
 
-/* ✅ V1.25: PARCHE PARA SELECTORES EN PC (Fondo oscuro y texto visible) */
+/* ✅ V1.26: CORRECCIÓN VISUAL DEL SELECTOR DE BANCOS (Fondo igual a los inputs) */
 select, select option {
-  background-color: #1a1a3e !important;
+  background-color: rgba(255,255,255,0.05) !important; /* Fondo transparente morado */
   color: #ffffff !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 12px !important;
 }
 select:focus, select:active {
+  border-color: var(--gold-border) !important;
+  box-shadow: 0 0 20px rgba(255,215,0,0.2);
   outline: none;
-  border-color: var(--gold-border);
 }
 /* ----------------------------------------------------- */
 
