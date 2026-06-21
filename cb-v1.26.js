@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-// ✅ V1.26 - URL DE LA API
+// ✅ V1.26 - URL DE LA API ACTUALIZADA
 const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -347,7 +347,6 @@ function renderAjustes() {
   const a = window.ajustes || {};
   const p = cachePerfil || {};
 
-  // ✅ V1.26: LISTA COMPLETA DE BANCOS
   const allBanks = [
     '0102 - BANCO DE VENEZUELA',
     '0104 - BANCO VENEZOLANO DE CREDITO',
