@@ -1,4 +1,4 @@
-/* ✅ V1.26: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+/* ✅ V1.27: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
@@ -21,38 +21,37 @@
   --border: #4b296b; --gold-border: #FFD700; --radius: 16px; --radius-sm: 10px;
   --shadow: 0 4px 20px rgba(0,0,0,0.6); --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.15);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Clash Royale', 'Inter', sans-serif; }
 body {
   margin: 0; padding: 0; background: var(--bg-primary);
-  font-family: 'Clash Royale', 'Inter', system-ui, -apple-system, sans-serif; /* ✅ Fuente aplicada a todo el cuerpo */
   color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
   background-image: radial-gradient(ellipse at 50% 0%, rgba(139, 79, 205, 0.15) 0%, transparent 60%),
                     radial-gradient(ellipse at 80% 100%, rgba(255, 70, 85, 0.05) 0%, transparent 50%);
   display: flex; flex-direction: column; min-height: 100vh;
   
-  /* ✅ V1.26: ESTILO DEL SCROLLBAR (Funciona en Chrome, Edge, Safari y Firefox) */
+  /* Estilo del scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--gold) var(--bg-secondary);
 }
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-::-webkit-scrollbar-thumb {
-  background-color: var(--gold);
-  border-radius: 10px;
-  border: 2px solid var(--bg-secondary);
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: #e6c300;
-}
-/* ----------------------------------------------------------- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 10px; border: 2px solid var(--bg-secondary); }
+::-webkit-scrollbar-thumb:hover { background-color: #e6c300; }
 
-.app-wrapper { flex: 1; max-width: 1400px; margin: 0 auto; background: var(--bg-secondary); border-radius: 0; overflow: hidden; width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
-@media (min-width: 768px) { .app-wrapper { margin: 12px auto; border-radius: 24px; box-shadow: var(--shadow); } }
+/* Aplicar la fuente a todos los inputs, botones y selectores */
+input, select, textarea, button { font-family: 'Clash Royale', 'Inter', sans-serif !important; }
+b, strong { font-weight: 700; }
+
+/* Contenedor principal con límite de ancho para PC grandes */
+.app-wrapper { 
+  flex: 1; max-width: 1400px; margin: 0 auto; 
+  background: var(--bg-secondary); border-radius: 0; overflow: hidden; width: 100%; 
+  display: flex; flex-direction: column; min-height: 100vh; 
+}
+@media (min-width: 900px) { 
+  .app-wrapper { margin: 20px auto; border-radius: 24px; box-shadow: var(--shadow); } 
+}
 
 .app-header {
   padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
@@ -92,24 +91,15 @@ body {
 .auth-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
 .auth-tab { flex: 1; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.82rem; transition: all 0.3s; border: none; background: transparent; color: var(--text-secondary); }
 .auth-tab.active { background: var(--blue); color: white; box-shadow: 0 4px 0 #1e4a7a; transform: translateY(-2px); }
+
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-weight: 700; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* ✅ V1.26: SELECTORES E INPUTS CON EL MISMO FONDO MORADO (var(--bg-card)) */
 .input-group input, .input-group select, .input-group textarea {
   width: 100%; padding: 12px 14px;
-  background: var(--bg-card);
-  border: 2px solid var(--border); border-radius: 12px;
+  background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px;
   color: var(--text); font-size: 0.9rem; transition: all 0.3s;
-  font-family: 'Clash Royale', 'Inter', sans-serif;
 }
-select, select option {
-  background: var(--bg-card) !important;
-  color: var(--text) !important;
-  font-family: 'Clash Royale', 'Inter', sans-serif;
-}
-/* --------------------------------------------- */
-
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
 .btn-gold {
@@ -204,46 +194,57 @@ select, select option {
     text-align: right; flex: 1; min-width: 0; word-break: break-word;
     display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px;
   }
-  .table-wrapper td .btn {
-    flex: 0 1 auto;
-    width: auto; max-width: 100%;
-  }
+  .table-wrapper td .btn { flex: 0 1 auto; width: auto; max-width: 100%; }
   .table-wrapper td:last-child { border-bottom: none; }
   
   .table-wrapper td.vs-row:before { display: none; }
   .table-wrapper td.vs-row { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); align-items: center; }
   
+  /* ✅ V1.27: Mini recuadro VS ultra-compacto y corregido */
   .vs-box {
     display: flex; flex-direction: column; width: 100%;
     border: 1px solid var(--border); border-radius: 6px;
-    padding: 4px 8px; background: rgba(255,255,255,0.02);
+    padding: 3px 6px; background: rgba(255,255,255,0.02);
     overflow: hidden;
   }
   .vs-header {
     display: flex; justify-content: space-between; width: 100%;
-    font-size: 0.55rem; font-weight: 700; color: var(--text-secondary);
-    text-transform: uppercase; padding-bottom: 2px; border-bottom: 1px solid var(--border);
-    margin-bottom: 2px;
+    font-size: 0.45rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; padding-bottom: 1px; border-bottom: 1px solid var(--border);
+    margin-bottom: 1px;
   }
   .vs-body {
-    display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 4px;
+    display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 2px;
   }
   .vs-player {
-    font-weight: 700; font-size: 0.75rem; color: var(--text);
-    text-align: center; word-break: break-word;
+    font-weight: 700; font-size: 0.7rem; color: var(--text);
+    text-align: center; word-break: break-word; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     flex: 1; min-width: 0;
   }
-  .vs-icon { color: var(--gold); font-size: 0.75rem; font-weight: 900; flex-shrink: 0; }
-  .vs-empty { color: var(--text-secondary); font-weight: 700; font-size: 0.7rem; font-style: italic; text-align: center; flex: 1; word-break: break-word; }
+  .vs-icon { color: var(--gold); font-size: 0.7rem; font-weight: 900; flex-shrink: 0; }
   
-  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; flex-shrink: 0; }
-  .table-wrapper td .badge { font-size: 0.65rem; padding: 2px 8px; flex-shrink: 0; }
+  /* ✅ V1.27: Eliminada la cursiva y corregido el texto de espera */
+  .vs-empty { 
+    font-style: normal !important;
+    font-weight: 600; font-size: 0.65rem; color: var(--text-secondary); 
+    text-align: center; flex: 1; word-break: break-word; white-space: nowrap; 
+    overflow: hidden; text-overflow: ellipsis; 
+  }
+  
+  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.6rem; flex-shrink: 0; }
+  .table-wrapper td .badge { font-size: 0.6rem; padding: 2px 8px; flex-shrink: 0; }
 }
 @media (min-width: 821px) {
+  .app-wrapper { border-radius: 20px; } /* En PC, si la ventana es muy ancha, la app tiene bordes redondeados */
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
   th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
+  th:nth-child(1), td:nth-child(1) { width: 15%; }
+  th:nth-child(2), td:nth-child(2) { width: 35%; }
+  th:nth-child(3), td:nth-child(3) { width: 20%; }
+  th:nth-child(4), td:nth-child(4) { width: 15%; }
+  th:nth-child(5), td:nth-child(5) { width: 15%; }
 }
 
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
@@ -307,43 +308,11 @@ select, select option {
 .modal-dispute h3 { color: var(--red); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .modal-dispute .warning-text { color: #ffaaaf; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
 
-/* ✅ V1.26: SCROLLBAR PERSONALIZADO PARA CONTENEDORES INTERNOS (LISTA DE BANCOS) */
-.banks-checkbox-list {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    max-height: 200px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--gold) var(--bg-secondary);
-}
-.banks-checkbox-list::-webkit-scrollbar {
-  width: 6px;
-}
-.banks-checkbox-list::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 8px;
-}
-.banks-checkbox-list::-webkit-scrollbar-thumb {
-  background-color: var(--gold);
-  border-radius: 10px;
-  border: 2px solid var(--bg-secondary);
-}
-/* ------------------------------------------------------------ */
-
-.bank-option {
-    display: flex; align-items: center; padding: 6px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.2s;
-}
+.banks-checkbox-list { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; max-height: 200px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold) var(--bg-secondary); }
+.banks-checkbox-list::-webkit-scrollbar { width: 6px; }
+.banks-checkbox-list::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 8px; }
+.banks-checkbox-list::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 10px; border: 2px solid var(--bg-secondary); }
+.bank-option { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
 .bank-option:last-child { border-bottom: none; }
 .bank-option:hover { color: var(--text); }
-.bank-option input[type="checkbox"] {
-    accent-color: var(--gold);
-    width: 18px; height: 18px;
-    margin-right: 12px;
-    cursor: pointer;
-}
+.bank-option input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
