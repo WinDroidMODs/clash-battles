@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-// ✅ V1.20: URL DE LA API ACTUALIZADA CON EL NUEVO ENLACE
+// ✅ V1.21 - URL DE LA API ACTUALIZADA
 const API = 'https://script.google.com/macros/s/AKfycbxdMqnUBq_FmDKKw2XzeQAzTWXhI351z8Yr6KLm4AKYYpJCYGR7RhzurEkP6LlCv7Sz/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
