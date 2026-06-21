@@ -61,7 +61,6 @@ body {
 .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Inter', sans-serif; }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* 💥 ESTILO CLASH ROYALE PARA BOTONES */
 .btn-gold {
   padding: 13px; border-radius: 14px; font-weight: 800; font-size: 0.9rem; width: 100%; margin-top: 8px;
   letter-spacing: 0.5px; cursor: pointer;
@@ -127,10 +126,12 @@ body {
 .kpi-title { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
 .kpi-value { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-/* ✅ V1.19: DISEÑO DE TARJETAS V1.17 RESTAURADO PERO CON COLORES V1.18 */
+/* ✅ V1.20: CORRECCIÓN DE DISEÑO EN MÓVILES (Tablas, VS Box y Saldo) */
 .table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--gold-border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 820px) {
   .table-wrapper { border: none; box-shadow: none; background: transparent; }
+  .table-wrapper table, .table-wrapper thead, .table-wrapper tbody, .table-wrapper th, .table-wrapper td, .table-wrapper tr { display: block; width: 100%; }
+  .table-wrapper thead tr { display: none !important; } /* Ocultar encabezados de tabla en móviles */
   .table-wrapper tr {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -158,6 +159,7 @@ body {
   .table-wrapper td.vs-row:before { display: none; }
   .table-wrapper td.vs-row { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); align-items: center; }
   
+  /* Mini recuadro VS sin cortes y con texto ajustable */
   .vs-box {
     display: flex; flex-direction: column; width: 100%;
     border: 1px solid var(--border); border-radius: 6px;
@@ -171,14 +173,15 @@ body {
     margin-bottom: 2px;
   }
   .vs-body {
-    display: flex; justify-content: space-between; align-items: center; width: 100%;
+    display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 4px;
   }
   .vs-player {
-    font-weight: 600; font-size: 0.8rem; color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%;
+    font-weight: 600; font-size: 0.75rem; color: var(--text);
+    text-align: center; word-break: break-word;
+    flex: 1; min-width: 0;
   }
-  .vs-icon { color: var(--gold); font-size: 0.8rem; font-weight: 900; flex-shrink: 0; }
-  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.7rem; font-style: italic; }
+  .vs-icon { color: var(--gold); font-size: 0.75rem; font-weight: 900; flex-shrink: 0; }
+  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.7rem; font-style: italic; text-align: center; flex: 1; word-break: break-word; }
   
   .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; flex-shrink: 0; }
   .table-wrapper td .badge { font-size: 0.65rem; padding: 2px 8px; flex-shrink: 0; }
@@ -189,6 +192,7 @@ body {
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
 }
+
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
 .badge-pending { background: rgba(255, 70, 85, 0.2); color: #FF4655; border-color: #FF4655; }
 .badge-ready { background: rgba(0, 230, 118, 0.2); color: #00E676; border-color: #00E676; }
@@ -201,9 +205,10 @@ body {
 .modal-close:hover { background: #ff6b7a; transform: translateY(-2px); }
 .modal-close:active { transform: translateY(2px); box-shadow: 0 2px 0 #971f2d; }
 
-.balance-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px; box-shadow: 0 0 20px rgba(255,215,0,0.1); }
-.balance-icon { background: var(--gold); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: #1a1a2e; font-weight: 800; font-size: 1.5rem; box-shadow: 0 4px 0 #997A00; }
-
+.balance-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; box-shadow: 0 0 20px rgba(255,215,0,0.1); flex-wrap: wrap; }
+.balance-icon { background: var(--gold); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: #1a1a2e; font-weight: 800; font-size: 1.5rem; box-shadow: 0 4px 0 #997A00; flex-shrink: 0; }
+.balance-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-left: auto; min-width: 65px; flex-shrink: 0; }
+.balance-actions .btn { width: 100%; justify-content: center; white-space: nowrap; padding: 6px 8px; font-size: 0.65rem; border-radius: 8px; }
 .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .perfil-grid { grid-template-columns: 1fr; } }
 
