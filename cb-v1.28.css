@@ -1,4 +1,4 @@
-/* ✅ V1.27: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+/* ✅ V1.28: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
@@ -11,7 +11,6 @@
     font-weight: 700; /* Bold */
     font-display: swap;
 }
-/* ------------------------------------------------- */
 
 :root {
   --bg-primary: #150621; --bg-secondary: #23103a; --bg-card: #33164d; --bg-card-hover: #462069;
@@ -39,11 +38,9 @@ body {
 ::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 10px; border: 2px solid var(--bg-secondary); }
 ::-webkit-scrollbar-thumb:hover { background-color: #e6c300; }
 
-/* Aplicar la fuente a todos los inputs, botones y selectores */
 input, select, textarea, button { font-family: 'Clash Royale', 'Inter', sans-serif !important; }
 b, strong { font-weight: 700; }
 
-/* Contenedor principal con límite de ancho para PC grandes */
 .app-wrapper { 
   flex: 1; max-width: 1400px; margin: 0 auto; 
   background: var(--bg-secondary); border-radius: 0; overflow: hidden; width: 100%; 
@@ -200,7 +197,6 @@ b, strong { font-weight: 700; }
   .table-wrapper td.vs-row:before { display: none; }
   .table-wrapper td.vs-row { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); align-items: center; }
   
-  /* ✅ V1.27: Mini recuadro VS ultra-compacto y corregido */
   .vs-box {
     display: flex; flex-direction: column; width: 100%;
     border: 1px solid var(--border); border-radius: 6px;
@@ -222,20 +218,12 @@ b, strong { font-weight: 700; }
     flex: 1; min-width: 0;
   }
   .vs-icon { color: var(--gold); font-size: 0.7rem; font-weight: 900; flex-shrink: 0; }
-  
-  /* ✅ V1.27: Eliminada la cursiva y corregido el texto de espera */
-  .vs-empty { 
-    font-style: normal !important;
-    font-weight: 600; font-size: 0.65rem; color: var(--text-secondary); 
-    text-align: center; flex: 1; word-break: break-word; white-space: nowrap; 
-    overflow: hidden; text-overflow: ellipsis; 
-  }
-  
+  .vs-empty { font-style: normal !important; font-weight: 600; font-size: 0.65rem; color: var(--text-secondary); text-align: center; flex: 1; word-break: break-word; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.6rem; flex-shrink: 0; }
   .table-wrapper td .badge { font-size: 0.6rem; padding: 2px 8px; flex-shrink: 0; }
 }
 @media (min-width: 821px) {
-  .app-wrapper { border-radius: 20px; } /* En PC, si la ventana es muy ancha, la app tiene bordes redondeados */
+  .app-wrapper { border-radius: 20px; }
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
   th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
@@ -259,10 +247,8 @@ b, strong { font-weight: 700; }
 .modal-close:hover { background: #ff6b7a; transform: translateY(-2px); }
 .modal-close:active { transform: translateY(2px); box-shadow: 0 2px 0 #971f2d; }
 
-.balance-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; box-shadow: 0 0 20px rgba(255,215,0,0.1); flex-wrap: wrap; }
+.balance-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(255,215,0,0.1); }
 .balance-icon { background: var(--gold); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: #1a1a2e; font-weight: 700; font-size: 1.5rem; box-shadow: 0 4px 0 #997A00; flex-shrink: 0; }
-.balance-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-left: auto; min-width: 65px; flex-shrink: 0; }
-.balance-actions .btn { width: 100%; justify-content: center; white-space: nowrap; padding: 6px 8px; font-size: 0.65rem; border-radius: 8px; }
 .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .perfil-grid { grid-template-columns: 1fr; } }
 
@@ -316,3 +302,41 @@ b, strong { font-weight: 700; }
 .bank-option:last-child { border-bottom: none; }
 .bank-option:hover { color: var(--text); }
 .bank-option input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
+
+/* ✅ V1.28: MEDIA QUERY PARA CELULARES MUY PEQUEÑOS (Menos de 380px) */
+@media (max-width: 380px) {
+    body, .app-wrapper { font-size: 13px; }
+    .app-header { height: 50px; padding: 6px 12px; }
+    .app-title { font-size: 0.9rem !important; }
+    .hamburger svg { width: 22px; height: 22px; }
+    .header-right .btn-header { font-size: 0.6rem; padding: 4px 10px; }
+    
+    .sidebar { width: 250px; padding: 12px; }
+    .sidebar-user { flex-wrap: wrap; gap: 4px; }
+    .sidebar-user span { font-size: 0.7rem; }
+    .sidebar-stat .val { font-size: 0.9rem; }
+    .sidebar-stat .lbl { font-size: 0.5rem; }
+    .nav-item { padding: 8px 12px; font-size: 0.7rem; }
+    .nav-item i { font-size: 0.8rem; width: 16px; }
+
+    .input-group label { font-size: 0.6rem; }
+    .input-group input, .input-group select, .input-group textarea { font-size: 0.8rem; padding: 8px 12px; }
+    .btn-gold { font-size: 0.8rem; padding: 10px; }
+    .btn { padding: 8px 14px; font-size: 0.7rem; }
+    .btn-sm { padding: 4px 8px; font-size: 0.6rem; }
+    
+    /* Ajustes tarjeta de saldo */
+    .balance-card { padding: 14px; }
+    .balance-icon { width: 36px; height: 36px; font-size: 1rem; }
+    .balance-card .btn { font-size: 0.6rem !important; padding: 6px 8px; }
+
+    /* ⚠️ FORZAR TAMAÑO DE FUENTE DE LAS TARJETAS DE BATALLA PARA QUE NO SE REDUZCAN */
+    .table-wrapper td { font-size: 0.7rem !important; }
+    .table-wrapper td:before { font-size: 0.6rem !important; }
+    .vs-player { font-size: 0.7rem !important; }
+    .vs-empty { font-size: 0.6rem !important; }
+    .table-wrapper td .btn-sm { font-size: 0.6rem !important; }
+    .table-wrapper td .badge { font-size: 0.6rem !important; }
+
+    .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
+}
