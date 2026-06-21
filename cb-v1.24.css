@@ -255,3 +255,28 @@ body {
 .modal-dispute .modal-content { border: 2px solid var(--red); box-shadow: 0 0 25px rgba(255, 70, 85, 0.4); }
 .modal-dispute h3 { color: var(--red); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .modal-dispute .warning-text { color: #ffaaaf; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
+
+/* ✅ V1.24: Estilos para casillas de verificación de bancos */
+.banks-checkbox-list {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.bank-option {
+    display: flex; align-items: center; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+.bank-option:last-child { border-bottom: none; }
+.bank-option:hover { color: var(--text); }
+.bank-option input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 18px; height: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+}
