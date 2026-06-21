@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-// ✅ V1.25: NUEVO LINK DE GOOGLE SHEETS ACTUALIZADO
+// ✅ V1.25: URL DE LA API ACTUALIZADA CON EL NUEVO ENLACE
 const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -347,6 +347,7 @@ function renderAjustes() {
   const a = window.ajustes || {};
   const p = cachePerfil || {};
 
+  // ✅ V1.25: LISTA COMPLETA DE BANCOS (Agregados 0157 y 0172)
   const allBanks = [
     '0102 - BANCO DE VENEZUELA',
     '0104 - BANCO VENEZOLANO DE CREDITO',
@@ -361,6 +362,7 @@ function renderAjustes() {
     '0146 - BANGENTE',
     '0151 - BANCO FONDO COMÚN',
     '0156 - 100% BANCO',
+    '0157 - DELSUR BANCO UNIVERSAL',
     '0163 - BANCO DEL TESORO',
     '0168 - BANCRECER',
     '0169 - R4 BANCO MICROFINANCIERO C.A.',
@@ -376,9 +378,13 @@ function renderAjustes() {
 
   const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
   
-  // ✅ V1.25: Selector de Mi Banco muestra TODOS los bancos, no solo los activos
+  // Admin's own bank dropdown (filtrar por activos)
   let myBankOptions = `<option value="">Selecciona un banco</option>`;
-  myBankOptions = allBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
+  if (activeBanks.length > 0) {
+    myBankOptions = activeBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
+  } else {
+    myBankOptions = `<option value="" disabled>Primero activa bancos abajo</option>`;
+  }
 
   // Checkbox UI para activar/desactivar bancos
   let bankCheckboxes = allBanks.map(b => `
@@ -414,6 +420,7 @@ function renderAjustes() {
 }
 
 async function guardarAjustes() {
+  // Leer checkboxes activos
   const checkedBoxes = document.querySelectorAll('.bank-checkbox:checked');
   const selectedBanks = Array.from(checkedBoxes).map(el => el.value);
   
@@ -573,37 +580,16 @@ function renderDesafios() {
 
 function renderPerfil() {
   const p = cachePerfilJugador || {};
+  const a = window.ajustes || {};
+  const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
 
-  const allBanks = [
-    '0102 - BANCO DE VENEZUELA',
-    '0104 - BANCO VENEZOLANO DE CREDITO',
-    '0105 - BANCO MERCANTIL',
-    '0108 - BBVA PROVINCIAL',
-    '0114 - BANCARIBE',
-    '0115 - BANCO EXTERIOR',
-    '0128 - BANCO CARONÍ',
-    '0134 - BANESCO',
-    '0137 - BANCO SOFITASA',
-    '0138 - BANCO PLAZA',
-    '0146 - BANGENTE',
-    '0151 - BANCO FONDO COMÚN',
-    '0156 - 100% BANCO',
-    '0163 - BANCO DEL TESORO',
-    '0168 - BANCRECER',
-    '0169 - R4 BANCO MICROFINANCIERO C.A.',
-    '0171 - BANCO ACTIVO',
-    '0172 - BANCAMIGA BANCO UNIVERSAL, C.A.',
-    '0174 - BANPLUS',
-    '0175 - BANCO DIGITAL DE LOS TRABAJADORES',
-    '0177 - BANFANB',
-    '0178 - N58 BANCO DIGITAL',
-    '0191 - BANCO NACIONAL DE CREDITO',
-    '0601 - INSTITUTO MUNICIPAL DE CREDITO POPULAR'
-  ];
-
-  // ✅ V1.25: Selector de Banco del Jugador muestra TODOS los bancos
+  // Opciones de banco filtradas por bancos activos
   let bankOptions = `<option value="">Selecciona un banco</option>`;
-  bankOptions = allBanks.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('');
+  if (activeBanks.length > 0) {
+    bankOptions = activeBanks.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('');
+  } else {
+    bankOptions = `<option value="" disabled>No hay bancos disponibles</option>`;
+  }
 
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
@@ -721,6 +707,7 @@ function retirarSaldoUI() {
 async function enviarRetiro() {
   const monto = document.getElementById('montoRetiro').value;
   const perfil = cachePerfilJugador || {};
+  // Tomamos los datos bancarios del jugador automáticamente
   const datos = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
   
   if (!monto) return toast('Ingresa un monto válido', 'error');
