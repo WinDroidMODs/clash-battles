@@ -186,7 +186,7 @@ function renderBatallasAdmin(filtro = '') {
   let batallas = cacheBatallasAdmin || [];
   if (filtro) batallas = batallas.filter(b => b.estado === filtro);
   let html = `<div style='margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;'>
-    <select onchange='renderBatallasAdmin(this.value)' style='padding:8px 12px; border-radius:8px; background:#1a1a3e; color:white; border:1px solid #2a2a5a;'>
+    <select onchange='renderBatallasAdmin(this.value)' style='padding:8px 12px; border-radius:8px; background:var(--bg-card); color:white; border:2px solid var(--gold-border);'>
       <option value=''>Todos</option>
       <option value='Pendiente de pago'>Pendiente de pago</option>
       <option value='Lista para jugar'>Lista para jugar</option>
@@ -516,14 +516,14 @@ function renderPerfil() {
       <div class='balance-icon'>$</div>
       <div>
         <div style='font-size:0.8rem; color:var(--text-secondary);'>SALDO DISPONIBLE</div>
-        <div style='font-size:1.8rem; font-weight:900;'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
+        <div style='font-size:1.8rem; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
       </div>
       <div class='balance-actions'>
         <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()'>Recargar</button>
         <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()'>Retirar</button>
       </div>
     </div>
-    <h3 style='margin-bottom:16px;'>Mis Datos</h3>
+    <h3 style='margin-bottom:16px; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Mis Datos</h3>
     <div class='perfil-grid'>
       <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego || ''}'/></div>
       <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag || ''}'/></div>
@@ -758,26 +758,26 @@ async function initApp() {
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   
-  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700;'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
+  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
   
   let navItems = '';
   if (rol === 'admin') {
     navItems = `
-      <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Batallas 1C1</button>
-      <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation" style="color: #FF4655;"></i> Disputas</button>
-      <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #00E676;"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
-      <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Movimientos</button>
-      <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users" style="color: #4F8EF7;"></i> Jugadores</button>
-      <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears" style="color: #FFD700;"></i> Ajustes</button>`;
+      <button class='nav-item active' onclick='switchTab("batallas",this)'><i class="fa-solid fa-crosshairs"></i> Batallas 1C1</button>
+      <button class='nav-item' onclick='switchTab("disputas",this)'><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);"></i> Disputas</button>
+      <button class='nav-item' onclick='switchTab("recargas",this)'><i class="fa-solid fa-sack-dollar" style="color:var(--green);"></i> Recargas <span class='admin-badge' id='badgeRecargas' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("retiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color:var(--red);"></i> Retiros <span class='admin-badge' id='badgeRetiros' style='display:none'>0</span></button>
+      <button class='nav-item' onclick='switchTab("movimientos",this)'><i class="fa-solid fa-clipboard-list"></i> Movimientos</button>
+      <button class='nav-item' onclick='switchTab("jugadores",this)'><i class="fa-solid fa-users"></i> Jugadores</button>
+      <button class='nav-item' onclick='switchTab("ajustes",this)'><i class="fa-solid fa-gears"></i> Ajustes</button>`;
     initAdmin();
   } else {
     navItems = `
-      <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs" style="color: #FFD700;"></i> Desafíos 1C1</button>
-      <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar" style="color: #00E676;"></i> Recargas</button>
-      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color: #00E676;"></i> Retiros</button>
-      <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list" style="color: #4F8EF7;"></i> Historial</button>
-      <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user" style="color: #4F8EF7;"></i> Perfil</button>`;
+      <button class='nav-item active' onclick='switchTab("desafios",this)'><i class="fa-solid fa-crosshairs"></i> Desafíos 1C1</button>
+      <button class='nav-item' onclick='switchTab("misRecargas",this)'><i class="fa-solid fa-sack-dollar" style="color:var(--green);"></i> Recargas</button>
+      <button class='nav-item' onclick='switchTab("misRetiros",this)'><i class="fa-solid fa-money-bill-1-wave" style="color:var(--red);"></i> Retiros</button>
+      <button class='nav-item' onclick='switchTab("miHistorial",this)'><i class="fa-solid fa-clipboard-list"></i> Historial</button>
+      <button class='nav-item' onclick='switchTab("perfil",this)'><i class="fa-regular fa-user"></i> Perfil</button>`;
     initJugador();
   }
   document.getElementById('sidebarNav').innerHTML = navItems;
