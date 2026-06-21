@@ -1,27 +1,10 @@
 :root {
-  /* 🟣 PALETA DE COLORES CLASH ROYALE 🟡 */
-  --bg-primary: #150621; /* Fondo morado oscuro profundo */
-  --bg-secondary: #23103a; /* Fondo secundario morado */
-  --bg-card: #33164d; /* Fondo de tarjetas y menús */
-  --bg-card-hover: #462069;
-  --blue: #4F8EF7; /* Azul brillante tipo "Social" */
-  --blue-glow: #7ba9ff;
-  --gold: #FFD700; /* Oro Clash Royale */
-  --gold-dark: #D4AF37;
-  --red: #FF4655; /* Rojo para disputas */
-  --red-glow: #ff6b7a;
-  --green: #00E676; /* Verde para recargas */
-  --green-glow: #69F0AE;
-  --purple: #BB86FC;
-  --pink: #FF4081;
-  --text: #FFFFFF;
-  --text-secondary: #C0B0D9;
-  --border: #4b296b; /* Borde morado suave */
-  --gold-border: #FFD700; /* Borde dorado brillante */
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 4px 20px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.15);
+  --bg-primary: #150621; --bg-secondary: #23103a; --bg-card: #33164d; --bg-card-hover: #462069;
+  --blue: #4F8EF7; --blue-glow: #7ba9ff; --gold: #FFD700; --gold-dark: #D4AF37;
+  --red: #FF4655; --red-glow: #ff6b7a; --green: #00E676; --green-glow: #69F0AE;
+  --purple: #BB86FC; --pink: #FF4081; --text: #FFFFFF; --text-secondary: #C0B0D9;
+  --border: #4b296b; --gold-border: #FFD700; --radius: 16px; --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.6); --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.15);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -37,24 +20,17 @@ body {
 
 .app-header {
   padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 2px solid var(--gold); /* Borde dorado estilo juego */
-  background: linear-gradient(180deg, #31194a 0%, #20102e 100%); /* Degradado morado profundo */
+  border-bottom: 2px solid var(--gold-border); background: linear-gradient(180deg, #31194a 0%, #20102e 100%);
   height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
-.app-title {
-  font-weight: 900; font-size: 1.2rem; letter-spacing: 0.5px;
-  color: var(--gold);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255, 215, 0, 0.3); /* Brillo dorado */
-  background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;
-}
+.app-title { font-weight: 900; font-size: 1.2rem; letter-spacing: 0.5px; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255, 215, 0, 0.3); }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .btn-header {
   padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 0.78rem;
   border: 2px solid rgba(255,255,255,0.2); cursor: pointer; background: var(--blue); color: white;
-  box-shadow: 0 4px 0 #1e4a7a; /* Efecto 3D de botón de juego */ transition: all 0.1s;
-  text-transform: uppercase; letter-spacing: 0.5px;
+  box-shadow: 0 4px 0 #1e4a7a; transition: all 0.1s; text-transform: uppercase; letter-spacing: 0.5px;
 }
 .btn-header:hover { background: #6BA3FF; transform: translateY(-2px); box-shadow: 0 6px 0 #1e4a7a; }
 .btn-header:active { transform: translateY(2px); box-shadow: 0 2px 0 #1e4a7a; }
@@ -69,11 +45,9 @@ body {
 
 .auth-container { display: flex; justify-content: center; align-items: center; padding: 0 16px 40px; min-height: auto; background: transparent; }
 .auth-card {
-  width: 100%; max-width: 420px; padding: 40px 28px;
-  background: var(--bg-card);
-  border: 2px solid var(--gold-border); /* Borde dorado grueso */
-  border-radius: 24px;
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 20px rgba(255, 215, 0, 0.05); /* Brillo dorado */
+  width: 100%; max-width: 420px; padding: 40px 28px; background: var(--bg-card);
+  border: 2px solid var(--gold-border); border-radius: 24px;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2), inset 0 0 20px rgba(255, 215, 0, 0.05);
   text-align: center; position: relative;
 }
 .auth-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #FFD700, #DAA520); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(255,215,0,0.3); font-size: 2rem; }
@@ -87,7 +61,7 @@ body {
 .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Inter', sans-serif; }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* 💥 NUEVO ESTILO DE BOTONES "CLASH ROYALE" */
+/* 💥 ESTILO CLASH ROYALE PARA BOTONES */
 .btn-gold {
   padding: 13px; border-radius: 14px; font-weight: 800; font-size: 0.9rem; width: 100%; margin-top: 8px;
   letter-spacing: 0.5px; cursor: pointer;
@@ -97,17 +71,13 @@ body {
 }
 .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #997A00; }
 .btn-gold:active { transform: translateY(4px); box-shadow: 0 2px 0 #997A00; }
-
 .btn-blue { background: var(--blue); color: white; border: 2px solid #9dbfff; box-shadow: 0 4px 0 #1e4a7a; }
 .btn-blue:hover { background: #6BA3FF; }
 .btn-blue:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e4a7a; }
-
 .btn-red { background: var(--red); color: white; border: 2px solid #ff9ba3; box-shadow: 0 4px 0 #971f2d; }
 .btn-red:active { transform: translateY(4px); box-shadow: 0 2px 0 #971f2d; }
-
 .btn-green { background: var(--green); color: #1a1a2e; border: 2px solid #9effd0; box-shadow: 0 4px 0 #008a4a; }
 .btn-green:active { transform: translateY(4px); box-shadow: 0 2px 0 #008a4a; }
-
 .btn { padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.1s; text-transform: uppercase; letter-spacing: 0.3px; }
 .btn-sm { padding: 6px 12px; font-size: 0.7rem; }
 .btn-block { width: 100%; }
@@ -115,14 +85,12 @@ body {
 .auth-error { font-size: 0.8rem; margin-top: 10px; min-height: 18px; color: var(--red); }
 .hidden { display: none !important; }
 
-/* 🛡️ MENÚ LATERAL ESTILO CLASH */
 .sidebar {
   position: fixed; top: 60px; left: 0; width: 300px; height: calc(100vh - 60px);
   background: var(--bg-secondary); border-right: 2px solid var(--gold-border);
   overflow-y: auto; z-index: 95; transform: translateX(-100%);
   transition: transform 0.3s ease; padding: 16px 12px;
   display: flex; flex-direction: column; gap: 8px;
-  border-left: 4px solid var(--gold); /* Detalle decorativo */
 }
 .sidebar.open { transform: translateX(0); }
 .sidebar-overlay { display: none; position: fixed; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: rgba(0,0,0,0.7); z-index: 90; }
@@ -152,7 +120,6 @@ body {
 .tab-panel { display: none !important; }
 .tab-panel.active { display: block !important; }
 
-/* 📊 ESTADÍSTICAS TIPO CLASH */
 .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
 @media (min-width: 600px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 .kpi-card { background: var(--bg-card); border: 2px solid var(--gold-border); border-radius: var(--radius); padding: 20px 16px; box-shadow: var(--shadow); text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
@@ -160,39 +127,73 @@ body {
 .kpi-title { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
 .kpi-value { font-size: 1.8rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-/* 🃏 TARJETAS DE BATALLA (ESTILO CLASH ROYALE) */
-.table-wrapper { border-radius: var(--radius); overflow: hidden; border: 2px solid var(--gold-border); margin-bottom: 16px; background: var(--bg-card); box-shadow: 0 0 15px rgba(255, 215, 0, 0.1); }
+/* ✅ V1.19: DISEÑO DE TARJETAS V1.17 RESTAURADO PERO CON COLORES V1.18 */
+.table-wrapper { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--gold-border); margin-bottom: 16px; background: var(--bg-card); box-shadow: var(--shadow); }
 @media (max-width: 820px) {
   .table-wrapper { border: none; box-shadow: none; background: transparent; }
   .table-wrapper tr {
     background: var(--bg-card);
-    border: 2px solid var(--gold-border); /* Borde dorado grueso en móviles */
-    border-radius: 16px;
-    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
     margin-bottom: 14px;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    box-shadow: var(--shadow);
     width: 100%;
   }
-  .table-wrapper td .badge { font-size: 0.55rem !important; padding: 2px 6px !important; }
-  .vs-box { border: 1px solid var(--gold); background: rgba(255,215,0,0.05); }
+  .table-wrapper td {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.75rem; gap: 8px; width: 100%;
+  }
+  .table-wrapper td:before {
+    content: attr(data-label); font-weight: 700; color: var(--text-secondary);
+    font-size: 0.65rem; flex-shrink: 0; text-transform: uppercase; margin-top: 2px;
+  }
+  .table-wrapper td > *:not(:before) {
+    text-align: right; flex: 1; min-width: 0; word-break: break-word;
+    display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px;
+  }
+  .table-wrapper td:last-child { border-bottom: none; }
+  
+  .table-wrapper td.vs-row:before { display: none; }
+  .table-wrapper td.vs-row { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); align-items: center; }
+  
+  .vs-box {
+    display: flex; flex-direction: column; width: 100%;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 8px; background: rgba(255,255,255,0.02);
+    overflow: hidden;
+  }
+  .vs-header {
+    display: flex; justify-content: space-between; width: 100%;
+    font-size: 0.55rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; padding-bottom: 2px; border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+  .vs-body {
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+  }
+  .vs-player {
+    font-weight: 600; font-size: 0.8rem; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%;
+  }
+  .vs-icon { color: var(--gold); font-size: 0.8rem; font-weight: 900; flex-shrink: 0; }
+  .vs-empty { color: var(--text-secondary); font-weight: 600; font-size: 0.7rem; font-style: italic; }
+  
+  .table-wrapper td .btn-sm { padding: 4px 8px; font-size: 0.65rem; flex-shrink: 0; }
+  .table-wrapper td .badge { font-size: 0.65rem; padding: 2px 8px; flex-shrink: 0; }
 }
-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
-th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
-tr:hover td { background: rgba(255, 215, 0, 0.05); }
-
+@media (min-width: 821px) {
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
+  th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
+  tr:hover td { background: rgba(255, 215, 0, 0.05); }
+}
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
 .badge-pending { background: rgba(255, 70, 85, 0.2); color: #FF4655; border-color: #FF4655; }
 .badge-ready { background: rgba(0, 230, 118, 0.2); color: #00E676; border-color: #00E676; }
 .badge-review { background: rgba(255, 215, 0, 0.2); color: #FFD700; border-color: #FFD700; }
 .badge-done { background: rgba(187, 134, 252, 0.2); color: #BB86FC; border-color: #BB86FC; }
-
-/* 🪙 MINI RECUADRO VS */
-.vs-box { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); }
-.vs-header { color: var(--gold); }
-.vs-icon { color: var(--gold); }
-.vs-player { font-weight: 600; color: #FFF; }
-.vs-empty { color: var(--text-secondary); }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; backdrop-filter: blur(4px); }
 .modal-content { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); border: 2px solid var(--gold-border); position: relative; }
@@ -223,18 +224,14 @@ tr:hover td { background: rgba(255, 215, 0, 0.05); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .admin-badge { background: var(--red); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: auto; }
 
-/* 📲 BOTÓN WHATSAPP - CLASH STYLE */
 .whatsapp-float {
     position: fixed; bottom: 20px; right: 20px;
     width: 60px; height: 60px;
-    background: linear-gradient(180deg, #25D366, #128C7E); /* Verde Clash */
-    border: 2px solid #9effd0;
-    border-radius: 50%;
+    background: linear-gradient(180deg, #25D366, #128C7E);
+    border: 2px solid #9effd0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; color: white; font-size: 32px;
-    box-shadow: 0 6px 0 #075e54; /* Efecto 3D */
-    text-decoration: none;
-    opacity: 0; transform: scale(0.8); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 50;
+    box-shadow: 0 6px 0 #075e54; text-decoration: none;
+    opacity: 0; transform: scale(0.8); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 50;
 }
 .whatsapp-float.show { opacity: 1; transform: scale(1); }
 .whatsapp-float:active { transform: translateY(4px); box-shadow: 0 2px 0 #075e54; }
