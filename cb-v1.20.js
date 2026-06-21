@@ -1,4 +1,5 @@
 // ==================== CONFIG ====================
+// ✅ V1.20: URL DE LA API ACTUALIZADA CON EL NUEVO ENLACE
 const API = 'https://script.google.com/macros/s/AKfycbxdMqnUBq_FmDKKw2XzeQAzTWXhI351z8Yr6KLm4AKYYpJCYGR7RhzurEkP6LlCv7Sz/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -516,7 +517,7 @@ function renderPerfil() {
       <div class='balance-icon'>$</div>
       <div>
         <div style='font-size:0.8rem; color:var(--text-secondary);'>SALDO DISPONIBLE</div>
-        <div style='font-size:1.8rem; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
+        <div style='font-size:1.8rem; font-weight:900; white-space:nowrap; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
       </div>
       <div class='balance-actions'>
         <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()'>Recargar</button>
