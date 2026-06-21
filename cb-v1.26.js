@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-// ✅ V1.25: URL DE LA API ACTUALIZADA CON EL NUEVO ENLACE
+// ✅ V1.26 - URL DE LA API
 const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -347,7 +347,7 @@ function renderAjustes() {
   const a = window.ajustes || {};
   const p = cachePerfil || {};
 
-  // ✅ V1.25: LISTA COMPLETA DE BANCOS (Agregados 0157 y 0172)
+  // ✅ V1.26: LISTA COMPLETA DE BANCOS
   const allBanks = [
     '0102 - BANCO DE VENEZUELA',
     '0104 - BANCO VENEZOLANO DE CREDITO',
@@ -378,7 +378,6 @@ function renderAjustes() {
 
   const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
   
-  // Admin's own bank dropdown (filtrar por activos)
   let myBankOptions = `<option value="">Selecciona un banco</option>`;
   if (activeBanks.length > 0) {
     myBankOptions = activeBanks.map(b => `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`).join('');
@@ -386,7 +385,6 @@ function renderAjustes() {
     myBankOptions = `<option value="" disabled>Primero activa bancos abajo</option>`;
   }
 
-  // Checkbox UI para activar/desactivar bancos
   let bankCheckboxes = allBanks.map(b => `
     <label class="bank-option">
       <input type="checkbox" class="bank-checkbox" value="${b}" ${activeBanks.includes(b) ? 'checked' : ''} />
@@ -420,7 +418,6 @@ function renderAjustes() {
 }
 
 async function guardarAjustes() {
-  // Leer checkboxes activos
   const checkedBoxes = document.querySelectorAll('.bank-checkbox:checked');
   const selectedBanks = Array.from(checkedBoxes).map(el => el.value);
   
@@ -583,7 +580,6 @@ function renderPerfil() {
   const a = window.ajustes || {};
   const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
 
-  // Opciones de banco filtradas por bancos activos
   let bankOptions = `<option value="">Selecciona un banco</option>`;
   if (activeBanks.length > 0) {
     bankOptions = activeBanks.map(b => `<option value="${b}" ${p.banco === b ? 'selected' : ''}>${b}</option>`).join('');
@@ -707,7 +703,6 @@ function retirarSaldoUI() {
 async function enviarRetiro() {
   const monto = document.getElementById('montoRetiro').value;
   const perfil = cachePerfilJugador || {};
-  // Tomamos los datos bancarios del jugador automáticamente
   const datos = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
   
   if (!monto) return toast('Ingresa un monto válido', 'error');
