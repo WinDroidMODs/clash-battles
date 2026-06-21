@@ -848,6 +848,7 @@ async function confirmarUnion() {
   } else toast(res.error || 'Error', 'error');
 }
 
+// ✅ CORREGIDO: Función initApp con el menú de usuario reordenado (Nombre arriba, Cerrar sesión abajo)
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
@@ -855,7 +856,15 @@ async function initApp() {
   const playerIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>';
   const roleIcon = rol === 'admin' ? adminIcon : playerIcon;
   
-  document.getElementById('sidebarUser').innerHTML = `${roleIcon} <span style='font-weight:700; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span><button class='btn btn-red btn-sm' onclick='logout()' style='margin-left:auto;'>Cerrar sesión</button>`;
+  // Reemplazada la estructura por una columna vertical
+  document.getElementById('sidebarUser').innerHTML = `
+      <div style='display:flex; flex-direction:column; gap:10px; width:100%;'>
+          <div style='display:flex; align-items:center; gap:10px;'>
+              ${roleIcon} <span style='font-weight:700; color:var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>${nombreJuego || (rol==='admin'?'admin':'Jugador')}</span>
+          </div>
+          <button class='btn btn-red btn-sm' onclick='logout()' style='width:100%; justify-content:center;'>Cerrar sesión</button>
+      </div>
+  `;
   
   let navItems = '';
   if (rol === 'admin') {
