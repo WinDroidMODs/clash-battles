@@ -1,5 +1,4 @@
 // ==================== CONFIG ====================
-// ✅ V1.21 - URL DE LA API ACTUALIZADA
 const API = 'https://script.google.com/macros/s/AKfycbxdMqnUBq_FmDKKw2XzeQAzTWXhI351z8Yr6KLm4AKYYpJCYGR7RhzurEkP6LlCv7Sz/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -137,11 +136,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ✅ V1.22: Formateador de moneda venezolana (Bs)
+function formatVES(amount) {
+    if (isNaN(amount)) return '0,00';
+    return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
+
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
+let cachePerfil = null;
 
 async function initAdmin() {
+  cachePerfil = await apiCall({ action: 'getPerfil', userId });
   await updateSidebarStatsAdmin();
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
@@ -335,10 +342,65 @@ async function rechazarRetiro(id) {
   } else toast(res.error, 'error');
 }
 
+// ✅ V1.22: Organización de Ajustes (Mis Datos y Datos para Retiros)
 function renderAjustes() {
   const a = window.ajustes || {};
+  const p = cachePerfil || {};
+
+  const banks = [
+    '0102 - BANCO DE VENEZUELA',
+    '0104 - BANCO VENEZOLANO DE CREDITO',
+    '0105 - BANCO MERCANTIL',
+    '0108 - BBVA PROVINCIAL',
+    '0114 - BANCARIBE',
+    '0115 - BANCO EXTERIOR',
+    '0128 - BANCO CARONÍ',
+    '0134 - BANESCO',
+    '0137 - BANCO SOFITASA',
+    '0138 - BANCO PLAZA',
+    '0146 - BANGENTE',
+    '0151 - BANCO FONDO COMÚN',
+    '0156 - 100% BANCO',
+    '0163 - BANCO DEL TESORO',
+    '0168 - BANCRECER',
+    '0169 - R4 BANCO MICROFINANCIERO C.A.',
+    '0171 - BANCO ACTIVO',
+    '0172 - BANCAMIGA BANCO UNIVERSAL, C.A.',
+    '0174 - BANPLUS',
+    '0175 - BANCO DIGITAL DE LOS TRABAJADORES',
+    '0177 - BANFANB',
+    '0178 - N58 BANCO DIGITAL',
+    '0191 - BANCO NACIONAL DE CREDITO',
+    '0601 - INSTITUTO MUNICIPAL DE CREDITO POPULAR'
+  ];
+
+  let bankOptions = `<option value="">Selecciona un banco</option>`;
+  banks.forEach(b => {
+    bankOptions += `<option value="${b}" ${a.pagoBanco === b ? 'selected' : ''}>${b}</option>`;
+  });
+
   document.getElementById('panel-ajustes').innerHTML = `
+    <h3 style='color:var(--gold); margin-bottom:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Mis Datos</h3>
+    <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;'>
+      <div class='input-group'><label>Nombre en el juego</label><input id='ajNombre' value='${p.nombreJuego || ''}'/></div>
+      <div class='input-group'><label>Tag (#)</label><input id='ajTag' value='${p.tag || ''}'/></div>
+      <div class='input-group'><label>Supercell ID</label><input id='ajSupercell' value='${p.supercellId || ''}'/></div>
+      <div class='input-group'><label>WhatsApp</label><input id='ajWhatsApp' value='${p.telefono || ''}'/></div>
+    </div>
+
+    <h3 style='color:var(--gold); margin-bottom:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>Datos para Retiros</h3>
     <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px;'>
+      <div class='input-group'>
+        <label>Banco</label>
+        <select id='ajBanco'>${bankOptions}</select>
+      </div>
+      <div class='input-group'><label>Teléfono de pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
+      <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
+      <div class='input-group'><label>Número de cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
+      <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
+      <div class='input-group'><label>Tasa $ (Retiros) [Bs]</label><input id='ajTasaRetiro' value='${a.tasaRetiro || 0}'/></div>
+    </div>
+    <div style='display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;'>
       <div class='input-group'><label>Comisión casa ($)</label><input id='ajComision' value='${a.comisionCasa || 0.30}'/></div>
       <div class='input-group'><label>Premio ganador ($)</label><input id='ajPremio' value='${a.premioGanador || 1.70}'/></div>
       <div class='input-group'><label>Costo inscripción ($)</label><input id='ajCosto' value='${a.costoInscripcion || 1.00}'/></div>
@@ -346,12 +408,6 @@ function renderAjustes() {
       <div class='input-group'><label>Recarga máxima ($)</label><input id='ajMaxRecarga' value='${a.maxRecarga || 50}'/></div>
       <div class='input-group'><label>Retiro mínimo ($)</label><input id='ajMinRetiro' value='${a.minRetiro || 2}'/></div>
       <div class='input-group'><label>Retiro máximo ($)</label><input id='ajMaxRetiro' value='${a.maxRetiro || 50}'/></div>
-      <div class='input-group'><label>Banco</label><input id='ajBanco' value='${a.pagoBanco || ''}'/></div>
-      <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
-      <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
-      <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
-      <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
-      <div class='input-group'><label>Tasa $ (Retiros) [Bs]</label><input id='ajTasaRetiro' value='${a.tasaRetiro || 0}'/></div>
     </div>
     <button class='btn btn-gold' onclick='guardarAjustes()' style='margin-top:16px;'>Guardar Ajustes</button>`;
 }
@@ -373,16 +429,30 @@ async function guardarAjustes() {
     tasaRetiro: document.getElementById('ajTasaRetiro').value
   };
   await apiCall({ action: 'saveAjustes', ajustes: a });
+
+  await apiCall({
+    action: 'editarPerfil', userId,
+    nombreJuego: document.getElementById('ajNombre').value,
+    tag: document.getElementById('ajTag').value,
+    supercellId: document.getElementById('ajSupercell').value,
+    telefono: document.getElementById('ajWhatsApp').value,
+    banco: document.getElementById('ajBanco').value,
+    telefonoPago: document.getElementById('ajTel').value,
+    cedula: document.getElementById('ajCedula').value,
+    cuenta: document.getElementById('ajCuenta').value
+  });
+
   window.ajustes = await apiCall({ action: 'getAjustes' });
+  cachePerfil = await apiCall({ action: 'getPerfil', userId });
   toast('Ajustes guardados');
 }
 
-let cachePerfil = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
+let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
 async function initJugador() {
   await updateSidebarStatsJugador();
-  cachePerfil = await apiCall({ action: 'getPerfil', userId });
+  cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
   cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
   const todas = await apiCall({ action: 'getBatallas' });
   cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -511,7 +581,7 @@ function renderDesafios() {
 }
 
 function renderPerfil() {
-  const p = cachePerfil || {};
+  const p = cachePerfilJugador || {};
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
       <div class='balance-icon'>$</div>
@@ -551,7 +621,7 @@ async function guardarPerfil() {
     cuenta: document.getElementById('perfilCuenta').value
   });
   toast('Perfil actualizado');
-  cachePerfil = await apiCall({ action: 'getPerfil', userId });
+  cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
   renderPerfil();
   updateSidebarStatsJugador();
 }
@@ -573,7 +643,7 @@ function recargarSaldoUI() {
   const tasa = parseFloat(a.tasaRecarga || 0);
   montoInput.oninput = function() {
     const amount = parseFloat(this.value) || 0;
-    bsOutput.textContent = (amount * tasa).toFixed(2);
+    bsOutput.textContent = formatVES(amount * tasa); // ✅ Formato corregido
   };
   if(montoInput.value) montoInput.oninput();
 
@@ -591,6 +661,7 @@ async function enviarRecarga() {
   } else toast(res.error, 'error');
 }
 
+// ✅ V1.22: Datos estructurados para retiro
 function retirarSaldoUI() {
   const a = window.ajustes || {};
   const min = parseFloat(a.minRetiro || 2);
@@ -598,16 +669,22 @@ function retirarSaldoUI() {
   document.getElementById('rangoRetiro').textContent = `(mín $${min} - máx $${max})`;
   document.getElementById('montoRetiro').min = min;
   document.getElementById('montoRetiro').max = max;
-  const perfil = cachePerfil || {};
-  const datos = [perfil.banco, perfil.telefonoPago, perfil.cuenta].filter(Boolean).join(' - ');
-  document.getElementById('datosRetiro').value = datos;
+  const perfil = cachePerfilJugador || {};
+
+  // Mostrar datos organizados exactamente como en Recargar
+  document.getElementById('retiroBanco').textContent = perfil.banco || 'No definido';
+  document.getElementById('retiroTelefono').textContent = perfil.telefonoPago || 'No definido';
+  document.getElementById('retiroCedula').textContent = perfil.cedula || 'No definido';
+  document.getElementById('retiroCuenta').textContent = perfil.cuenta || 'No definido';
+  // Mantener el textarea por si quiere añadir cambios adicionales
+  document.getElementById('datosRetiro').value = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
 
   const montoInput = document.getElementById('montoRetiro');
   const bsOutput = document.getElementById('montoRetiroBs');
   const tasa = parseFloat(a.tasaRetiro || 0);
   montoInput.oninput = function() {
     const amount = parseFloat(this.value) || 0;
-    bsOutput.textContent = (amount * tasa).toFixed(2);
+    bsOutput.textContent = formatVES(amount * tasa); // ✅ Formato corregido
   };
   if(montoInput.value) montoInput.oninput();
 
@@ -622,7 +699,7 @@ async function enviarRetiro() {
   if (res.success) {
     toast('Solicitud de retiro enviada. El admin la procesará.');
     closeModal('modalRetiro');
-    cachePerfil = await apiCall({ action: 'getPerfil', userId });
+    cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
     renderPerfil();
     updateSidebarStatsJugador();
   } else toast(res.error, 'error');
@@ -699,7 +776,7 @@ function enviarPruebasDisputa() {
     return;
   }
 
-  const p = cachePerfil || {};
+  const p = cachePerfilJugador || {};
   const mensaje = `Motivo de verificación: ${motivo}\n\nDatos del jugador:\nNombre en el juego: ${p.nombreJuego || 'No definido'}\nTag: ${p.tag || 'No definido'}\nSupercell ID: ${p.supercellId || 'No definido'}\nTeléfono: ${p.telefono || 'No definido'}\n\nCaptura de pantalla adjunta de mi victoria 🏆 o derrota ❌: (el usuario debe colocar una imagen también en el mensaje o captura en WhatsApp)`;
 
   const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
@@ -718,7 +795,7 @@ async function crearBatallaAbierta() {
   if (res.success) {
     toast('Desafío creado');
     closeModal('modalCrearBatallaAbierta');
-    cachePerfil = await apiCall({ action: 'getPerfil', userId });
+    cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
@@ -743,7 +820,7 @@ async function confirmarUnion() {
   if (res.success) {
     toast('Te has unido a la batalla.');
     closeModal('modalUnirseBatalla');
-    cachePerfil = await apiCall({ action: 'getPerfil', userId });
+    cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
