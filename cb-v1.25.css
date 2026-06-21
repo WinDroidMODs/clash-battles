@@ -60,22 +60,16 @@ body {
 .input-group label { font-weight: 600; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; transition: all 0.3s; font-family: 'Inter', sans-serif; }
 
-/* ✅ V1.25: CORRECCIÓN PARA SELECTORES EN PC (Fondo oscuro forzado) */
+/* ✅ V1.25: PARCHE PARA SELECTORES EN PC (Fondo oscuro y texto visible) */
 select, select option {
-    background-color: var(--bg-card) !important;
-    color: var(--text) !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
+  background-color: #1a1a3e !important;
+  color: #ffffff !important;
 }
-select:focus {
-    border-color: var(--gold-border) !important;
-    box-shadow: 0 0 20px rgba(255,215,0,0.2) !important;
-    outline: none !important;
+select:focus, select:active {
+  outline: none;
+  border-color: var(--gold-border);
 }
-select option:checked {
-    background-color: var(--bg-card-hover) !important;
-}
+/* ----------------------------------------------------- */
 
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
@@ -273,3 +267,27 @@ select option:checked {
 .modal-dispute .modal-content { border: 2px solid var(--red); box-shadow: 0 0 25px rgba(255, 70, 85, 0.4); }
 .modal-dispute h3 { color: var(--red); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .modal-dispute .warning-text { color: #ffaaaf; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
+
+.banks-checkbox-list {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.bank-option {
+    display: flex; align-items: center; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+.bank-option:last-child { border-bottom: none; }
+.bank-option:hover { color: var(--text); }
+.bank-option input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 18px; height: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+}
