@@ -572,10 +572,12 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
+// ✅ V1.28: Nueva Tarjeta de Saldo estilo App (con Bs y botones con iconos)
 function renderPerfil() {
   const p = cachePerfilJugador || {};
   const a = window.ajustes || {};
   const activeBanks = a.bancos_activos ? a.bancos_activos.split(',') : [];
+  const tasaRecarga = parseFloat(a.tasaRecarga || 0);
 
   let bankOptions = `<option value="">Selecciona un banco</option>`;
   if (activeBanks.length > 0) {
@@ -584,16 +586,24 @@ function renderPerfil() {
     bankOptions = `<option value="" disabled>No hay bancos disponibles</option>`;
   }
 
+  const usdBalance = parseFloat(p.saldo || 0);
+  const bsBalance = usdBalance * tasaRecarga;
+
   document.getElementById('panel-perfil').innerHTML = `
-    <div class='balance-card'>
-      <div class='balance-icon'>$</div>
-      <div>
-        <div style='font-size:0.8rem; color:var(--text-secondary);'>SALDO DISPONIBLE</div>
-        <div style='font-size:1.8rem; font-weight:900; white-space:nowrap; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>$${parseFloat(p.saldo || 0).toFixed(2)}</div>
+    <div class='balance-card' style='flex-direction: column; align-items: stretch; gap: 12px;'>
+      <div style='display: flex; justify-content: space-between; align-items: center; width:100%;'>
+        <div class='balance-icon'>$</div>
+        <div style='text-align: right;'>
+          <div style='font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; margin-bottom:2px;'>SALDO DISPONIBLE</div>
+          <div style='display: flex; justify-content: flex-end; align-items: baseline; gap: 8px;'>
+            <span style='font-size:1.8rem; font-weight:900; text-shadow: 0 2px 4px rgba(0,0,0,0.5);'>$${usdBalance.toFixed(2)}</span>
+            <span style='font-size:1.1rem; font-weight:600; color:var(--text-secondary);'>Bs: ${formatVES(bsBalance)}</span>
+          </div>
+        </div>
       </div>
-      <div class='balance-actions'>
-        <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()'>Recargar</button>
-        <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()'>Retirar</button>
+      <div class='balance-actions' style='display: flex; flex-direction: row; gap: 8px; width: 100%;'>
+        <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()' style='flex:1; justify-content:center;'><i class="fa-solid fa-sack-dollar"></i> Recargar</button>
+        <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()' style='flex:1; justify-content:center;'><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar</button>
       </div>
     </div>
     
