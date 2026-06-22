@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.32.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.32: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+/* Clash-Battles-v1.33.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.33: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
@@ -243,13 +243,13 @@ b, strong { font-weight: 700; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
   th:nth-child(1), td:nth-child(1) { width: 10%; }
-  th:nth-child(2), td:nth-child(2) { width: 20%; }
+  th:nth-child(2), td:nth-child(2) { width: 15%; }
   th:nth-child(3), td:nth-child(3) { width: 15%; }
   th:nth-child(4), td:nth-child(4) { width: 10%; }
   th:nth-child(5), td:nth-child(5) { width: 15%; }
   th:nth-child(6), td:nth-child(6) { width: 10%; }
   th:nth-child(7), td:nth-child(7) { width: 10%; }
-  th:nth-child(8), td:nth-child(8) { width: 10%; }
+  th:nth-child(8), td:nth-child(8) { width: 15%; }
 }
 
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.3px; display: inline-block; border: 1px solid currentColor; }
