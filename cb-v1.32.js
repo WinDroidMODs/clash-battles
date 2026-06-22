@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-// ✅ V1.31: VERSIÓN ACTUALIZADA
-const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
+// ✅ V1.32: ESTADÍSTICAS ADMIN GLOBALES
+const API = 'https://script.google.com/macros/s/AKfycbzNZNJOHGmI7gE-YdMjmhCcJRbAorQlMxhJ9cFcW6lv-eGyhLcK8ihhek0MJE3AXoOB/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -168,6 +168,7 @@ async function initAdmin() {
   renderAjustes();
 }
 
+// ✅ FUNCIÓN ACTUALIZADA: ESTADÍSTICAS GLOBALES PARA EL ADMIN
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
     if (gStats.totalSaldo !== undefined) {
@@ -178,6 +179,9 @@ async function updateSidebarStatsAdmin() {
                 <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
                 <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
                 <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+                <div class='sidebar-stat'><div class='val blue'>${gStats.batallasActivas}</div><div class='lbl'>Batallas Activas</div></div>
+                <div class='sidebar-stat'><div class='val purple'>${gStats.batallasFinalizadas}</div><div class='lbl'>Finalizadas</div></div>
+                <div class='sidebar-stat'><div class='val'>${gStats.totalJugadores}</div><div class='lbl'>Jugadores</div></div>
             `;
         }
     }
