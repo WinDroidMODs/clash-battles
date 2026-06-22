@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-// ✅ V1.33: CORRECCIÓN DE ESTADÍSTICAS GLOBALES PARA ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbwpcKJs0gnFVsVf0T-UqOgjxYdPlMvS_C3GRBiae2AmzNP2UnpRLmbB_JsecGzzTF_X/exec';
+// ✅ V1.32: Panel de administración con KPI globales y colores
+const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -149,7 +149,7 @@ let cachePerfil = null;
 
 async function initAdmin() {
   cachePerfil = await apiCall({ action: 'getPerfil', userId });
-  await updateSidebarStatsAdmin();
+  await updateSidebarStatsAdmin(); // NUEVO: panel de KPI globales
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
   const todosMovs = await apiCall({ action: 'getMovimientos' });
@@ -168,22 +168,56 @@ async function initAdmin() {
   renderAjustes();
 }
 
+// ============================================================
+// NUEVO PANEL DE ESTADÍSTICAS PARA ADMIN (KPI con colores)
+// ============================================================
 async function updateSidebarStatsAdmin() {
-    const gStats = await apiCall({ action: 'getAdminStats' });
-    if (gStats.totalSaldo !== undefined) {
-        const statsContainer = document.getElementById('sidebarStats');
-        if (statsContainer) {
-            statsContainer.innerHTML = `
-                <div class='sidebar-stat'><div class='val gold'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-                <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-                <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-                <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-                <div class='sidebar-stat'><div class='val blue'>${gStats.batallasActivas}</div><div class='lbl'>Batallas Activas</div></div>
-                <div class='sidebar-stat'><div class='val purple'>${gStats.batallasFinalizadas}</div><div class='lbl'>Finalizadas</div></div>
-                <div class='sidebar-stat'><div class='val'>${gStats.totalJugadores}</div><div class='lbl'>Jugadores</div></div>
-            `;
-        }
-    }
+  const stats = await apiCall({ action: 'getAdminStats' });
+  if (!stats || stats.totalSaldo === undefined) {
+    console.warn('No se pudieron cargar las estadísticas del admin');
+    return;
+  }
+
+  const container = document.getElementById('sidebarStats');
+  if (!container) return;
+
+  // HTML con 8 KPI en grid de 2 columnas
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0;">
+      <div class="kpi-card" style="border-color:var(--gold); background:rgba(255,215,0,0.1);">
+        <div class="kpi-title">💰 Saldo Total</div>
+        <div class="kpi-value gold">$${stats.totalSaldo}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--blue); background:rgba(79,142,247,0.1);">
+        <div class="kpi-title">📥 Recargas</div>
+        <div class="kpi-value blue">$${stats.totalRecargas}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--red); background:rgba(255,70,85,0.1);">
+        <div class="kpi-title">📤 Retiros</div>
+        <div class="kpi-value red">$${stats.totalRetiros}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--green); background:rgba(0,230,118,0.1);">
+        <div class="kpi-title">🏆 Ganancias Casa</div>
+        <div class="kpi-value green">$${stats.gananciasCasa}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--purple); background:rgba(187,134,252,0.1);">
+        <div class="kpi-title">👥 Usuarios</div>
+        <div class="kpi-value purple">${stats.totalUsuarios}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--pink); background:rgba(255,64,129,0.1);">
+        <div class="kpi-title">⚔️ Activas</div>
+        <div class="kpi-value pink">${stats.batallasActivas}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--text-secondary); background:rgba(192,176,217,0.1);">
+        <div class="kpi-title">✅ Finalizadas</div>
+        <div class="kpi-value">${stats.batallasFinalizadas}</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--red); background:rgba(255,70,85,0.1);">
+        <div class="kpi-title">⚠️ Disputas</div>
+        <div class="kpi-value red">${stats.batallasDisputa}</div>
+      </div>
+    </div>
+  `;
 }
 
 function updateBadges() {
@@ -833,7 +867,7 @@ function mostrarModalUnion(batallaId) {
   batallaSeleccionadaUnion = batallaId;
   document.getElementById('unirseInfo').innerHTML = `
     <p>Te unirás a la batalla <strong>#${b.id}</strong> contra <strong>${b.j1Nombre || b.j2Nombre}</strong>.</p>
-    <p>Se descontará <strong>$1.00</strong> de tu saldo.</p>`;
+    <p>Se descontará <strong>$${window.ajustes.costoInscripcion || 1.00}</strong> de tu saldo.</p>`;
   document.getElementById('modalUnirseBatalla').classList.remove('hidden');
 }
 
