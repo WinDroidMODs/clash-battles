@@ -1,7 +1,7 @@
-// Clash-Battles-v1.32.js | Autor: Robinson Avila | By: WinDroidMODs
+// Clash-Battles-v1.33.js | Autor: Robinson Avila | By: WinDroidMODs
 // ==================== CONFIG ====================
-// ✅ V1.32: VERSIÓN ACTUALIZADA - ELIMINADOS KPIS GLOBALES DEL ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbzDcZ9oUGilxHC1rWV2j5onLFYH2OaIyBLuiV1Fg6W_SoFZl27FE3DCI3YaQzTGLZ16/exec';
+// ✅ V1.33: VERSIÓN ACTUALIZADA - KPIS ADMIN RESTAURADOS Y MANEJO DE ERRORES
+const API = 'https://script.google.com/macros/s/AKfycbzUwzT1zN4xyBrmCnyMn8ZwUEROhxe5ibcb-dlDpnyjRwkL7Cq3gQqxqXJ7VbZICl2L/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -143,26 +143,55 @@ function formatVES(amount) {
     return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
+// ===============================================
+// FUNCIONES DE ADMIN (CON MANEJO DE ERRORES)
+// ===============================================
+
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
 
 async function initAdmin() {
-  // 🔽 ELIMINADOS KPIS GLOBALES PARA ADMIN (no se muestra el contenedor de estadísticas)
-  document.getElementById('sidebarStats').style.display = 'none';
+  // 🔽 MOSTRAMOS LOS KPIS PARA ADMIN (los ocultamos antes, ahora los mostramos)
+  document.getElementById('sidebarStats').style.display = 'grid';
+  
+  // Cargar estadísticas globales (KPIs)
+  await updateSidebarStatsAdmin();
 
-  cachePerfil = await apiCall({ action: 'getPerfil', userId });
-  // No se llama a updateSidebarStatsAdmin()
-  cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
-  cacheUsuarios = await apiCall({ action: 'getUsuarios' });
-  const todosMovs = await apiCall({ action: 'getMovimientos' });
-  cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
-  cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
-  cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
+  // Cargar datos con verificación de errores
+  const batallasRes = await apiCall({ action: 'getBatallas' });
+  if (batallasRes.success === false) {
+    toast('Error al cargar batallas: ' + batallasRes.error, 'error');
+    cacheBatallasAdmin = [];
+  } else {
+    cacheBatallasAdmin = batallasRes;
+  }
+
+  const usuariosRes = await apiCall({ action: 'getUsuarios' });
+  if (usuariosRes.success === false) {
+    toast('Error al cargar usuarios: ' + usuariosRes.error, 'error');
+    cacheUsuarios = [];
+  } else {
+    cacheUsuarios = usuariosRes;
+  }
+
+  const movsRes = await apiCall({ action: 'getMovimientos' });
+  if (movsRes.success === false) {
+    toast('Error al cargar movimientos: ' + movsRes.error, 'error');
+    cacheRecargas = [];
+    cacheRetiros = [];
+    cacheMovimientosAdmin = [];
+  } else {
+    cacheRecargas = movsRes.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
+    cacheRetiros = movsRes.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+    cacheMovimientosAdmin = movsRes.filter(m => m.estado !== 'Pendiente');
+  }
   pendingRecargas = cacheRecargas.length;
   pendingRetiros = cacheRetiros.length;
   updateBadges();
+
+  // Renderizar todas las secciones
   renderBatallasAdmin();
   renderUsuariosAdmin();
   renderRecargasAdmin();
@@ -173,18 +202,22 @@ async function initAdmin() {
 }
 
 async function updateSidebarStatsAdmin() {
-    const gStats = await apiCall({ action: 'getAdminStats' });
-    if (gStats.totalSaldo !== undefined) {
-        const statsContainer = document.getElementById('sidebarStats');
-        if (statsContainer) {
-            statsContainer.innerHTML = `
-                <div class='sidebar-stat'><div class='val gold'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-                <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-                <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-                <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-            `;
-        }
+  const gStats = await apiCall({ action: 'getAdminStats' });
+  if (gStats.success === false) {
+    toast('Error al cargar estadísticas: ' + gStats.error, 'error');
+    return;
+  }
+  if (gStats.totalSaldo !== undefined) {
+    const statsContainer = document.getElementById('sidebarStats');
+    if (statsContainer) {
+      statsContainer.innerHTML = `
+        <div class='sidebar-stat'><div class='val gold'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+        <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+        <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+        <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+      `;
     }
+  }
 }
 
 function updateBadges() {
@@ -443,6 +476,10 @@ async function guardarAjustes() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   toast('Ajustes guardados');
 }
+
+// ===============================================
+// FUNCIONES DE JUGADOR (SIN CAMBIOS)
+// ===============================================
 
 let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
@@ -854,6 +891,10 @@ async function confirmarUnion() {
     updateSidebarStatsJugador();
   } else toast(res.error || 'Error', 'error');
 }
+
+// ===============================================
+// INICIO DE LA APP
+// ===============================================
 
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
