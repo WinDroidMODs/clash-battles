@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-// ✅ V1.32: ESTADÍSTICAS ADMIN GLOBALES
-const API = 'https://script.google.com/macros/s/AKfycbzNZNJOHGmI7gE-YdMjmhCcJRbAorQlMxhJ9cFcW6lv-eGyhLcK8ihhek0MJE3AXoOB/exec';
+// ✅ V1.33: CORRECCIÓN DE ESTADÍSTICAS GLOBALES PARA ADMIN
+const API = 'https://script.google.com/macros/s/AKfycbwpcKJs0gnFVsVf0T-UqOgjxYdPlMvS_C3GRBiae2AmzNP2UnpRLmbB_JsecGzzTF_X/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -168,7 +168,6 @@ async function initAdmin() {
   renderAjustes();
 }
 
-// ✅ FUNCIÓN ACTUALIZADA: ESTADÍSTICAS GLOBALES PARA EL ADMIN
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
     if (gStats.totalSaldo !== undefined) {
