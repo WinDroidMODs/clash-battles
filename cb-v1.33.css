@@ -1,4 +1,4 @@
-/* ✅ V1.32: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
+/* ✅ V1.33: CARGA DE FUENTES DE SUPERCELL DESDE GITHUB */
 @font-face {
     font-family: 'Clash Royale';
     src: url('https://cdn.jsdelivr.net/gh/WinDroidMODs/clash-battles@main/Clash_Regular.otf') format('opentype');
@@ -242,7 +242,7 @@ b, strong { font-weight: 700; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
   
-  /* ✅ ANCHOS DE COLUMNAS CORREGIDOS (V1.32) */
+  /* ✅ ANCHOS DE COLUMNAS CORREGIDOS (V1.33) */
   th:nth-child(1), td:nth-child(1) { width: 10%; }
   th:nth-child(2), td:nth-child(2) { width: 20%; } /* ✅ EMAIL aumentado a 20% */
   th:nth-child(3), td:nth-child(3) { width: 15%; }
@@ -384,6 +384,6 @@ b, strong { font-weight: 700; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
 }
 
-/* ✅ NUEVOS COLORES PARA ESTADÍSTICAS DEL ADMIN (V1.32) */
+/* ✅ NUEVOS COLORES PARA ESTADÍSTICAS DEL ADMIN (V1.33) */
 .val.blue { color: #4F8EF7; }
 .val.purple { color: #BB86FC; }
