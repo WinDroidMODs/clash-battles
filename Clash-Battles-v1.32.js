@@ -1,7 +1,6 @@
-// Clash-Battles-v1.33.js | Autor: Robinson Avila | By: WinDroidMODs
+// Clash-Battles-v1.32.js | Autor: Robinson Avila | By: WinDroidMODs
 // ==================== CONFIG ====================
-// ✅ V1.33: VERSIÓN ACTUALIZADA - KPIS ADMIN RESTAURADOS Y MANEJO DE ERRORES
-const API = 'https://script.google.com/macros/s/AKfycbzUwzT1zN4xyBrmCnyMn8ZwUEROhxe5ibcb-dlDpnyjRwkL7Cq3gQqxqXJ7VbZICl2L/exec';
+const API = 'https://script.google.com/macros/s/AKfycbylzUCuyUmPGOaDePKrwvGz25GANN5rQhIbMgpyO30i8iESVkt3CUgQulRHeorO75p_/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -143,55 +142,53 @@ function formatVES(amount) {
     return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
-// ===============================================
-// FUNCIONES DE ADMIN (CON MANEJO DE ERRORES)
-// ===============================================
-
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
 
+// ✅ FUNCIÓN CORREGIDA PARA ACTUALIZAR KPI DEL ADMIN
+async function updateSidebarStatsAdmin() {
+    const gStats = await apiCall({ action: 'getAdminStats' });
+    if (gStats && gStats.totalSaldo !== undefined) {
+        const statsContainer = document.getElementById('sidebarStats');
+        if (statsContainer) {
+            // Si ya existen los elementos, actualizamos sus valores
+            const saldoEl = document.getElementById('statSaldoAdmin');
+            const recargasEl = document.getElementById('statRecargasAdmin');
+            const retirosEl = document.getElementById('statRetirosAdmin');
+            const gananciaEl = document.getElementById('statGananciaAdmin');
+            
+            if (saldoEl && recargasEl && retirosEl && gananciaEl) {
+                saldoEl.textContent = '$' + gStats.totalSaldo.toFixed(2);
+                recargasEl.textContent = '$' + gStats.totalRecargas.toFixed(2);
+                retirosEl.textContent = '$' + gStats.totalRetiros.toFixed(2);
+                gananciaEl.textContent = '$' + gStats.gananciasCasa.toFixed(2);
+            } else {
+                // Si no existen, los creamos (nuevo HTML)
+                statsContainer.innerHTML = `
+                    <div class='sidebar-stat'><div class='val gold' id='statSaldoAdmin'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+                    <div class='sidebar-stat'><div class='val green' id='statRecargasAdmin'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+                    <div class='sidebar-stat'><div class='val red' id='statRetirosAdmin'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+                    <div class='sidebar-stat'><div class='val gold' id='statGananciaAdmin'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+                `;
+            }
+        }
+    }
+}
+
 async function initAdmin() {
-  // 🔽 MOSTRAMOS LOS KPIS PARA ADMIN (los ocultamos antes, ahora los mostramos)
-  document.getElementById('sidebarStats').style.display = 'grid';
-  
-  // Cargar estadísticas globales (KPIs)
-  await updateSidebarStatsAdmin();
-
-  // Cargar datos con verificación de errores
-  const batallasRes = await apiCall({ action: 'getBatallas' });
-  if (batallasRes.success === false) {
-    toast('Error al cargar batallas: ' + batallasRes.error, 'error');
-    cacheBatallasAdmin = [];
-  } else {
-    cacheBatallasAdmin = batallasRes;
-  }
-
-  const usuariosRes = await apiCall({ action: 'getUsuarios' });
-  if (usuariosRes.success === false) {
-    toast('Error al cargar usuarios: ' + usuariosRes.error, 'error');
-    cacheUsuarios = [];
-  } else {
-    cacheUsuarios = usuariosRes;
-  }
-
-  const movsRes = await apiCall({ action: 'getMovimientos' });
-  if (movsRes.success === false) {
-    toast('Error al cargar movimientos: ' + movsRes.error, 'error');
-    cacheRecargas = [];
-    cacheRetiros = [];
-    cacheMovimientosAdmin = [];
-  } else {
-    cacheRecargas = movsRes.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
-    cacheRetiros = movsRes.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
-    cacheMovimientosAdmin = movsRes.filter(m => m.estado !== 'Pendiente');
-  }
+  cachePerfil = await apiCall({ action: 'getPerfil', userId });
+  await updateSidebarStatsAdmin(); // llamada inicial
+  cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+  cacheUsuarios = await apiCall({ action: 'getUsuarios' });
+  const todosMovs = await apiCall({ action: 'getMovimientos' });
+  cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
+  cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+  cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
   pendingRecargas = cacheRecargas.length;
   pendingRetiros = cacheRetiros.length;
   updateBadges();
-
-  // Renderizar todas las secciones
   renderBatallasAdmin();
   renderUsuariosAdmin();
   renderRecargasAdmin();
@@ -202,22 +199,32 @@ async function initAdmin() {
 }
 
 async function updateSidebarStatsAdmin() {
-  const gStats = await apiCall({ action: 'getAdminStats' });
-  if (gStats.success === false) {
-    toast('Error al cargar estadísticas: ' + gStats.error, 'error');
-    return;
-  }
-  if (gStats.totalSaldo !== undefined) {
-    const statsContainer = document.getElementById('sidebarStats');
-    if (statsContainer) {
-      statsContainer.innerHTML = `
-        <div class='sidebar-stat'><div class='val gold'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-        <div class='sidebar-stat'><div class='val green'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-        <div class='sidebar-stat'><div class='val red'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-        <div class='sidebar-stat'><div class='val gold'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-      `;
+    const gStats = await apiCall({ action: 'getAdminStats' });
+    if (gStats && gStats.totalSaldo !== undefined) {
+        const statsContainer = document.getElementById('sidebarStats');
+        if (statsContainer) {
+            // Si ya existen los elementos, actualizamos sus valores
+            const saldoEl = document.getElementById('statSaldoAdmin');
+            const recargasEl = document.getElementById('statRecargasAdmin');
+            const retirosEl = document.getElementById('statRetirosAdmin');
+            const gananciaEl = document.getElementById('statGananciaAdmin');
+            
+            if (saldoEl && recargasEl && retirosEl && gananciaEl) {
+                saldoEl.textContent = '$' + gStats.totalSaldo.toFixed(2);
+                recargasEl.textContent = '$' + gStats.totalRecargas.toFixed(2);
+                retirosEl.textContent = '$' + gStats.totalRetiros.toFixed(2);
+                gananciaEl.textContent = '$' + gStats.gananciasCasa.toFixed(2);
+            } else {
+                // Si no existen, los creamos (nuevo HTML)
+                statsContainer.innerHTML = `
+                    <div class='sidebar-stat'><div class='val gold' id='statSaldoAdmin'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+                    <div class='sidebar-stat'><div class='val green' id='statRecargasAdmin'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+                    <div class='sidebar-stat'><div class='val red' id='statRetirosAdmin'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+                    <div class='sidebar-stat'><div class='val gold' id='statGananciaAdmin'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+                `;
+            }
+        }
     }
-  }
 }
 
 function updateBadges() {
@@ -269,7 +276,7 @@ async function declararGanadorAdmin(batallaId, jugador) {
     cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
     renderBatallasAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
-    updateSidebarStatsAdmin();
+    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
   }
 }
 
@@ -330,7 +337,7 @@ async function verificarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    updateSidebarStatsAdmin();
+    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
   } else toast(res.error, 'error');
 }
 
@@ -345,7 +352,7 @@ async function rechazarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    updateSidebarStatsAdmin();
+    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
   } else toast(res.error, 'error');
 }
 
@@ -360,7 +367,7 @@ async function verificarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    updateSidebarStatsAdmin();
+    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
   } else toast(res.error, 'error');
 }
 
@@ -375,7 +382,7 @@ async function rechazarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    updateSidebarStatsAdmin();
+    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
   } else toast(res.error, 'error');
 }
 
@@ -477,16 +484,10 @@ async function guardarAjustes() {
   toast('Ajustes guardados');
 }
 
-// ===============================================
-// FUNCIONES DE JUGADOR (SIN CAMBIOS)
-// ===============================================
-
 let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
 async function initJugador() {
-  // 🔽 Para jugadores se mantiene el contenedor de estadísticas
-  document.getElementById('sidebarStats').style.display = 'grid';
   await updateSidebarStatsJugador();
   cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
   cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
@@ -892,10 +893,6 @@ async function confirmarUnion() {
   } else toast(res.error || 'Error', 'error');
 }
 
-// ===============================================
-// INICIO DE LA APP
-// ===============================================
-
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
@@ -942,10 +939,19 @@ async function initApp() {
 }
 
 function onTabSwitch(tab) {
-  if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
+  if (tab === 'batallas' && rol === 'admin') {
+    renderBatallasAdmin();
+    updateSidebarStatsAdmin(); // refrescar
+  }
   if (tab === 'disputas') renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
-  if (tab === 'recargas') renderRecargasAdmin();
-  if (tab === 'retiros') renderRetirosAdmin();
+  if (tab === 'recargas') {
+    renderRecargasAdmin();
+    updateSidebarStatsAdmin();
+  }
+  if (tab === 'retiros') {
+    renderRetirosAdmin();
+    updateSidebarStatsAdmin();
+  }
   if (tab === 'movimientos') renderMovimientosAdmin();
   if (tab === 'jugadores') renderUsuariosAdmin();
   if (tab === 'ajustes') renderAjustes();
