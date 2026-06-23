@@ -1,6 +1,7 @@
-// Clash-Battles-v1.32.js | Autor: Robinson Avila | By: WinDroidMODs
+// Clash-Battles-v1.34.js | Autor: Robinson Avila | By: WinDroidMODs
 // ==================== CONFIG ====================
-const API = 'https://script.google.com/macros/s/AKfycbylzUCuyUmPGOaDePKrwvGz25GANN5rQhIbMgpyO30i8iESVkt3CUgQulRHeorO75p_/exec';
+// ✅ V1.34: CORREGIDO KPI ADMIN
+const API = 'https://script.google.com/macros/s/AKfycbzI74FtDrfWSeHw4IFcRvkcDatmdjDoWEkEdbxARSezWYzUyZMTmkV5jtyf9az41oki/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -147,39 +148,9 @@ let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
 
-// ✅ FUNCIÓN CORREGIDA PARA ACTUALIZAR KPI DEL ADMIN
-async function updateSidebarStatsAdmin() {
-    const gStats = await apiCall({ action: 'getAdminStats' });
-    if (gStats && gStats.totalSaldo !== undefined) {
-        const statsContainer = document.getElementById('sidebarStats');
-        if (statsContainer) {
-            // Si ya existen los elementos, actualizamos sus valores
-            const saldoEl = document.getElementById('statSaldoAdmin');
-            const recargasEl = document.getElementById('statRecargasAdmin');
-            const retirosEl = document.getElementById('statRetirosAdmin');
-            const gananciaEl = document.getElementById('statGananciaAdmin');
-            
-            if (saldoEl && recargasEl && retirosEl && gananciaEl) {
-                saldoEl.textContent = '$' + gStats.totalSaldo.toFixed(2);
-                recargasEl.textContent = '$' + gStats.totalRecargas.toFixed(2);
-                retirosEl.textContent = '$' + gStats.totalRetiros.toFixed(2);
-                gananciaEl.textContent = '$' + gStats.gananciasCasa.toFixed(2);
-            } else {
-                // Si no existen, los creamos (nuevo HTML)
-                statsContainer.innerHTML = `
-                    <div class='sidebar-stat'><div class='val gold' id='statSaldoAdmin'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-                    <div class='sidebar-stat'><div class='val green' id='statRecargasAdmin'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-                    <div class='sidebar-stat'><div class='val red' id='statRetirosAdmin'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-                    <div class='sidebar-stat'><div class='val gold' id='statGananciaAdmin'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-                `;
-            }
-        }
-    }
-}
-
 async function initAdmin() {
   cachePerfil = await apiCall({ action: 'getPerfil', userId });
-  await updateSidebarStatsAdmin(); // llamada inicial
+  await updateSidebarStatsAdmin();
   cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
   cacheUsuarios = await apiCall({ action: 'getUsuarios' });
   const todosMovs = await apiCall({ action: 'getMovimientos' });
@@ -198,32 +169,22 @@ async function initAdmin() {
   renderAjustes();
 }
 
+// ✅ CORREGIDA: ahora usa parseFloat y valores por defecto para evitar 0 erróneos
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
-    if (gStats && gStats.totalSaldo !== undefined) {
-        const statsContainer = document.getElementById('sidebarStats');
-        if (statsContainer) {
-            // Si ya existen los elementos, actualizamos sus valores
-            const saldoEl = document.getElementById('statSaldoAdmin');
-            const recargasEl = document.getElementById('statRecargasAdmin');
-            const retirosEl = document.getElementById('statRetirosAdmin');
-            const gananciaEl = document.getElementById('statGananciaAdmin');
-            
-            if (saldoEl && recargasEl && retirosEl && gananciaEl) {
-                saldoEl.textContent = '$' + gStats.totalSaldo.toFixed(2);
-                recargasEl.textContent = '$' + gStats.totalRecargas.toFixed(2);
-                retirosEl.textContent = '$' + gStats.totalRetiros.toFixed(2);
-                gananciaEl.textContent = '$' + gStats.gananciasCasa.toFixed(2);
-            } else {
-                // Si no existen, los creamos (nuevo HTML)
-                statsContainer.innerHTML = `
-                    <div class='sidebar-stat'><div class='val gold' id='statSaldoAdmin'>$${gStats.totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
-                    <div class='sidebar-stat'><div class='val green' id='statRecargasAdmin'>$${gStats.totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
-                    <div class='sidebar-stat'><div class='val red' id='statRetirosAdmin'>$${gStats.totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
-                    <div class='sidebar-stat'><div class='val gold' id='statGananciaAdmin'>$${gStats.gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
-                `;
-            }
-        }
+    const totalSaldo = parseFloat(gStats.totalSaldo || 0);
+    const totalRecargas = parseFloat(gStats.totalRecargas || 0);
+    const totalRetiros = parseFloat(gStats.totalRetiros || 0);
+    const gananciasCasa = parseFloat(gStats.gananciasCasa || 0);
+    
+    const statsContainer = document.getElementById('sidebarStats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class='sidebar-stat'><div class='val gold'>$${totalSaldo.toFixed(2)}</div><div class='lbl'>Saldo Total</div></div>
+            <div class='sidebar-stat'><div class='val green'>$${totalRecargas.toFixed(2)}</div><div class='lbl'>Recargas Totales</div></div>
+            <div class='sidebar-stat'><div class='val red'>$${totalRetiros.toFixed(2)}</div><div class='lbl'>Retiros Totales</div></div>
+            <div class='sidebar-stat'><div class='val gold'>$${gananciasCasa.toFixed(2)}</div><div class='lbl'>Ganancias Casa</div></div>
+        `;
     }
 }
 
@@ -276,7 +237,7 @@ async function declararGanadorAdmin(batallaId, jugador) {
     cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
     renderBatallasAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
-    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
+    updateSidebarStatsAdmin();
   }
 }
 
@@ -337,7 +298,7 @@ async function verificarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -352,7 +313,7 @@ async function rechazarRecarga(id) {
     updateBadges();
     renderRecargasAdmin();
     renderMovimientosAdmin();
-    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -367,7 +328,7 @@ async function verificarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -382,7 +343,7 @@ async function rechazarRetiro(id) {
     updateBadges();
     renderRetirosAdmin();
     renderMovimientosAdmin();
-    await updateSidebarStatsAdmin(); // ✅ refrescar KPI
+    updateSidebarStatsAdmin();
   } else toast(res.error, 'error');
 }
 
@@ -939,19 +900,10 @@ async function initApp() {
 }
 
 function onTabSwitch(tab) {
-  if (tab === 'batallas' && rol === 'admin') {
-    renderBatallasAdmin();
-    updateSidebarStatsAdmin(); // refrescar
-  }
+  if (tab === 'batallas' && rol === 'admin') renderBatallasAdmin();
   if (tab === 'disputas') renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
-  if (tab === 'recargas') {
-    renderRecargasAdmin();
-    updateSidebarStatsAdmin();
-  }
-  if (tab === 'retiros') {
-    renderRetirosAdmin();
-    updateSidebarStatsAdmin();
-  }
+  if (tab === 'recargas') renderRecargasAdmin();
+  if (tab === 'retiros') renderRetirosAdmin();
   if (tab === 'movimientos') renderMovimientosAdmin();
   if (tab === 'jugadores') renderUsuariosAdmin();
   if (tab === 'ajustes') renderAjustes();
