@@ -1,7 +1,7 @@
-// Clash-Battles-v1.34.js | Autor: Robinson Avila | By: WinDroidMODs
+// Clash-Battles-v1.35.js | Autor: Robinson Avila | By: WinDroidMODs
 // ==================== CONFIG ====================
-// ✅ V1.34: CORREGIDO KPI ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbzI74FtDrfWSeHw4IFcRvkcDatmdjDoWEkEdbxARSezWYzUyZMTmkV5jtyf9az41oki/exec';
+// ✅ V1.35: CORREGIDO KPI ADMIN CON HOJA ACUMULADA
+const API = 'https://script.google.com/macros/s/AKfycbw5dmeA73DxnQI9xnaZ-JQLr6Pcohla0fNr10e6VZ_sZqnWXZ758B0OIJIOmcyq0xdC/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -169,7 +169,6 @@ async function initAdmin() {
   renderAjustes();
 }
 
-// ✅ CORREGIDA: ahora usa parseFloat y valores por defecto para evitar 0 erróneos
 async function updateSidebarStatsAdmin() {
     const gStats = await apiCall({ action: 'getAdminStats' });
     const totalSaldo = parseFloat(gStats.totalSaldo || 0);
