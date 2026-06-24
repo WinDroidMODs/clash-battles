@@ -682,7 +682,7 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// 💎 V1.40: RENDERIZADO DE REFERIDOS CON ORO (Bs), GEMAS Y NIVELES
+// 💎 V1.40: RENDERIZADO DE REFERIDOS CON ORO (Bs), GEMAS Y NIVELES (CON BOTÓN DE CANJE)
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -702,6 +702,23 @@ function renderReferidos() {
         tier = 2; nextTier = 31; gemsPerRef = 12; progress = ((totalReferidos - 16) / 15) * 100; 
     } else { 
         progress = (totalReferidos / 16) * 100; 
+    }
+
+    // ✅ BLOQUE PARA EL BOTÓN DE CANJE
+    let canjeBlock = '';
+    if (gemas >= 100) {
+        canjeBlock = `
+            <div style='margin-top:16px; text-align:center;'>
+                <button class='btn btn-gold btn-block' onclick='canjearGemas()'>Canjear 100 💎 por $1.00 USD</button>
+            </div>
+        `;
+    } else {
+        const faltan = 100 - gemas;
+        canjeBlock = `
+            <div style='margin-top:16px; text-align:center; font-size:0.85rem; color:var(--text-secondary);'>
+                Te faltan <strong style="color:var(--gold);">${faltan}</strong> gemas para poder canjear.
+            </div>
+        `;
     }
 
     document.getElementById('panel-referidos').innerHTML = `
@@ -740,10 +757,12 @@ function renderReferidos() {
 
             <div class='ref-info-row'>
                 <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>🪙</div>
-                <div class='ref-info-text'>Convierte <strong>100 💎</strong> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD) desde tu perfil.</div>
+                <div class='ref-info-text'>Convierte <strong>100 💎</strong> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD).</div>
             </div>
 
-            <button class='btn btn-gold btn-block' onclick='compartirEnlace()'>Compartir enlace de invitación</button>
+            ${canjeBlock}
+
+            <button class='btn btn-gold btn-block' onclick='compartirEnlace()' style='margin-top:12px;'>Compartir enlace de invitación</button>
         </div>
 
         ${totalReferidos === 0 ? `
