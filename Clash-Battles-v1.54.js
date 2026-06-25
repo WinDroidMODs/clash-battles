@@ -1,12 +1,11 @@
-// Clash-Battles-v1.53.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.53: CORREGIDO EL DISEÑO DEL MENÚ HAMBURGUESA (ANCHO COMPLETO Y TEXTO ALINEADO)
-const API = 'https://script.google.com/macros/s/AKfycby0FKWko3MRjBK2dDcuJg0C2aDl3DLkohfkdB2z8L3v69JWRiT10UiYWWy16G85YlEo/exec';
+// Clash-Battles-v1.54.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.54: KPI ESTANDARIZADOS, NUEVOS NIVELES (7/9/12), LISTA DE REFERIDOS Y MODAL DE CANJE VARIABLE
+const API = 'https://script.google.com/macros/s/AKfycbyZPox_yPMDKJ2coL0ExStftxVapTUfjqpLElyhEU_Q1dT78h1Rr2LGNM2pns6d6pgy/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
-// URLs DE ÍCONOS CORREGIDAS
 const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
@@ -591,18 +590,21 @@ async function guardarAjustes() {
 
 let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
+let cacheReferidosList = [];
 
 async function initJugador() {
   try {
-    const [perfil, misBatallas, todas, todosMovs] = await Promise.all([
+    const [perfil, misBatallas, todas, todosMovs, referidos] = await Promise.all([
       apiCall({ action: 'getPerfil', userId }),
       apiCall({ action: 'getMisBatallas', userId }),
       apiCall({ action: 'getBatallas' }),
-      apiCall({ action: 'getMovimientos' })
+      apiCall({ action: 'getMovimientos' }),
+      apiCall({ action: 'getReferidosList', userId })
     ]);
 
     cachePerfilJugador = perfil;
     cacheMisBatallas = misBatallas;
+    cacheReferidosList = referidos;
     updateSidebarStatsJugador(perfil, misBatallas);
 
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -621,7 +623,7 @@ async function initJugador() {
   }
 }
 
-// ✅ V1.53: CORREGIDO EL DISEÑO DEL MENÚ. Se anula la cuadrícula de 2 columnas para que el Oro y Gemas ocupen el 100% del ancho.
+// ✅ V1.54: ESTILOS ESTANDARIZADOS, NUEVO ORDEN Y GANANCIA VERDE
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
@@ -635,7 +637,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   
   const statsContainer = document.getElementById('sidebarStats');
   
-  // ANULAR el estilo de grid por defecto y forzar una sola columna flexible
   statsContainer.style.display = 'flex';
   statsContainer.style.flexDirection = 'column';
   statsContainer.style.gap = '8px';
@@ -650,22 +651,26 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
       <div class='sidebar-stat' style='width:100%; background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
         <div style='display:flex; align-items:center; gap:8px;'>
           <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
-          <span style='color:var(--gold); font-weight:700; font-size:0.8rem;'>Oro (Bs)</span>
+          <span class='lbl' style='color:var(--gold);'>Oro</span>
         </div>
-        <div class='val gold' style='font-size:1.2rem;'>${formatVES(oroVES)}</div>
+        <div class='val gold'>${formatVES(oroVES)}</div>
       </div>
       <div class='sidebar-stat' style='width:100%; background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
         <div style='display:flex; align-items:center; gap:8px;'>
           <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" />
-          <span style='color:var(--green); font-weight:700; font-size:0.8rem;'>Gemas</span>
+          <span class='lbl' style='color:var(--green);'>Gemas</span>
         </div>
-        <div class='val gem' style='font-size:1.2rem;'>${gemas}</div>
+        <div class='val gem'>${gemas}</div>
       </div>
     </div>
     <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;'>
       <div class='sidebar-stat' style='background:rgba(255,215,0,0.15); border-radius:8px; padding:6px 4px;'>
         <div class='val gold'>$${parseFloat(perfil.saldo || 0).toFixed(2)}</div>
         <div class='lbl'>Saldo</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(0,230,118,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val green'>$${(ganadas * 1.70).toFixed(2)}</div>
+        <div class='lbl'>Ganancia</div>
       </div>
       <div class='sidebar-stat' style='background:rgba(0,230,118,0.15); border-radius:8px; padding:6px 4px;'>
         <div class='val green'>${ganadas}</div>
@@ -682,10 +687,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
       <div class='sidebar-stat' style='background:rgba(79,142,247,0.15); border-radius:8px; padding:6px 4px;'>
         <div class='val blue'>${mis.filter(b => b.estado === 'Finalizada').length}</div>
         <div class='lbl'>Fin.</div>
-      </div>
-      <div class='sidebar-stat' style='background:rgba(255,64,129,0.15); border-radius:8px; padding:6px 4px;'>
-        <div class='val pink'>$${(ganadas * 1.70).toFixed(2)}</div>
-        <div class='lbl'>Ganancia</div>
       </div>
     </div>
   `;
@@ -792,6 +793,7 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
+// ✅ V1.54: NUEVO RENDERIZADO DE REFERIDOS CON NIVELES (7/9/12), EXPLICACIÓN Y LISTA DE REFERIDOS
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -799,25 +801,25 @@ function renderReferidos() {
     const a = window.ajustes || {};
     const tasa = parseFloat(a.tasaRecarga || 0);
     const oroVES = saldoUSD * tasa;
-
     const totalReferidos = parseInt(p.totalReferidos || 0);
     const link = window.location.origin + window.location.pathname + '?ref=' + userId;
 
-    let tier = 1, nextTier = 16, gemsPerRef = 10, progress = 0;
+    let tier = 1, nextTier = 16, gemsPerRef = 7, progress = 0;
     if (totalReferidos >= 31) { 
-        tier = 3; nextTier = 0; gemsPerRef = 15; progress = 100; 
+        tier = 3; nextTier = 0; gemsPerRef = 12; progress = 100; 
     } else if (totalReferidos >= 16) { 
-        tier = 2; nextTier = 31; gemsPerRef = 12; progress = ((totalReferidos - 16) / 15) * 100; 
+        tier = 2; nextTier = 31; gemsPerRef = 9; progress = ((totalReferidos - 16) / 15) * 100; 
     } else { 
         progress = (totalReferidos / 16) * 100; 
     }
 
+    // Botón de canje
     let canjeBlock = '';
     if (gemas >= 100) {
         canjeBlock = `
             <div style='margin-top:16px; text-align:center;'>
-                <button class='btn btn-gold btn-block' onclick='canjearGemas()' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
-                    Canjear 100 <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" /> por $1.00 USD
+                <button class='btn btn-gold btn-block' onclick='mostrarModalCanje()' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
+                    Canjear Gemas <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" /> por USD
                 </button>
             </div>
         `;
@@ -825,7 +827,30 @@ function renderReferidos() {
         const faltan = 100 - gemas;
         canjeBlock = `
             <div style='margin-top:16px; text-align:center; font-size:0.85rem; color:var(--text-secondary);'>
-                Te faltan <strong style="color:var(--gold);">${faltan}</strong> gemas para poder canjear.
+                Te faltan <strong style="color:var(--gold);">${faltan}</strong> gemas para poder canjear (mínimo 100).
+            </div>
+        `;
+    }
+
+    // Lista de referidos (Historial)
+    let historyHtml = '';
+    if (cacheReferidosList && cacheReferidosList.length > 0) {
+        historyHtml = `
+            <h4 style='color:var(--blue); margin-top:20px; margin-bottom:10px; text-align:center;'>Historial de referidos</h4>
+            <div class='table-wrapper'>
+                <table>
+                    <thead><tr><th>Nombre</th><th>Supercell ID</th><th>Fecha</th><th>Gemas</th></tr></thead>
+                    <tbody>
+                        ${cacheReferidosList.map(item => `
+                            <tr>
+                                <td data-label="Nombre">${item.nombreJuego}</td>
+                                <td data-label="Supercell">${item.supercellId || 'N/A'}</td>
+                                <td data-label="Fecha">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
+                                <td data-label="Gemas">${item.gemsAwarded} 💎</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
             </div>
         `;
     }
@@ -833,7 +858,7 @@ function renderReferidos() {
     document.getElementById('panel-referidos').innerHTML = `
         <div class='ref-card ref-top-bar'>
             <div class='ref-stat'>
-                <div class='ref-stat-label'>Oro (Bs)</div>
+                <div class='ref-stat-label'>Oro</div>
                 <div class='ref-stat-val gold' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
                     <img src="${ICON_ORO}" alt="Oro" style="height:24px; width:24px; object-fit:contain;" />
                     ${formatVES(oroVES)}
@@ -870,6 +895,15 @@ function renderReferidos() {
                 </div>
             </div>
 
+            <div style='margin-bottom:16px; padding:12px; background:rgba(255,255,255,0.05); border-radius:8px;'>
+                <strong style="color:var(--gold);">🏅 Sistema de niveles:</strong><br>
+                <span style="font-size:0.8rem; color:var(--text-secondary);">
+                    <strong>Nivel 1:</strong> 7 <img src="${ICON_GEMA}" alt="Gema" style="height:14px; width:14px; object-fit:contain;" /> por referido (0 a 15 jugadores)<br>
+                    <strong>Nivel 2:</strong> 9 <img src="${ICON_GEMA}" alt="Gema" style="height:14px; width:14px; object-fit:contain;" /> por referido (16 a 30 jugadores)<br>
+                    <strong>Nivel 3:</strong> 12 <img src="${ICON_GEMA}" alt="Gema" style="height:14px; width:14px; object-fit:contain;" /> por referido (31+ jugadores)<br>
+                </span>
+            </div>
+
             <div class='ref-info-row'>
                 <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>
                     <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
@@ -878,21 +912,16 @@ function renderReferidos() {
             </div>
 
             ${canjeBlock}
-
             <button class='btn btn-gold btn-block' onclick='compartirEnlace()' style='margin-top:12px;'>Compartir enlace de invitación</button>
         </div>
 
-        ${totalReferidos === 0 ? `
+        ${historyHtml}
+        ${cacheReferidosList && cacheReferidosList.length === 0 ? `
             <div class='ref-card ref-empty-card'>
                 <h4>¿Sin invitaciones aún?</h4>
                 <p>¡Empieza ahora y aumenta tus ganancias! Cada persona que invites se beneficia, y tú también ganas gemas. ¡No te pierdas esta oportunidad!</p>
             </div>
-        ` : `
-            <div class='ref-card ref-stats-card'>
-                <h4>Centro de actividad</h4>
-                <p>Has invitado a <strong>${totalReferidos}</strong> jugadores. Sigue compartiendo tu enlace para multiplicar tus gemas y subir de nivel.</p>
-            </div>
-        `}
+        ` : ''}
     `;
 }
 
@@ -925,11 +954,52 @@ function compartirEnlace() {
     }
 }
 
-async function canjearGemas() {
-    if (!confirm('¿Estás seguro de que quieres canjear 100 gemas por $1.00 en tu saldo?')) return;
-    const res = await apiCall({ action: 'canjearGemas' });
+// ✅ V1.54: MODAL DE CANJE VARIABLE
+function mostrarModalCanje() {
+    const gemasActuales = parseInt(cachePerfilJugador.gemas || 0);
+    document.getElementById('canjeGemasActual').textContent = gemasActuales;
+    document.getElementById('canjeGemasInput').value = '';
+    document.getElementById('canjeGemasInput').max = gemasActuales;
+    document.getElementById('canjeGemasInput').min = 100;
+    document.getElementById('canjeResultadoUSD').textContent = '$0.00';
+    document.getElementById('canjeResultadoBs').textContent = 'Bs 0,00';
+    document.getElementById('modalCanje').classList.remove('hidden');
+}
+
+function actualizarCanjePreview() {
+    const input = document.getElementById('canjeGemasInput');
+    let gems = parseInt(input.value) || 0;
+    const maxGems = parseInt(input.max);
+    const a = window.ajustes || {};
+    const tasa = parseFloat(a.tasaRecarga || 0);
+    
+    if (gems > maxGems) {
+        input.value = maxGems;
+        gems = maxGems;
+    }
+    if (gems < 100 && gems > 0) {
+        // Solo muestra 0 si es menor a 100 pero no actualiza el valor
+    }
+    
+    const montoUSD = gems / 100;
+    const montoBs = montoUSD * tasa;
+    document.getElementById('canjeResultadoUSD').textContent = `$${montoUSD.toFixed(2)}`;
+    document.getElementById('canjeResultadoBs').textContent = `Bs ${formatVES(montoBs)}`;
+}
+
+async function ejecutarCanje() {
+    const input = document.getElementById('canjeGemasInput');
+    const gems = parseInt(input.value) || 0;
+    
+    if (gems < 100) {
+        toast('Debes canjear al menos 100 gemas.', 'error');
+        return;
+    }
+    
+    const res = await apiCall({ action: 'canjearGemas', gemas: gems });
     if (res.success) {
-        toast('🎉 ¡Canje exitoso! Se añadió $1.00 a tu saldo.');
+        toast(`🎉 ¡Canje exitoso! Se añadió $${res.montoUSD.toFixed(2)} a tu saldo.`);
+        closeModal('modalCanje');
         cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
         renderReferidos();
         updateSidebarStatsJugador();
