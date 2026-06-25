@@ -1,16 +1,15 @@
-// Clash-Battles-v1.52.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.52: URL DEL ORO CORREGIDA, DISEÑO KPI APILADO Y MODALES DE CONFIRMACIÓN
-const API = 'https://script.google.com/macros/s/AKfycby7XDvlqDCPXP3MYmemZ2k1SIo71jcsw1wZCunCv8MaB6sriCjByW9A2gzLfAA0SUK7/exec';
+// Clash-Battles-v1.53.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.53: CORREGIDO EL DISEÑO DEL MENÚ HAMBURGUESA (ANCHO COMPLETO Y TEXTO ALINEADO)
+const API = 'https://script.google.com/macros/s/AKfycby0FKWko3MRjBK2dDcuJg0C2aDl3DLkohfkdB2z8L3v69JWRiT10UiYWWy16G85YlEo/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
-// ✅ V1.52: URLs DE ÍCONOS CORREGIDAS (SE ARREGLÓ EL LINK DEL ORO)
+// URLs DE ÍCONOS CORREGIDAS
 const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
-// Variables para el modal de confirmación personalizado
 let modalConfirmCallback = null;
 
 function showConfirmModal(title, msg, callback) {
@@ -329,7 +328,6 @@ function renderBatallasAdmin(filtro = '') {
   document.getElementById('panel-batallas').innerHTML = html;
 }
 
-// ✅ V1.52: FUNCIONES DE ELIMINACIÓN CON MODALES PERSONALIZADOS
 async function deleteBatalla(batallaId) {
     showConfirmModal('Eliminar batalla', `¿Estás seguro de eliminar la batalla #${batallaId}?`, async () => {
         const res = await apiCall({ action: 'deleteBatalla', batallaIds: [batallaId] });
@@ -623,7 +621,7 @@ async function initJugador() {
   }
 }
 
-// ✅ V1.52: NUEVO DISEÑO DE KPI EN EL MENÚ. ORO Y GEMAS APILADOS HORIZONTALMENTE
+// ✅ V1.53: CORREGIDO EL DISEÑO DEL MENÚ. Se anula la cuadrícula de 2 columnas para que el Oro y Gemas ocupen el 100% del ancho.
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
@@ -636,52 +634,61 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   const ganadas = mis.filter(b => b.estado === 'Finalizada' && ((b.j1Id == userId && b.ganador === 'J1') || (b.j2Id == userId && b.ganador === 'J2'))).length;
   
   const statsContainer = document.getElementById('sidebarStats');
-  if (statsContainer) {
-      statsContainer.innerHTML = `
-        <div style='display:flex; flex-direction:column; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;'>
-          <div class='sidebar-stat' style='width:100%; background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
-            <div style='display:flex; align-items:center; gap:8px;'>
-              <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
-              <span style='color:var(--gold); font-weight:700; font-size:0.8rem;'>Oro (Bs)</span>
-            </div>
-            <div class='val gold' style='font-size:1.2rem;'>${formatVES(oroVES)}</div>
-          </div>
-          <div class='sidebar-stat' style='width:100%; background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
-            <div style='display:flex; align-items:center; gap:8px;'>
-              <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" />
-              <span style='color:var(--green); font-weight:700; font-size:0.8rem;'>Gemas</span>
-            </div>
-            <div class='val gem' style='font-size:1.2rem;'>${gemas}</div>
-          </div>
+  
+  // ANULAR el estilo de grid por defecto y forzar una sola columna flexible
+  statsContainer.style.display = 'flex';
+  statsContainer.style.flexDirection = 'column';
+  statsContainer.style.gap = '8px';
+  statsContainer.style.width = '100%';
+  statsContainer.style.background = 'var(--bg-card)';
+  statsContainer.style.border = '1px solid var(--gold-border)';
+  statsContainer.style.borderRadius = '12px';
+  statsContainer.style.padding = '12px';
+
+  statsContainer.innerHTML = `
+    <div style='display:flex; flex-direction:column; gap:8px; width:100%; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;'>
+      <div class='sidebar-stat' style='width:100%; background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
+        <div style='display:flex; align-items:center; gap:8px;'>
+          <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
+          <span style='color:var(--gold); font-weight:700; font-size:0.8rem;'>Oro (Bs)</span>
         </div>
-        <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px;'>
-          <div class='sidebar-stat' style='background:rgba(255,215,0,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val gold'>$${parseFloat(perfil.saldo || 0).toFixed(2)}</div>
-            <div class='lbl'>Saldo</div>
-          </div>
-          <div class='sidebar-stat' style='background:rgba(0,230,118,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val green'>${ganadas}</div>
-            <div class='lbl'>Ganadas</div>
-          </div>
-          <div class='sidebar-stat' style='background:rgba(187,134,252,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val purple'>${mis.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length}</div>
-            <div class='lbl'>Activas</div>
-          </div>
-          <div class='sidebar-stat' style='background:rgba(255,70,85,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val red'>${mis.filter(b => b.estado === 'Pendiente de pago' || b.estado === 'Disputa').length}</div>
-            <div class='lbl'>Pend.</div>
-          </div>
-          <div class='sidebar-stat' style='background:rgba(79,142,247,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val blue'>${mis.filter(b => b.estado === 'Finalizada').length}</div>
-            <div class='lbl'>Fin.</div>
-          </div>
-          <div class='sidebar-stat' style='background:rgba(255,64,129,0.15); border-radius:8px; padding:6px 4px;'>
-            <div class='val pink'>$${(ganadas * 1.70).toFixed(2)}</div>
-            <div class='lbl'>Ganancia</div>
-          </div>
+        <div class='val gold' style='font-size:1.2rem;'>${formatVES(oroVES)}</div>
+      </div>
+      <div class='sidebar-stat' style='width:100%; background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
+        <div style='display:flex; align-items:center; gap:8px;'>
+          <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" />
+          <span style='color:var(--green); font-weight:700; font-size:0.8rem;'>Gemas</span>
         </div>
-      `;
-  }
+        <div class='val gem' style='font-size:1.2rem;'>${gemas}</div>
+      </div>
+    </div>
+    <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;'>
+      <div class='sidebar-stat' style='background:rgba(255,215,0,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val gold'>$${parseFloat(perfil.saldo || 0).toFixed(2)}</div>
+        <div class='lbl'>Saldo</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(0,230,118,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val green'>${ganadas}</div>
+        <div class='lbl'>Ganadas</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(187,134,252,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val purple'>${mis.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length}</div>
+        <div class='lbl'>Activas</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(255,70,85,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val red'>${mis.filter(b => b.estado === 'Pendiente de pago' || b.estado === 'Disputa').length}</div>
+        <div class='lbl'>Pend.</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(79,142,247,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val blue'>${mis.filter(b => b.estado === 'Finalizada').length}</div>
+        <div class='lbl'>Fin.</div>
+      </div>
+      <div class='sidebar-stat' style='background:rgba(255,64,129,0.15); border-radius:8px; padding:6px 4px;'>
+        <div class='val pink'>$${(ganadas * 1.70).toFixed(2)}</div>
+        <div class='lbl'>Ganancia</div>
+      </div>
+    </div>
+  `;
 }
 
 function renderDesafios() {
@@ -785,7 +792,6 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// 💎 RENDERIZADO DE REFERIDOS CON IMÁGENES REALES
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
