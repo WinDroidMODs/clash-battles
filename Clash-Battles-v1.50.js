@@ -1,12 +1,11 @@
-// Clash-Battles-v1.47.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.47: POLLING CADA 5 SEGUNDOS PARA ACTUALIZAR GEMAS Y BOTÓN DE CANJE
-const API = 'https://script.google.com/macros/s/AKfycbwbqcNNY_mGJCf_yf_8OKgTZD4SUSzErLAquzgyCVwrRNH0tPyg46XymyNaqASJRxNs/exec';
+// Clash-Battles-v1.50.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.50: NUEVOS ÍCONOS DE ORO Y GEMA, MENÚ JUGADOR ELEGANTE, ELIMINACIÓN DE BATALLAS FINALIZADAS
+const API = 'https://script.google.com/macros/s/AKfycbwJeaUTfMk2sObbmDSoDHbfkAN1SZjGLjG7gSSwfEg0dRfiQX3A02OcCg-GhRFLnN1o/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
-// 💎 Detectar ID de referido al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const refId = urlParams.get('ref');
@@ -52,7 +51,6 @@ async function register() {
   if (res.success) {
     localStorage.removeItem('pendingRef');
     if (res.isReferral && res.refereeGems > 0) {
-      // 💎 Mostramos el modal de las 3 gemas
       document.getElementById('regGemsCount').textContent = res.refereeGems;
       document.getElementById('modalRegistroGemas').classList.remove('hidden');
     } else {
@@ -170,8 +168,6 @@ let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
 
-let pollingInterval = null; // Para controlar el intervalo de sondeo
-
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
@@ -223,7 +219,6 @@ async function initApp() {
   if (firstNavItem) firstNavItem.click();
 }
 
-// ✅ V1.40: ADMIN CARGANDO EN PARALELO CON PROMISE.ALL
 async function initAdmin() {
   try {
     const [perfil, gStats, batallas, usuarios, todosMovs] = await Promise.all([
@@ -297,14 +292,51 @@ function renderBatallasAdmin(filtro = '') {
       <option value='Disputa'>Disputa</option>
       <option value='Finalizada'>Finalizada</option>
     </select>
+    <button class='btn btn-red btn-sm' onclick='deleteAllFinalizadas()' style='margin-left:auto;'>🗑️ Limpiar Finalizadas</button>
   </div>`;
-  html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th></tr></thead><tbody>`;
+  html += `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Estado</th><th>Ganador</th><th></th></tr></thead><tbody>`;
   batallas.forEach(b => {
     const badgeEstado = b.estado === 'Pendiente de pago' ? 'badge-pending' : b.estado === 'Lista para jugar' ? 'badge-ready' : b.estado === 'Disputa' ? 'badge-pending' : 'badge-done';
-    html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="Retador">${b.j1Nombre} ${b.j1Tag}</td><td data-label="Oponente">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td></tr>`;
+    let deleteIcon = '';
+    if (b.estado === 'Finalizada') {
+      deleteIcon = `<button class='btn btn-red btn-sm' style='padding:2px 8px; font-size:0.7rem;' onclick='deleteBatalla(${b.id})'>✕</button>`;
+    }
+    html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="Retador">${b.j1Nombre} ${b.j1Tag}</td><td data-label="Oponente">${b.j2Nombre} ${b.j2Tag}</td><td data-label="Estado"><span class='badge ${badgeEstado}'>${b.estado}</span></td><td data-label="Ganador">${b.ganador === 'J1' ? b.j1Nombre : b.ganador === 'J2' ? b.j2Nombre : '-'}</td><td style='text-align:right;'>${deleteIcon}</td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-batallas').innerHTML = html;
+}
+
+// ✅ V1.50: FUNCIONES PARA ELIMINAR BATALLAS FINALIZADAS
+async function deleteBatalla(batallaId) {
+  if (!confirm(`¿Estás seguro de eliminar la batalla #${batallaId}?`)) return;
+  const res = await apiCall({ action: 'deleteBatalla', batallaIds: [batallaId] });
+  if (res.success) {
+    toast(`Batalla #${batallaId} eliminada.`);
+    cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+    renderBatallasAdmin();
+    updateSidebarStatsAdmin();
+  } else {
+    toast(res.error || 'Error al eliminar', 'error');
+  }
+}
+
+async function deleteAllFinalizadas() {
+  const finalizadas = cacheBatallasAdmin.filter(b => b.estado === 'Finalizada');
+  if (finalizadas.length === 0) return toast('No hay batallas finalizadas para eliminar.', 'error');
+  
+  if (!confirm(`¿Estás seguro de eliminar TODAS las ${finalizadas.length} batallas finalizadas?`)) return;
+  
+  const ids = finalizadas.map(b => b.id);
+  const res = await apiCall({ action: 'deleteBatalla', batallaIds: ids });
+  if (res.success) {
+    toast(`${res.deletedCount} batallas finalizadas eliminadas.`);
+    cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+    renderBatallasAdmin();
+    updateSidebarStatsAdmin();
+  } else {
+    toast(res.error || 'Error al eliminar', 'error');
+  }
 }
 
 function renderDisputasAdmin(disputas) {
@@ -539,7 +571,6 @@ async function guardarAjustes() {
 let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
-// ✅ V1.40: JUGADOR CARGANDO EN PARALELO CON PROMISE.ALL (MÁXIMA VELOCIDAD)
 async function initJugador() {
   try {
     const [perfil, misBatallas, todas, todosMovs] = await Promise.all([
@@ -551,7 +582,6 @@ async function initJugador() {
 
     cachePerfilJugador = perfil;
     cacheMisBatallas = misBatallas;
-    // Pasamos los datos ya cargados para evitar dobles llamadas en updateSidebarStatsJugador
     updateSidebarStatsJugador(perfil, misBatallas);
 
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -564,48 +594,65 @@ async function initJugador() {
     renderMisRetiros();
     renderMiHistorial();
     renderPerfil();
-
-    // ✅ V1.47: Iniciar sondeo cada 5 segundos
-    iniciarPolling();
-
   } catch (error) {
     console.error("Error cargando datos jugador:", error);
     toast("Error al cargar datos del jugador", "error");
   }
 }
 
-// ✅ V1.47: FUNCIÓN DE POLLING
-function iniciarPolling() {
-  // Detener cualquier polling previo
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(async () => {
-    try {
-      const perfil = await apiCall({ action: 'getPerfil', userId });
-      cachePerfilJugador = perfil;
-      // Actualizar el panel de referidos si está visible
-      const panelReferidos = document.getElementById('panel-referidos');
-      if (panelReferidos && panelReferidos.classList.contains('active')) {
-        renderReferidos();
-      }
-      // También actualizar las estadísticas laterales
-      updateSidebarStatsJugador(perfil, cacheMisBatallas);
-    } catch (e) {
-      console.error("Error en polling:", e);
-    }
-  }, 5000); // 5 segundos
-}
-
-// ✅ V1.40: AHORA RECIBE LOS DATOS DE PERFIL Y MIS BATALLAS SIN HACER NUEVAS LLAMADAS A LA API
+// ✅ V1.50: NUEVA INTERFAZ DE MENÚ CON ORO Y GEMAS, ESTADÍSTICAS COLORIDAS
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
   
+  const a = window.ajustes || {};
+  const tasa = parseFloat(a.tasaRecarga || 0);
+  const oroVES = parseFloat(perfil.saldo || 0) * tasa;
+  const gemas = parseInt(perfil.gemas || 0);
+  
   const ganadas = mis.filter(b => b.estado === 'Finalizada' && ((b.j1Id == userId && b.ganador === 'J1') || (b.j2Id == userId && b.ganador === 'J2'))).length;
-  document.getElementById('statSaldo').textContent = '$' + parseFloat(perfil.saldo || 0).toFixed(2);
-  document.getElementById('statGanadas').textContent = ganadas;
-  document.getElementById('statActivas').textContent = mis.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length;
-  document.getElementById('statFinalizadas').textContent = mis.filter(b => b.estado === 'Finalizada').length;
-  document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
+  
+  const statsContainer = document.getElementById('sidebarStats');
+  if (statsContainer) {
+      statsContainer.innerHTML = `
+        <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:12px;'>
+          <div class='sidebar-stat' style='background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px;'>
+            <div class='val gold' style='font-size:1.1rem;'>${formatVES(oroVES)}</div>
+            <div class='lbl' style='color:var(--gold);'>🪙 Oro (Bs)</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px;'>
+            <div class='val gem' style='font-size:1.1rem;'>${gemas}</div>
+            <div class='lbl' style='color:var(--green);'>💎 Gemas</div>
+          </div>
+        </div>
+        <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px;'>
+          <div class='sidebar-stat' style='background:rgba(255,215,0,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val gold'>$${parseFloat(perfil.saldo || 0).toFixed(2)}</div>
+            <div class='lbl'>Saldo</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(0,230,118,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val green'>${ganadas}</div>
+            <div class='lbl'>Ganadas</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(187,134,252,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val purple'>${mis.filter(b => b.estado !== 'Finalizada' && b.estado !== 'Disputa').length}</div>
+            <div class='lbl'>Activas</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(255,70,85,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val red'>${mis.filter(b => b.estado === 'Pendiente de pago' || b.estado === 'Disputa').length}</div>
+            <div class='lbl'>Pend.</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(79,142,247,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val blue'>${mis.filter(b => b.estado === 'Finalizada').length}</div>
+            <div class='lbl'>Fin.</div>
+          </div>
+          <div class='sidebar-stat' style='background:rgba(255,64,129,0.15); border-radius:8px; padding:6px 4px;'>
+            <div class='val pink'>$${(ganadas * 1.70).toFixed(2)}</div>
+            <div class='lbl'>Ganancia</div>
+          </div>
+        </div>
+      `;
+  }
 }
 
 function renderDesafios() {
@@ -709,19 +756,18 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// 💎 V1.47: RENDERIZADO DE REFERIDOS CON ORO (Bs), GEMAS Y NIVELES (CON BOTÓN DE CANJE SIEMPRE ACTIVO)
+// 💎 RENDERIZADO DE REFERIDOS CON NUEVOS ÍCONOS Y BOTÓN DE CANJE GARANTIZADO
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
     const saldoUSD = parseFloat(p.saldo || 0);
     const a = window.ajustes || {};
     const tasa = parseFloat(a.tasaRecarga || 0);
-    const oroVES = saldoUSD * tasa; // 🪙 Oro en Bolívares
+    const oroVES = saldoUSD * tasa;
 
     const totalReferidos = parseInt(p.totalReferidos || 0);
     const link = window.location.origin + window.location.pathname + '?ref=' + userId;
 
-    // Calcular nivel y progreso
     let tier = 1, nextTier = 16, gemsPerRef = 10, progress = 0;
     if (totalReferidos >= 31) { 
         tier = 3; nextTier = 0; gemsPerRef = 15; progress = 100; 
@@ -731,7 +777,6 @@ function renderReferidos() {
         progress = (totalReferidos / 16) * 100; 
     }
 
-    // ✅ BLOQUE PARA EL BOTÓN DE CANJE (SIEMPRE SE MUESTRA SI GEMAS >= 100)
     let canjeBlock = '';
     if (gemas >= 100) {
         canjeBlock = `
