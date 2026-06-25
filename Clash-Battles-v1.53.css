@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.52.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.52: MISMO DISEÑO VISUAL - MEJORAS EN JS Y XML */
+/* Clash-Battles-v1.53.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.53: MISMO DISEÑO VISUAL - CORRECCIÓN DE DISEÑO EN JS Y XML */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -144,14 +144,6 @@ b, strong { font-weight: 700; }
 .sidebar.open { transform: translateX(0); }
 .sidebar-overlay { display: none; position: fixed; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: rgba(0,0,0,0.7); z-index: 90; }
 .sidebar-overlay.active { display: block; }
-.sidebar-stats {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-  padding: 12px; background: var(--bg-card); border-radius: 12px; margin-bottom: 8px;
-  border: 1px solid var(--gold-border); box-shadow: inset 0 0 15px rgba(255,215,0,0.05);
-}
-.sidebar-stat { text-align: center; padding: 8px 4px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-.sidebar-stat .val { font-size: 1.2rem; font-weight: 700; color: var(--text); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-.sidebar-stat .lbl { font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); }
 .sidebar-user { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
 .sidebar-user svg, .sidebar-user i { width: 20px; height: 20px; flex-shrink: 0; }
 .sidebar-user span { font-size: 0.9rem; flex: 1; min-width: 0; word-break: break-word; }
@@ -370,7 +362,7 @@ b, strong { font-weight: 700; }
 .bank-option:hover { color: var(--text); }
 .bank-option input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
 
-/* ✅ V1.51: COLORES PERSONALIZADOS PARA LOS KPI DEL JUGADOR */
+/* ✅ COLORES PERSONALIZADOS PARA LOS KPI DEL JUGADOR */
 .gold { color: var(--gold); text-shadow: 0 0 10px var(--shadow-glow); }
 .green { color: var(--green); text-shadow: 0 0 10px var(--green-glow); }
 .purple { color: var(--purple); text-shadow: 0 0 10px rgba(187, 134, 252, 0.4); }
