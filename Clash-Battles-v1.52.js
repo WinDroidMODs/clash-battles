@@ -1,14 +1,32 @@
-// Clash-Battles-v1.51.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.51: ÍCONOS REALES DE ORO/GEMA, FONDO DE ROMBOS MEJORADO, ORDEN CORRECTO DE KPI
-const API = 'https://script.google.com/macros/s/AKfycbx2fcvkv-A2Yvr_4Zurn_CmqUtMvfBUJUgxZdC2jSXafGPSM4kvucoXhYj-j44yGXs/exec';
+// Clash-Battles-v1.52.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.52: URL DEL ORO CORREGIDA, DISEÑO KPI APILADO Y MODALES DE CONFIRMACIÓN
+const API = 'https://script.google.com/macros/s/AKfycby7XDvlqDCPXP3MYmemZ2k1SIo71jcsw1wZCunCv8MaB6sriCjByW9A2gzLfAA0SUK7/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
-// Imágenes de los íconos (proporcionadas por el usuario)
-const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bB4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
+// ✅ V1.52: URLs DE ÍCONOS CORREGIDAS (SE ARREGLÓ EL LINK DEL ORO)
+const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
+
+// Variables para el modal de confirmación personalizado
+let modalConfirmCallback = null;
+
+function showConfirmModal(title, msg, callback) {
+    document.getElementById('modalConfirmTitle').textContent = title;
+    document.getElementById('modalConfirmMsg').textContent = msg;
+    modalConfirmCallback = callback;
+    document.getElementById('modalConfirm').classList.remove('hidden');
+}
+
+function executeModalConfirm() {
+    if (modalConfirmCallback) {
+        modalConfirmCallback();
+        modalConfirmCallback = null;
+    }
+    closeModal('modalConfirm');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -311,33 +329,37 @@ function renderBatallasAdmin(filtro = '') {
   document.getElementById('panel-batallas').innerHTML = html;
 }
 
+// ✅ V1.52: FUNCIONES DE ELIMINACIÓN CON MODALES PERSONALIZADOS
 async function deleteBatalla(batallaId) {
-  if (!confirm(`¿Estás seguro de eliminar la batalla #${batallaId}?`)) return;
-  const res = await apiCall({ action: 'deleteBatalla', batallaIds: [batallaId] });
-  if (res.success) {
-    toast(`Batalla #${batallaId} eliminada.`);
-    cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-    updateSidebarStatsAdmin();
-  } else {
-    toast(res.error || 'Error al eliminar', 'error');
-  }
+    showConfirmModal('Eliminar batalla', `¿Estás seguro de eliminar la batalla #${batallaId}?`, async () => {
+        const res = await apiCall({ action: 'deleteBatalla', batallaIds: [batallaId] });
+        if (res.success) {
+            toast(`Batalla #${batallaId} eliminada.`);
+            cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+            renderBatallasAdmin();
+            updateSidebarStatsAdmin();
+        } else {
+            toast(res.error || 'Error al eliminar', 'error');
+        }
+    });
 }
 
 async function deleteAllFinalizadas() {
   const finalizadas = cacheBatallasAdmin.filter(b => b.estado === 'Finalizada');
   if (finalizadas.length === 0) return toast('No hay batallas finalizadas para eliminar.', 'error');
-  if (!confirm(`¿Estás seguro de eliminar TODAS las ${finalizadas.length} batallas finalizadas?`)) return;
-  const ids = finalizadas.map(b => b.id);
-  const res = await apiCall({ action: 'deleteBatalla', batallaIds: ids });
-  if (res.success) {
-    toast(`${res.deletedCount} batallas finalizadas eliminadas.`);
-    cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
-    renderBatallasAdmin();
-    updateSidebarStatsAdmin();
-  } else {
-    toast(res.error || 'Error al eliminar', 'error');
-  }
+  
+  showConfirmModal('Limpiar finalizadas', `¿Estás seguro de eliminar TODAS las ${finalizadas.length} batallas finalizadas?`, async () => {
+      const ids = finalizadas.map(b => b.id);
+      const res = await apiCall({ action: 'deleteBatalla', batallaIds: ids });
+      if (res.success) {
+        toast(`${res.deletedCount} batallas finalizadas eliminadas.`);
+        cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
+        renderBatallasAdmin();
+        updateSidebarStatsAdmin();
+      } else {
+        toast(res.error || 'Error al eliminar', 'error');
+      }
+  });
 }
 
 function renderDisputasAdmin(disputas) {
@@ -601,7 +623,7 @@ async function initJugador() {
   }
 }
 
-// ✅ V1.51: NUEVO DISEÑO DEL MENÚ JUGADOR - ORO Y GEMAS EN PRIMERA FILA, KPI DEBAJO
+// ✅ V1.52: NUEVO DISEÑO DE KPI EN EL MENÚ. ORO Y GEMAS APILADOS HORIZONTALMENTE
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
@@ -616,20 +638,20 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   const statsContainer = document.getElementById('sidebarStats');
   if (statsContainer) {
       statsContainer.innerHTML = `
-        <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;'>
-          <div class='sidebar-stat' style='background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:8px;'>
-            <div style='display:flex; align-items:center; justify-content:center; gap:6px;'>
+        <div style='display:flex; flex-direction:column; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;'>
+          <div class='sidebar-stat' style='width:100%; background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
+            <div style='display:flex; align-items:center; gap:8px;'>
               <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
               <span style='color:var(--gold); font-weight:700; font-size:0.8rem;'>Oro (Bs)</span>
             </div>
-            <div class='val gold' style='font-size:1.2rem; margin-top:4px;'>${formatVES(oroVES)}</div>
+            <div class='val gold' style='font-size:1.2rem;'>${formatVES(oroVES)}</div>
           </div>
-          <div class='sidebar-stat' style='background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:8px;'>
-            <div style='display:flex; align-items:center; justify-content:center; gap:6px;'>
+          <div class='sidebar-stat' style='width:100%; background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:6px 12px; display:flex; align-items:center; justify-content:space-between;'>
+            <div style='display:flex; align-items:center; gap:8px;'>
               <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" />
               <span style='color:var(--green); font-weight:700; font-size:0.8rem;'>Gemas</span>
             </div>
-            <div class='val gem' style='font-size:1.2rem; margin-top:4px;'>${gemas}</div>
+            <div class='val gem' style='font-size:1.2rem;'>${gemas}</div>
           </div>
         </div>
         <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px;'>
