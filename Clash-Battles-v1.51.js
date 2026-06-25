@@ -1,10 +1,14 @@
-// Clash-Battles-v1.50.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.50: NUEVOS ÍCONOS DE ORO Y GEMA, MENÚ JUGADOR ELEGANTE, ELIMINACIÓN DE BATALLAS FINALIZADAS
-const API = 'https://script.google.com/macros/s/AKfycbwJeaUTfMk2sObbmDSoDHbfkAN1SZjGLjG7gSSwfEg0dRfiQX3A02OcCg-GhRFLnN1o/exec';
+// Clash-Battles-v1.51.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.51: ÍCONOS REALES DE ORO/GEMA, FONDO DE ROMBOS MEJORADO, ORDEN CORRECTO DE KPI
+const API = 'https://script.google.com/macros/s/AKfycbx2fcvkv-A2Yvr_4Zurn_CmqUtMvfBUJUgxZdC2jSXafGPSM4kvucoXhYj-j44yGXs/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
+
+// Imágenes de los íconos (proporcionadas por el usuario)
+const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bB4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
+const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -307,7 +311,6 @@ function renderBatallasAdmin(filtro = '') {
   document.getElementById('panel-batallas').innerHTML = html;
 }
 
-// ✅ V1.50: FUNCIONES PARA ELIMINAR BATALLAS FINALIZADAS
 async function deleteBatalla(batallaId) {
   if (!confirm(`¿Estás seguro de eliminar la batalla #${batallaId}?`)) return;
   const res = await apiCall({ action: 'deleteBatalla', batallaIds: [batallaId] });
@@ -324,9 +327,7 @@ async function deleteBatalla(batallaId) {
 async function deleteAllFinalizadas() {
   const finalizadas = cacheBatallasAdmin.filter(b => b.estado === 'Finalizada');
   if (finalizadas.length === 0) return toast('No hay batallas finalizadas para eliminar.', 'error');
-  
   if (!confirm(`¿Estás seguro de eliminar TODAS las ${finalizadas.length} batallas finalizadas?`)) return;
-  
   const ids = finalizadas.map(b => b.id);
   const res = await apiCall({ action: 'deleteBatalla', batallaIds: ids });
   if (res.success) {
@@ -600,7 +601,7 @@ async function initJugador() {
   }
 }
 
-// ✅ V1.50: NUEVA INTERFAZ DE MENÚ CON ORO Y GEMAS, ESTADÍSTICAS COLORIDAS
+// ✅ V1.51: NUEVO DISEÑO DEL MENÚ JUGADOR - ORO Y GEMAS EN PRIMERA FILA, KPI DEBAJO
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
@@ -615,14 +616,20 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   const statsContainer = document.getElementById('sidebarStats');
   if (statsContainer) {
       statsContainer.innerHTML = `
-        <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:12px;'>
-          <div class='sidebar-stat' style='background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px;'>
-            <div class='val gold' style='font-size:1.1rem;'>${formatVES(oroVES)}</div>
-            <div class='lbl' style='color:var(--gold);'>🪙 Oro (Bs)</div>
+        <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;'>
+          <div class='sidebar-stat' style='background:rgba(255,215,0,0.1); border:1px solid var(--gold); border-radius:8px; padding:8px;'>
+            <div style='display:flex; align-items:center; justify-content:center; gap:6px;'>
+              <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
+              <span style='color:var(--gold); font-weight:700; font-size:0.8rem;'>Oro (Bs)</span>
+            </div>
+            <div class='val gold' style='font-size:1.2rem; margin-top:4px;'>${formatVES(oroVES)}</div>
           </div>
-          <div class='sidebar-stat' style='background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px;'>
-            <div class='val gem' style='font-size:1.1rem;'>${gemas}</div>
-            <div class='lbl' style='color:var(--green);'>💎 Gemas</div>
+          <div class='sidebar-stat' style='background:rgba(0,230,118,0.1); border:1px solid var(--green); border-radius:8px; padding:8px;'>
+            <div style='display:flex; align-items:center; justify-content:center; gap:6px;'>
+              <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" />
+              <span style='color:var(--green); font-weight:700; font-size:0.8rem;'>Gemas</span>
+            </div>
+            <div class='val gem' style='font-size:1.2rem; margin-top:4px;'>${gemas}</div>
           </div>
         </div>
         <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px;'>
@@ -756,7 +763,7 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// 💎 RENDERIZADO DE REFERIDOS CON NUEVOS ÍCONOS Y BOTÓN DE CANJE GARANTIZADO
+// 💎 RENDERIZADO DE REFERIDOS CON IMÁGENES REALES
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -781,7 +788,9 @@ function renderReferidos() {
     if (gemas >= 100) {
         canjeBlock = `
             <div style='margin-top:16px; text-align:center;'>
-                <button class='btn btn-gold btn-block' onclick='canjearGemas()'>Canjear 100 💎 por $1.00 USD</button>
+                <button class='btn btn-gold btn-block' onclick='canjearGemas()' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
+                    Canjear 100 <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" /> por $1.00 USD
+                </button>
             </div>
         `;
     } else {
@@ -796,17 +805,23 @@ function renderReferidos() {
     document.getElementById('panel-referidos').innerHTML = `
         <div class='ref-card ref-top-bar'>
             <div class='ref-stat'>
-                <div class='ref-stat-label'>🪙 Oro (Bs)</div>
-                <div class='ref-stat-val gold'>${formatVES(oroVES)}</div>
+                <div class='ref-stat-label'>Oro (Bs)</div>
+                <div class='ref-stat-val gold' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
+                    <img src="${ICON_ORO}" alt="Oro" style="height:24px; width:24px; object-fit:contain;" />
+                    ${formatVES(oroVES)}
+                </div>
             </div>
             <div class='ref-stat'>
-                <div class='ref-stat-label'>💎 Gemas</div>
-                <div class='ref-stat-val gem'>${gemas}</div>
+                <div class='ref-stat-label'>Gemas</div>
+                <div class='ref-stat-val gem' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
+                    <img src="${ICON_GEMA}" alt="Gema" style="height:24px; width:24px; object-fit:contain;" />
+                    ${gemas}
+                </div>
             </div>
         </div>
 
         <div class='ref-card ref-main-card'>
-            <h3 class='ref-title'>Invita y gana Gemas 💎</h3>
+            <h3 class='ref-title'>Invita y gana Gemas</h3>
             <p class='ref-subtitle'>¡Es simple! Invita amigos y gana recompensas exclusivas de Clash Royale.</p>
             
             <div class='ref-link-box'>
@@ -821,15 +836,17 @@ function renderReferidos() {
                 <div class='ref-icon-box'><i class="fa-solid fa-crown" style="color:var(--gold);"></i></div>
                 <div class='ref-info-text'>
                     Nivel de referidos: <strong>Nivel ${tier}</strong><br>
-                    <span style='font-size:0.75rem;'>Ganas <strong>${gemsPerRef} 💎</strong> por cada nuevo jugador que se registre con tu enlace.</span>
+                    <span style='font-size:0.75rem;'>Ganas <strong>${gemsPerRef}</strong> <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain;" /> por cada nuevo jugador que se registre con tu enlace.</span>
                     <div class='ref-progress-bar'><div class='ref-progress-fill' style='width:${progress}%;'></div></div>
                     ${nextTier > 0 ? `<span style='font-size:0.7rem; color:var(--text-secondary);'>${totalReferidos} / ${nextTier} jugadores para el Nivel ${tier+1}</span>` : '<span style="font-size:0.7rem; color:var(--gold); font-weight:700;">¡Nivel máximo alcanzado!</span>'}
                 </div>
             </div>
 
             <div class='ref-info-row'>
-                <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>🪙</div>
-                <div class='ref-info-text'>Convierte <strong>100 💎</strong> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD).</div>
+                <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>
+                    <img src="${ICON_ORO}" alt="Oro" style="height:20px; width:20px; object-fit:contain;" />
+                </div>
+                <div class='ref-info-text'>Convierte <strong>100</strong> <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain;" /> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD).</div>
             </div>
 
             ${canjeBlock}
