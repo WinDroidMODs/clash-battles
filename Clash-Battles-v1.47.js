@@ -1,12 +1,10 @@
-// Clash-Battles-v1.45.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.45: SONDEO CADA 5 SEGUNDOS Y BOTÓN DE CANJE SIEMPRE ACTIVO CON 100+ GEMAS
-const API = 'https://script.google.com/macros/s/AKfycbzbWhtxMhcK62s_mFaymnDIq_hSAYeNqAm6_uQxs7ak1aadOAyiXuUlh3FltYh5Iyib/exec';
+// Clash-Battles-v1.47.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.47: POLLING CADA 5 SEGUNDOS PARA ACTUALIZAR GEMAS Y BOTÓN DE CANJE
+const API = 'https://script.google.com/macros/s/AKfycbwbqcNNY_mGJCf_yf_8OKgTZD4SUSzErLAquzgyCVwrRNH0tPyg46XymyNaqASJRxNs/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
-
-let pollingInterval = null; // Variable para guardar el intervalo
 
 // 💎 Detectar ID de referido al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
@@ -86,7 +84,6 @@ function switchAuthTab(tab) {
 }
 
 function logout() {
-  stopPolling(); // ✅ Detener el sondeo al cerrar sesión
   localStorage.clear(); token = ''; userId = ''; rol = ''; nombreJuego = '';
   location.reload();
 }
@@ -173,8 +170,9 @@ let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
 
+let pollingInterval = null; // Para controlar el intervalo de sondeo
+
 async function initApp() {
-  stopPolling(); // ✅ Limpiamos cualquier sondeo previo al inicializar
   window.ajustes = await apiCall({ action: 'getAjustes' });
   
   const adminIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
@@ -255,9 +253,6 @@ async function initAdmin() {
     renderMovimientosAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
     renderAjustes();
-    
-    // ✅ V1.41: Iniciar sondeo para Admin (cada 5 segundos)
-    startPolling();
   } catch (error) {
     console.error("Error cargando datos admin:", error);
     toast("Error al cargar datos del admin", "error");
@@ -544,7 +539,7 @@ async function guardarAjustes() {
 let cachePerfilJugador = null, cacheMisBatallas = null, cacheBatallasAbiertas = null;
 let cacheMisRecargas = [], cacheMisRetiros = [], cacheMiHistorial = [];
 
-// ✅ V1.40: JUGADOR CARGANDO EN PARALELO CON PROMISE.ALL
+// ✅ V1.40: JUGADOR CARGANDO EN PARALELO CON PROMISE.ALL (MÁXIMA VELOCIDAD)
 async function initJugador() {
   try {
     const [perfil, misBatallas, todas, todosMovs] = await Promise.all([
@@ -556,6 +551,7 @@ async function initJugador() {
 
     cachePerfilJugador = perfil;
     cacheMisBatallas = misBatallas;
+    // Pasamos los datos ya cargados para evitar dobles llamadas en updateSidebarStatsJugador
     updateSidebarStatsJugador(perfil, misBatallas);
 
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -568,13 +564,35 @@ async function initJugador() {
     renderMisRetiros();
     renderMiHistorial();
     renderPerfil();
-    
-    // ✅ V1.41: Iniciar sondeo para Jugador (cada 5 segundos)
-    startPolling();
+
+    // ✅ V1.47: Iniciar sondeo cada 5 segundos
+    iniciarPolling();
+
   } catch (error) {
     console.error("Error cargando datos jugador:", error);
     toast("Error al cargar datos del jugador", "error");
   }
+}
+
+// ✅ V1.47: FUNCIÓN DE POLLING
+function iniciarPolling() {
+  // Detener cualquier polling previo
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(async () => {
+    try {
+      const perfil = await apiCall({ action: 'getPerfil', userId });
+      cachePerfilJugador = perfil;
+      // Actualizar el panel de referidos si está visible
+      const panelReferidos = document.getElementById('panel-referidos');
+      if (panelReferidos && panelReferidos.classList.contains('active')) {
+        renderReferidos();
+      }
+      // También actualizar las estadísticas laterales
+      updateSidebarStatsJugador(perfil, cacheMisBatallas);
+    } catch (e) {
+      console.error("Error en polling:", e);
+    }
+  }, 5000); // 5 segundos
 }
 
 // ✅ V1.40: AHORA RECIBE LOS DATOS DE PERFIL Y MIS BATALLAS SIN HACER NUEVAS LLAMADAS A LA API
@@ -590,92 +608,108 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
-// ✅ V1.45: SONDEO CADA 5 SEGUNDOS PARA ADMIN
-function refreshAdminData() {
-    if (rol !== 'admin') return;
-    Promise.all([
-        apiCall({ action: 'getAdminStats' }),
-        apiCall({ action: 'getBatallas' }),
-        apiCall({ action: 'getMovimientos' })
-    ]).then(([gStats, batallas, todosMovs]) => {
-        cacheBatallasAdmin = batallas;
-        updateSidebarStatsAdmin(gStats);
-        cacheRecargas = todosMovs.filter(m => m.tipo === 'Recarga' && m.estado === 'Pendiente');
-        cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
-        cacheMovimientosAdmin = todosMovs.filter(m => m.estado !== 'Pendiente');
-        pendingRecargas = cacheRecargas.length;
-        pendingRetiros = cacheRetiros.length;
-        updateBadges();
-        // Solo renderizamos si la pestaña está activa
-        if (document.getElementById('panel-batallas').classList.contains('active')) renderBatallasAdmin();
-        if (document.getElementById('panel-recargas').classList.contains('active')) renderRecargasAdmin();
-        if (document.getElementById('panel-retiros').classList.contains('active')) renderRetirosAdmin();
-        if (document.getElementById('panel-movimientos').classList.contains('active')) renderMovimientosAdmin();
-    }).catch(err => {
-        console.warn("Fallo silencioso en sondeo admin:", err);
-    });
-}
+function renderDesafios() {
+  const misBatallas = cacheMisBatallas || [];
+  const abiertas = cacheBatallasAbiertas || [];
+  let all = [...abiertas, ...misBatallas];
+  const uniqueIds = new Set();
+  all = all.filter(b => { if (uniqueIds.has(b.id)) return false; uniqueIds.add(b.id); return true; });
+  all.sort((a,b) => b.id - a.id);
 
-// ✅ V1.45: SONDEO CADA 5 SEGUNDOS PARA JUGADOR
-function refreshPlayerData() {
-    if (rol !== 'jugador') return;
-    // Hacemos las llamadas. Si fallan, no mostramos error al usuario.
-    Promise.all([
-        apiCall({ action: 'getPerfil', userId }),
-        apiCall({ action: 'getMisBatallas', userId })
-    ]).then(([newPerfil, newMisBatallas]) => {
-        // Verificamos si los datos cambiaron para no renderizar innecesariamente
-        const oldGemas = cachePerfilJugador ? parseInt(cachePerfilJugador.gemas || 0) : 0;
-        const newGemas = parseInt(newPerfil.gemas || 0);
+  let html = `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
+    <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
+  </div>
+  <div class='table-wrapper'><table><thead><tr>
+    <th data-label="ID:">ID</th>
+    <th data-label="Retador / Oponente">Retador / Oponente</th>
+    <th data-label="Estado">Estado</th>
+    <th data-label="Ganador">Ganador</th>
+    <th data-label="Acción">Acción</th>
+  </tr></thead><tbody>`;
 
-        cachePerfilJugador = newPerfil;
-        cacheMisBatallas = newMisBatallas;
-
-        // Actualizar sidebar siempre
-        updateSidebarStatsJugador(newPerfil, newMisBatallas);
-
-        // Si las gemas cambiaron o la cantidad de referidos cambió, re-renderizamos la pestaña de referidos
-        if (oldGemas !== newGemas) {
-            renderReferidos(); 
-        }
-
-        // También actualizamos la pestaña de desafíos por si cambió algo
-        if (document.getElementById('panel-desafios').classList.contains('active')) {
-             // Recalcular cache de abiertas
-             apiCall({ action: 'getBatallas' }).then(todas => {
-                 cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
-                 renderDesafios();
-             });
-        }
-        // Actualizar perfil si está visible
-        if (document.getElementById('panel-perfil').classList.contains('active')) renderPerfil();
-    }).catch(err => {
-        // Aquí atrapamos el error sin que salte el toast molesto al usuario
-        console.warn("Sondeo de datos fallido (posible escritura en Google Sheets). Reintentando en 5s...", err);
-    });
-}
-
-// ✅ V1.45: CONTROLADOR DE SONDEO (5 SEGUNDOS)
-function startPolling() {
-    if (pollingInterval) clearInterval(pollingInterval); // Limpiar duplicados
+  all.forEach(b => {
+    const soyCreador = b.j1Id == userId;
+    const soyOponente = b.j2Id == userId;
     
-    if (rol === 'admin') {
-        refreshAdminData(); // Ejecutar inmediatamente
-        pollingInterval = setInterval(refreshAdminData, 5000); // 5 segundos
-    } else if (rol === 'jugador') {
-        refreshPlayerData(); // Ejecutar inmediatamente
-        pollingInterval = setInterval(refreshPlayerData, 5000); // 5 segundos
+    let p1Name = b.j1Nombre || '?';
+    let p2Name = b.j2Nombre || '';
+    if (soyCreador) p1Name = '<strong>Tú</strong>';
+    if (soyOponente) p2Name = '<strong>Tú</strong>';
+
+    let vsHtml = '';
+    if (b.j2Id) {
+        vsHtml = `<div class="vs-box">
+            <div class="vs-header"><span>Retador</span><span>🆚</span><span>Oponente</span></div>
+            <div class="vs-body">
+                <span class="vs-player">${p1Name}</span>
+                <span class="vs-icon">🆚</span>
+                <span class="vs-player">${p2Name}</span>
+            </div>
+        </div>`;
+    } else {
+        let emptyLabel = (b.j1Id == userId) ? 'Esperando oponente...' : 'Esperando...';
+        vsHtml = `<div class="vs-box">
+            <div class="vs-header"><span>Retador</span><span>🆚</span><span>Oponente</span></div>
+            <div class="vs-body">
+                <span class="vs-player">${p1Name}</span>
+                <span class="vs-icon">🆚</span>
+                <span class="vs-empty">${emptyLabel}</span>
+            </div>
+        </div>`;
     }
+
+    let estadoTexto = b.estado;
+    let badgeClass = 'badge-pending';
+    if (b.estado === 'Pendiente de pago' && !b.j2Id) {
+       estadoTexto = '🔓 Desafío abierto';
+       badgeClass = 'badge-ready';
+    } else if (b.estado === 'Lista para jugar') {
+       estadoTexto = '⚔️ En juego';
+       badgeClass = 'badge-review';
+    } else if (b.estado === 'Disputa') {
+       estadoTexto = '⚠️ Disputa';
+       badgeClass = 'badge-pending';
+    } else if (b.estado === 'Finalizada') {
+       estadoTexto = '✅ Finalizada';
+       badgeClass = 'badge-done';
+    }
+
+    let ganadorDisplay = b.ganador || '-';
+    let accion = '';
+    if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id != userId) {
+       accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
+    } else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
+       const yaDeclaro = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
+       if (!yaDeclaro) {
+         accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
+       } else {
+         accion = '⏳ Esperando al oponente...';
+       }
+    } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
+       accion = '⏳ Esperando oponente...';
+    } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
+      accion = `<span style='color:#FF4655; font-weight:bold;'>En revisión por admin</span>`;
+    } else if (b.estado === 'Finalizada') {
+      const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
+      accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
+      if (b.ganador === 'J1') ganadorDisplay = b.j1Nombre + ' 🏆';
+      else if (b.ganador === 'J2') ganadorDisplay = b.j2Nombre + ' 🏆';
+    }
+
+    html += `<tr>
+      <td data-label="ID:">#${b.id}</td>
+      <td class="vs-row">${vsHtml}</td>
+      <td data-label="Estado"><span class='badge ${badgeClass}'>${estadoTexto}</span></td>
+      <td data-label="Ganador">${ganadorDisplay}</td>
+      <td data-label="Acción">${accion}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  if (!all.length) html += '<p style="color:var(--text-secondary); text-align:center; margin-top:16px;">No hay desafíos activos en este momento. ¡Crea uno!</p>';
+  document.getElementById('panel-desafios').innerHTML = html;
 }
 
-function stopPolling() {
-    if (pollingInterval) {
-        clearInterval(pollingInterval);
-        pollingInterval = null;
-    }
-}
-
-// 💎 V1.45: RENDERIZADO DE REFERIDOS CON BOTÓN DE CANJE SIEMPRE ACTIVO CON GEMAS >= 100
+// 💎 V1.47: RENDERIZADO DE REFERIDOS CON ORO (Bs), GEMAS Y NIVELES (CON BOTÓN DE CANJE SIEMPRE ACTIVO)
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -697,7 +731,7 @@ function renderReferidos() {
         progress = (totalReferidos / 16) * 100; 
     }
 
-    // ✅ BLOQUE PARA EL BOTÓN DE CANJE (SIEMPRE QUE GEMAS >= 100)
+    // ✅ BLOQUE PARA EL BOTÓN DE CANJE (SIEMPRE SE MUESTRA SI GEMAS >= 100)
     let canjeBlock = '';
     if (gemas >= 100) {
         canjeBlock = `
@@ -806,7 +840,6 @@ async function canjearGemas() {
     const res = await apiCall({ action: 'canjearGemas' });
     if (res.success) {
         toast('🎉 ¡Canje exitoso! Se añadió $1.00 a tu saldo.');
-        // Forzamos una actualización inmediata del perfil tras el canje
         cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
         renderReferidos();
         updateSidebarStatsJugador();
