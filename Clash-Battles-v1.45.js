@@ -1,17 +1,12 @@
-// Clash-Battles-v1.44.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.44: LISTA DE REFERIDOS, MODAL DE CANJE, ICONOS DE GEMA Y CORRECCIÓN DE ERRORES
-const API = 'https://script.google.com/macros/s/AKfycbzt5BLQ0P9l6zXsVKMn-3NI7LvtzbL9I8ozb8KsLFzMvGun0JJ6A83Ig8UFq-Byn80o/exec';
+// Clash-Battles-v1.45.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.45: SONDEO CADA 5 SEGUNDOS Y BOTÓN DE CANJE SIEMPRE ACTIVO CON 100+ GEMAS
+const API = 'https://script.google.com/macros/s/AKfycbzbWhtxMhcK62s_mFaymnDIq_hSAYeNqAm6_uQxs7ak1aadOAyiXuUlh3FltYh5Iyib/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
 
 let pollingInterval = null; // Variable para guardar el intervalo
-
-// URLs de los nuevos iconos
-const URL_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
-const URL_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
-const URL_CLASH_BATTLES = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhD3nxeJ7rmm_soUVSdt0uWh1xE9P0CKeNUWAxWDdAiHIw0QkXxpuJU2EplSJxXTOdJtxqRH6H6SKW1GjV8NKijUb85Do0Z_fd6tUvfYAhLJEjutVaqFQldk97OYMLmq3CshqdxhLtp9MjEfwhIy9gpWFvxF8v9eTdSEctOukbl2U0jq5U066B0WN3zDISo/s500/Clash-Battles.png';
 
 // 💎 Detectar ID de referido al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
@@ -261,7 +256,7 @@ async function initAdmin() {
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
     renderAjustes();
     
-    // ✅ V1.41: Iniciar sondeo para Admin
+    // ✅ V1.41: Iniciar sondeo para Admin (cada 5 segundos)
     startPolling();
   } catch (error) {
     console.error("Error cargando datos admin:", error);
@@ -574,11 +569,11 @@ async function initJugador() {
     renderMiHistorial();
     renderPerfil();
     
-    // ✅ V1.41: Iniciar sondeo para Jugador
+    // ✅ V1.41: Iniciar sondeo para Jugador (cada 5 segundos)
     startPolling();
   } catch (error) {
-    // ❌ V1.44: Eliminamos el toast molesto. El error solo se registra en consola.
-    console.error("Error interno al cargar datos del jugador (posible red):", error);
+    console.error("Error cargando datos jugador:", error);
+    toast("Error al cargar datos del jugador", "error");
   }
 }
 
@@ -595,7 +590,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   document.getElementById('statGanancia').textContent = '$' + (ganadas * 1.70).toFixed(2);
 }
 
-// ✅ V1.41: SONDEO CADA 5 SEGUNDOS PARA ADMIN
+// ✅ V1.45: SONDEO CADA 5 SEGUNDOS PARA ADMIN
 function refreshAdminData() {
     if (rol !== 'admin') return;
     Promise.all([
@@ -621,7 +616,7 @@ function refreshAdminData() {
     });
 }
 
-// ✅ V1.42: SONDEO CADA 5 SEGUNDOS PARA JUGADOR + BOTÓN DE CANJE FORZADO
+// ✅ V1.45: SONDEO CADA 5 SEGUNDOS PARA JUGADOR
 function refreshPlayerData() {
     if (rol !== 'jugador') return;
     // Hacemos las llamadas. Si fallan, no mostramos error al usuario.
@@ -639,8 +634,8 @@ function refreshPlayerData() {
         // Actualizar sidebar siempre
         updateSidebarStatsJugador(newPerfil, newMisBatallas);
 
-        // 💎 Si las gemas cambiaron O si ya tienes 100+ gemas (forzamos la aparición del botón)
-        if (oldGemas !== newGemas || newGemas >= 100) {
+        // Si las gemas cambiaron o la cantidad de referidos cambió, re-renderizamos la pestaña de referidos
+        if (oldGemas !== newGemas) {
             renderReferidos(); 
         }
 
@@ -660,16 +655,16 @@ function refreshPlayerData() {
     });
 }
 
-// ✅ V1.42: CONTROLADOR DE SONDEO (ACTUALIZADO A 5 SEGUNDOS)
+// ✅ V1.45: CONTROLADOR DE SONDEO (5 SEGUNDOS)
 function startPolling() {
     if (pollingInterval) clearInterval(pollingInterval); // Limpiar duplicados
     
     if (rol === 'admin') {
         refreshAdminData(); // Ejecutar inmediatamente
-        pollingInterval = setInterval(refreshAdminData, 5000); // ⏰ 5 segundos
+        pollingInterval = setInterval(refreshAdminData, 5000); // 5 segundos
     } else if (rol === 'jugador') {
         refreshPlayerData(); // Ejecutar inmediatamente
-        pollingInterval = setInterval(refreshPlayerData, 5000); // ⏰ 5 segundos
+        pollingInterval = setInterval(refreshPlayerData, 5000); // 5 segundos
     }
 }
 
@@ -680,7 +675,7 @@ function stopPolling() {
     }
 }
 
-// 💎 V1.44: RENDERIZADO DE REFERIDOS CON LISTA Y MODAL DE CANJE
+// 💎 V1.45: RENDERIZADO DE REFERIDOS CON BOTÓN DE CANJE SIEMPRE ACTIVO CON GEMAS >= 100
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -702,12 +697,12 @@ function renderReferidos() {
         progress = (totalReferidos / 16) * 100; 
     }
 
-    // ✅ BLOQUE PARA EL BOTÓN DE CANJE
+    // ✅ BLOQUE PARA EL BOTÓN DE CANJE (SIEMPRE QUE GEMAS >= 100)
     let canjeBlock = '';
     if (gemas >= 100) {
         canjeBlock = `
             <div style='margin-top:16px; text-align:center;'>
-                <button class='btn btn-gold btn-block' onclick='abrirModalCanje()'>Canjear 100 <img src="${URL_GEMA}" class="icon-gema" alt="Gema"/> por $1.00 USD</button>
+                <button class='btn btn-gold btn-block' onclick='canjearGemas()'>Canjear 100 💎 por $1.00 USD</button>
             </div>
         `;
     } else {
@@ -719,86 +714,62 @@ function renderReferidos() {
         `;
     }
 
-    // Obtener la lista de referidos
-    apiCall({ action: 'getReferidos' }).then(lista => {
-        let listaHtml = '<div class="ref-list-container" style="margin-top:16px; border-top:1px solid var(--border); padding-top:16px;"><h4 style="color:var(--gold); margin-bottom:8px;">Lista de jugadores invitados</h4>';
-        if (lista && lista.length > 0) {
-            listaHtml += `<div class="table-wrapper"><table><thead><tr><th>Nombre</th><th>Tag</th></tr></thead><tbody>`;
-            lista.forEach(ref => {
-                listaHtml += `<tr><td>${ref.nombreJuego}</td><td>${ref.tag || '-'}</td></tr>`;
-            });
-            listaHtml += `</tbody></table></div>`;
-        } else {
-            listaHtml += `<p style="color:var(--text-secondary); font-size:0.85rem;">Aún no has invitado a nadie.</p>`;
-        }
-        listaHtml += '</div>';
-
-        // Renderizar todo
-        document.getElementById('panel-referidos').innerHTML = `
-            <div class='ref-card ref-top-bar'>
-                <div class='ref-stat'>
-                    <div class='ref-stat-label'><img src="${URL_ORO}" class="icon-oro" alt="Oro"/> Oro (Bs)</div>
-                    <div class='ref-stat-val gold'>${formatVES(oroVES)}</div>
-                </div>
-                <div class='ref-stat'>
-                    <div class='ref-stat-label'><img src="${URL_GEMA}" class="icon-gema" alt="Gema"/> Gemas</div>
-                    <div class='ref-stat-val gem'>${gemas}</div>
-                </div>
+    document.getElementById('panel-referidos').innerHTML = `
+        <div class='ref-card ref-top-bar'>
+            <div class='ref-stat'>
+                <div class='ref-stat-label'>🪙 Oro (Bs)</div>
+                <div class='ref-stat-val gold'>${formatVES(oroVES)}</div>
             </div>
-
-            <div class='ref-card ref-main-card'>
-                <h3 class='ref-title'>Invita y gana <img src="${URL_GEMA}" class="icon-gema" alt="Gema"/> Gemas</h3>
-                <p class='ref-subtitle'>¡Es simple! Invita amigos y gana recompensas exclusivas de Clash Royale.</p>
-                
-                <div class='ref-link-box'>
-                    <span class='ref-link-label'>Tu enlace de referido</span>
-                    <div class='ref-link-wrapper'>
-                        <input type="text" id="refLinkInput" value="${link}" readonly>
-                        <button class='btn btn-blue btn-sm btn-copy' onclick='copiarEnlace()'>Copiar</button>
-                    </div>
-                </div>
-
-                <div class='ref-info-row'>
-                    <div class='ref-icon-box'><i class="fa-solid fa-crown" style="color:var(--gold);"></i></div>
-                    <div class='ref-info-text'>
-                        Nivel de referidos: <strong>Nivel ${tier}</strong><br>
-                        <span style='font-size:0.75rem;'>Ganas <strong>${gemsPerRef} <img src="${URL_GEMA}" class="icon-gema" alt="Gema"/></strong> por cada nuevo jugador que se registre con tu enlace.</span>
-                        <div class='ref-progress-bar'><div class='ref-progress-fill' style='width:${progress}%;'></div></div>
-                        ${nextTier > 0 ? `<span style='font-size:0.7rem; color:var(--text-secondary);'>${totalReferidos} / ${nextTier} jugadores para el Nivel ${tier+1}</span>` : '<span style="font-size:0.7rem; color:var(--gold); font-weight:700;">¡Nivel máximo alcanzado!</span>'}
-                    </div>
-                </div>
-
-                <div class='ref-info-row'>
-                    <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>
-                        <img src="${URL_ORO}" class="icon-oro" alt="Oro"/>
-                    </div>
-                    <div class='ref-info-text'>Convierte <strong>100 <img src="${URL_GEMA}" class="icon-gema" alt="Gema"/></strong> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD).</div>
-                </div>
-
-                ${canjeBlock}
-
-                <button class='btn btn-gold btn-block' onclick='compartirEnlace()' style='margin-top:12px;'>Compartir enlace de invitación</button>
+            <div class='ref-stat'>
+                <div class='ref-stat-label'>💎 Gemas</div>
+                <div class='ref-stat-val gem'>${gemas}</div>
             </div>
+        </div>
 
-            ${totalReferidos === 0 ? `
-                <div class='ref-card ref-empty-card'>
-                    <h4>¿Sin invitaciones aún?</h4>
-                    <p>¡Empieza ahora y aumenta tus ganancias! Cada persona que invites se beneficia, y tú también ganas gemas. ¡No te pierdas esta oportunidad!</p>
-                </div>
-            ` : `
-                <div class='ref-card ref-stats-card'>
-                    <h4>Centro de actividad</h4>
-                    <p>Has invitado a <strong>${totalReferidos}</strong> jugadores. Sigue compartiendo tu enlace para multiplicar tus gemas y subir de nivel.</p>
-                </div>
-            `}
+        <div class='ref-card ref-main-card'>
+            <h3 class='ref-title'>Invita y gana Gemas 💎</h3>
+            <p class='ref-subtitle'>¡Es simple! Invita amigos y gana recompensas exclusivas de Clash Royale.</p>
             
-            ${listaHtml}
-        `;
-    }).catch(err => {
-        console.warn("Error cargando lista de referidos:", err);
-        // Fallback si no carga la lista
-        document.getElementById('panel-referidos').innerHTML = `... (contenido sin lista) ...`;
-    });
+            <div class='ref-link-box'>
+                <span class='ref-link-label'>Tu enlace de referido</span>
+                <div class='ref-link-wrapper'>
+                    <input type="text" id="refLinkInput" value="${link}" readonly>
+                    <button class='btn btn-blue btn-sm btn-copy' onclick='copiarEnlace()'>Copiar</button>
+                </div>
+            </div>
+
+            <div class='ref-info-row'>
+                <div class='ref-icon-box'><i class="fa-solid fa-crown" style="color:var(--gold);"></i></div>
+                <div class='ref-info-text'>
+                    Nivel de referidos: <strong>Nivel ${tier}</strong><br>
+                    <span style='font-size:0.75rem;'>Ganas <strong>${gemsPerRef} 💎</strong> por cada nuevo jugador que se registre con tu enlace.</span>
+                    <div class='ref-progress-bar'><div class='ref-progress-fill' style='width:${progress}%;'></div></div>
+                    ${nextTier > 0 ? `<span style='font-size:0.7rem; color:var(--text-secondary);'>${totalReferidos} / ${nextTier} jugadores para el Nivel ${tier+1}</span>` : '<span style="font-size:0.7rem; color:var(--gold); font-weight:700;">¡Nivel máximo alcanzado!</span>'}
+                </div>
+            </div>
+
+            <div class='ref-info-row'>
+                <div class='ref-icon-box' style='background:rgba(255,215,0,0.15); color:var(--gold);'>🪙</div>
+                <div class='ref-info-text'>Convierte <strong>100 💎</strong> en <strong>Bs ${formatVES(tasa)}</strong> de Oro (equivalente a $1.00 USD).</div>
+            </div>
+
+            ${canjeBlock}
+
+            <button class='btn btn-gold btn-block' onclick='compartirEnlace()' style='margin-top:12px;'>Compartir enlace de invitación</button>
+        </div>
+
+        ${totalReferidos === 0 ? `
+            <div class='ref-card ref-empty-card'>
+                <h4>¿Sin invitaciones aún?</h4>
+                <p>¡Empieza ahora y aumenta tus ganancias! Cada persona que invites se beneficia, y tú también ganas gemas. ¡No te pierdas esta oportunidad!</p>
+            </div>
+        ` : `
+            <div class='ref-card ref-stats-card'>
+                <h4>Centro de actividad</h4>
+                <p>Has invitado a <strong>${totalReferidos}</strong> jugadores. Sigue compartiendo tu enlace para multiplicar tus gemas y subir de nivel.</p>
+            </div>
+        `}
+    `;
 }
 
 function copiarEnlace() {
@@ -830,32 +801,12 @@ function compartirEnlace() {
     }
 }
 
-// ✅ V1.44: NUEVO MODAL DE CANJE DE GEMAS
-function abrirModalCanje() {
-    const gemas = parseInt(cachePerfilJugador.gemas || 0);
-    const maxCantidad = Math.floor(gemas / 100);
-    document.getElementById('modalCanjeMax').textContent = maxCantidad;
-    document.getElementById('modalCanjeInput').value = 1;
-    document.getElementById('modalCanjeInput').max = maxCantidad;
-    document.getElementById('modalCanjeInput').oninput = function() {
-        const val = parseInt(this.value) || 0;
-        document.getElementById('modalCanjeTotalGemas').textContent = val * 100;
-        document.getElementById('modalCanjeTotalUSD').textContent = val;
-    };
-    document.getElementById('modalCanjeInput').oninput(); // Triggers update
-    document.getElementById('modalCanjearGemas').classList.remove('hidden');
-}
-
-async function confirmarCanjeGemas() {
-    const cantidad = parseInt(document.getElementById('modalCanjeInput').value) || 0;
-    if (cantidad < 1) {
-        toast('Debes seleccionar al menos 1 paquete.', 'error');
-        return;
-    }
-    const res = await apiCall({ action: 'canjearGemas', cantidad: cantidad });
+async function canjearGemas() {
+    if (!confirm('¿Estás seguro de que quieres canjear 100 gemas por $1.00 en tu saldo?')) return;
+    const res = await apiCall({ action: 'canjearGemas' });
     if (res.success) {
-        toast(`🎉 ¡Canje exitoso! Se añadió $${cantidad}.00 a tu saldo.`);
-        closeModal('modalCanjearGemas');
+        toast('🎉 ¡Canje exitoso! Se añadió $1.00 a tu saldo.');
+        // Forzamos una actualización inmediata del perfil tras el canje
         cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
         renderReferidos();
         updateSidebarStatsJugador();
@@ -883,7 +834,7 @@ function renderPerfil() {
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
       <div class='balance-top'>
-        <div class='balance-icon'><img src="${URL_CLASH_BATTLES}" alt="Clash Battles" style="width:40px;height:40px;object-fit:contain;"/></div>
+        <div class='balance-icon'>$</div>
         <div class='balance-info'>
           <div class='balance-label'>SALDO DISPONIBLE</div>
           <div class='balance-amounts'>
