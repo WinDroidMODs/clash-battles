@@ -1,6 +1,6 @@
-// Clash-Battles-v1.54.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.54: KPI ESTANDARIZADOS, NUEVOS NIVELES (7/9/12), LISTA DE REFERIDOS Y MODAL DE CANJE VARIABLE
-const API = 'https://script.google.com/macros/s/AKfycbyZPox_yPMDKJ2coL0ExStftxVapTUfjqpLElyhEU_Q1dT78h1Rr2LGNM2pns6d6pgy/exec';
+// Clash-Battles-v1.55.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.55: MEJORA EN DESAFÍOS 1C1 (INTEGRACIÓN CON SUPERCELL ID Y CONTACTO)
+const API = 'https://script.google.com/macros/s/AKfycbwr55wJi5BXbetMFwxIfqPh0B5epf-AhS5y-vB7MQZIcJ0w0Xcnw34sYjrCvK3EYeSf/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -623,7 +623,6 @@ async function initJugador() {
   }
 }
 
-// ✅ V1.54: ESTILOS ESTANDARIZADOS, NUEVO ORDEN Y GANANCIA VERDE
 async function updateSidebarStatsJugador(perfil = null, mis = null) {
   if (!perfil) perfil = await apiCall({ action: 'getPerfil', userId });
   if (!mis) mis = await apiCall({ action: 'getMisBatallas', userId });
@@ -692,6 +691,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
+// ✅ V1.55: RENDERIZADO MEJORADO DE DESAFÍOS CON BOTONES DE SUPERCELL
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -764,10 +764,33 @@ function renderDesafios() {
        accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
     } else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
        const yaDeclaro = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
+       
+       // ✅ V1.55: Botones de Supercell y WhatsApp
+       let supercellBtns = '';
+       const oponenteId = soyCreador ? b.j2Supercell : b.j1Supercell;
+       const oponenteNombre = soyCreador ? b.j2Nombre : b.j1Nombre;
+       const oponenteTag = soyCreador ? b.j2Tag : b.j1Tag;
+       const miTag = cachePerfilJugador ? cachePerfilJugador.tag : '';
+       const miNombre = cachePerfilJugador ? cachePerfilJugador.nombreJuego : '';
+
+       if (oponenteId) {
+           const linkSC = `https://link.clashroyale.com/?action=add&id=${oponenteId}`;
+           supercellBtns = `
+               <div style='display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px;'>
+                   <button class='btn btn-blue btn-sm' onclick='copiarTexto("${oponenteId}", "ID de Supercell copiado")'>📋 Copiar ID</button>
+                   <button class='btn btn-green btn-sm' onclick='window.open("${linkSC}", "_blank")'>🔗 Agregar</button>
+                   <button class='btn btn-gold btn-sm' onclick='contactarOponente("${b.id}", "${miNombre}", "${miTag}", "${oponenteNombre}", "${oponenteTag}")'>📱 Contactar</button>
+               </div>
+           `;
+       }
+
        if (!yaDeclaro) {
-         accion = `<button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>`;
+         accion = `
+           <button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>
+           ${supercellBtns}
+         `;
        } else {
-         accion = '⏳ Esperando al oponente...';
+         accion = `⏳ Esperando al oponente... ${supercellBtns}`;
        }
     } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
        accion = '⏳ Esperando oponente...';
@@ -793,7 +816,21 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ V1.54: NUEVO RENDERIZADO DE REFERIDOS CON NIVELES (7/9/12), EXPLICACIÓN Y LISTA DE REFERIDOS
+// ✅ V1.55: FUNCIONES AUXILIARES PARA COPIAR Y CONTACTAR
+function copiarTexto(texto, mensaje) {
+    navigator.clipboard.writeText(texto).then(() => {
+        toast('✅ ' + mensaje);
+    }).catch(() => {
+        toast('Error al copiar', 'error');
+    });
+}
+
+function contactarOponente(batallaId, miNombre, miTag, opNombre, opTag) {
+    const mensaje = `Hola! Soy ${miNombre} (Tag: ${miTag}). Estoy en la batalla #${batallaId} contra ${opNombre} (Tag: ${opTag}). Mi Supercell ID es ${cachePerfilJugador.supercellId || 'No definido'}. ¿Cuál es el tuyo para agregarnos y jugar?`;
+    const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
+    window.open(waLink, '_blank');
+}
+
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -813,7 +850,6 @@ function renderReferidos() {
         progress = (totalReferidos / 16) * 100; 
     }
 
-    // Botón de canje
     let canjeBlock = '';
     if (gemas >= 100) {
         canjeBlock = `
@@ -832,7 +868,6 @@ function renderReferidos() {
         `;
     }
 
-    // Lista de referidos (Historial)
     let historyHtml = '';
     if (cacheReferidosList && cacheReferidosList.length > 0) {
         historyHtml = `
@@ -954,7 +989,6 @@ function compartirEnlace() {
     }
 }
 
-// ✅ V1.54: MODAL DE CANJE VARIABLE
 function mostrarModalCanje() {
     const gemasActuales = parseInt(cachePerfilJugador.gemas || 0);
     document.getElementById('canjeGemasActual').textContent = gemasActuales;
