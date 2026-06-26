@@ -1098,6 +1098,7 @@ async function ejecutarCanje() {
     }
 }
 
+// ✅ V1.56: RENDER PERFIL CON CAMBIOS SOLICITADOS (ETIQUETAS Y COLORES)
 function renderPerfil() {
   const p = cachePerfilJugador || {};
   const a = window.ajustes || {};
@@ -1117,18 +1118,18 @@ function renderPerfil() {
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
       <div class='balance-top'>
-        <div class='balance-icon'>$</div>
+        <div class='balance-icon' style='background:var(--green); color:#1a1a2e;'>$</div>
         <div class='balance-info'>
-          <div class='balance-label'>SALDO DISPONIBLE</div>
+          <div class='balance-label' style='color:#FFF;'>SALDO DISPONIBLE</div>
           <div class='balance-amounts'>
-            <span class='usd-amount'>$${usdBalance.toFixed(2)}</span>
-            <span class='bs-amount'>Bs: ${formatVES(bsBalance)}</span>
+            <span class='usd-amount' style='color:var(--green);'>$${usdBalance.toFixed(2)}</span>
+            <span class='bs-amount' style='color:var(--gold);'>Bs: ${formatVES(bsBalance)}</span>
           </div>
         </div>
       </div>
       <div class='balance-actions'>
         <button class='btn btn-gold btn-sm' onclick='recargarSaldoUI()'><i class="fa-solid fa-sack-dollar"></i> Recargar</button>
-        <button class='btn btn-red btn-sm' onclick='retirarSaldoUI()'><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar</button>
+        <button class='btn btn-green btn-sm' onclick='retirarSaldoUI()'><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar</button>
       </div>
     </div>
     
@@ -1136,8 +1137,8 @@ function renderPerfil() {
     <div class='perfil-grid' style='margin-bottom:24px;'>
       <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego || ''}'/></div>
       <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag || ''}'/></div>
-      <div class='input-group'><label>Supercell ID</label><input id='perfilSupercell' value='${p.supercellId || ''}'/></div>
-      <div class='input-group'><label>Enlace de invitación SC</label><input id='perfilSupercellLink' value='${p.supercellLink || ''}'/></div>
+      <div class='input-group'><label>SUPERCELL ID (ID)</label><input id='perfilSupercell' value='${p.supercellId || ''}'/></div>
+      <div class='input-group'><label>SUPERCELL ID (LINK)</label><input id='perfilSupercellLink' value='${p.supercellLink || ''}'/></div>
       <div class='input-group'><label>WhatsApp</label><input id='perfilTel' value='${p.telefono || ''}'/></div>
     </div>
 
