@@ -1,6 +1,6 @@
-// Clash-Battles-v1.57.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.57: NUEVOS COLORES DE BALANCE Y ETIQUETAS EN EL PERFIL
-const API = 'https://script.google.com/macros/s/AKfycbxa-0IEw6xg2UmO7uJTou5fH2P7bP_VArDWfMP_Ak7eFO9TP07yNUPxec2DORjSxaiw/exec';
+// Clash-Battles-v1.64.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.64: VERSIÓN ESTABLE CON FONDO DE ROMBOS CORREGIDO E INTERCALADO
+const API = 'https://script.google.com/macros/s/AKfycbwihxSUYXvCKbP0L4pYCBBkE3W7yHHEkr06WpPtvIUPSQQ1BBqp0RYK8XmuO28Aq8iS/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -1093,7 +1093,6 @@ async function ejecutarCanje() {
     }
 }
 
-// ✅ V1.57: NUEVAS ETIQUETAS Y COLORES EN EL PERFIL
 function renderPerfil() {
   const p = cachePerfilJugador || {};
   const a = window.ajustes || {};
