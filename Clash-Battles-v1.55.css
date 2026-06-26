@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.54.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.54: MISMO DISEÑO VISUAL - ESTILOS ESTANDARIZADOS EN JS */
+/* Clash-Battles-v1.55.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.55: FONDO DE ROMBOS CORREGIDO Y AJUSTE DE COLUMNAS EN TABLAS */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -44,9 +44,11 @@ body {
 input, select, textarea, button { font-family: 'Clash Royale', 'Inter', sans-serif !important; }
 b, strong { font-weight: 700; }
 
+/* ✅ CORREGIDO: Fondo transparente para que se vean los rombos del body */
 .app-wrapper { 
   flex: 1; max-width: 1400px; margin: 0 auto; 
-  background: var(--bg-secondary); border-radius: 0; overflow: visible !important; width: 100%; 
+  background: transparent !important; 
+  border-radius: 0; overflow: visible !important; width: 100%; 
   display: flex; flex-direction: column; min-height: 100vh; 
   padding-top: 60px;
 }
@@ -236,6 +238,8 @@ b, strong { font-weight: 700; }
   .table-wrapper th, .table-wrapper td { display: table-cell !important; padding: 8px 6px !important; line-height: 1.2 !important; border-bottom: 1px solid var(--border); text-align: left; color: var(--text); font-size: 0.8rem; word-wrap: break-word; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
+  
+  /* ✅ AJUSTE DE PORCENTAJES: Col 2 = 20%, Col 8 = 10% */
   th:nth-child(1), td:nth-child(1) { width: 10%; }
   th:nth-child(2), td:nth-child(2) { width: 20%; }
   th:nth-child(3), td:nth-child(3) { width: 15%; }
