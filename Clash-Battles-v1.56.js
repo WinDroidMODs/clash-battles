@@ -1,6 +1,6 @@
-// Clash-Battles-v1.55.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.55: MEJORA EN DESAFÍOS 1C1 (INTEGRACIÓN CON SUPERCELL ID Y CONTACTO)
-const API = 'https://script.google.com/macros/s/AKfycbwr55wJi5BXbetMFwxIfqPh0B5epf-AhS5y-vB7MQZIcJ0w0Xcnw34sYjrCvK3EYeSf/exec';
+// Clash-Battles-v1.56.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.56: BOTÓN ÚNICO "GESTIONAR BATALLA", MODAL DE ACCIONES Y CANCELACIÓN DE DESAFÍOS
+const API = 'https://script.google.com/macros/s/AKfycbyfVnvSdnc9u-N4nKzqV0OMWyUI8BzdgH_IaW69ePYWL7wbOyqatACC4wTgs1gTvr69/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -10,6 +10,7 @@ const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnO
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
 let modalConfirmCallback = null;
+let selectedBatalla = {}; // Para el modal de gestión
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -55,6 +56,7 @@ async function login() {
   } else showAuthError(res.error);
 }
 
+// ✅ V1.56: REGISTRO CON CAMPOS OBLIGATORIOS
 async function register() {
   const data = {
     action: 'registro',
@@ -63,10 +65,13 @@ async function register() {
     nombreJuego: document.getElementById('regNombre').value.trim(),
     tag: document.getElementById('regTag').value.trim(),
     supercellId: document.getElementById('regSupercell').value.trim(),
+    supercellLink: document.getElementById('regSupercellLink').value.trim(), // NUEVO CAMPO
     telefono: document.getElementById('regTel').value.trim(),
     refId: localStorage.getItem('pendingRef') || ''
   };
-  if (!data.email || !data.password || !data.nombreJuego) return showAuthError('Completa los campos obligatorios');
+  if (!data.email || !data.password || !data.nombreJuego || !data.supercellId || !data.supercellLink || !data.telefono) {
+    return showAuthError('Todos los campos son obligatorios para registrarte.');
+  }
   const res = await apiCall(data);
   if (res.success) {
     localStorage.removeItem('pendingRef');
@@ -181,6 +186,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function formatVES(amount) {
     if (isNaN(amount)) return '0,00';
     return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
+
+function copiarTexto(texto, mensaje) {
+    navigator.clipboard.writeText(texto).then(() => {
+        toast('✅ ' + mensaje);
+    }).catch(() => {
+        toast('Error al copiar', 'error');
+    });
+}
+
+function contactarOponente(batallaId, miNombre, miTag, opNombre, opTag, telefono) {
+    const mensaje = `Hola! Soy ${miNombre} (Tag: ${miTag}). Estoy en la batalla #${batallaId} contra ${opNombre} (Tag: ${opTag}). Mi Supercell ID es ${cachePerfilJugador.supercellId || 'No definido'}. ¿Cuál es el tuyo para agregarnos y jugar?`;
+    const waLink = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    window.open(waLink, '_blank');
 }
 
 let cacheBatallasAdmin = null, cacheUsuarios = null;
@@ -691,7 +710,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-// ✅ V1.55: RENDERIZADO MEJORADO DE DESAFÍOS CON BOTONES DE SUPERCELL
+// ✅ V1.56: RENDERIZADO CON BOTÓN ÚNICO Y MODAL
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -760,43 +779,38 @@ function renderDesafios() {
 
     let ganadorDisplay = b.ganador || '-';
     let accion = '';
+    
+    // ✅ V1.56: Lógica de botones y modal
     if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id != userId) {
-       accion = `<button class='btn btn-blue btn-sm' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
-    } else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
-       const yaDeclaro = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
-       
-       // ✅ V1.55: Botones de Supercell y WhatsApp
-       let supercellBtns = '';
+       accion = `<button class='btn btn-blue btn-sm btn-block' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
+    } 
+    else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
+       accion = `
+           <div style='display:flex; flex-direction:column; gap:6px; width:100%;'>
+               <span style='font-size:0.8rem; color:var(--text-secondary);'>⏳ Esperando oponente...</span>
+               <button class='btn btn-red btn-sm btn-block' onclick='cancelarBatalla(${b.id})'>❌ Cancelar desafío</button>
+           </div>
+       `;
+    } 
+    else if (b.estado === 'Lista para jugar' && (soyCreador || soyOponente)) {
        const oponenteId = soyCreador ? b.j2Supercell : b.j1Supercell;
        const oponenteNombre = soyCreador ? b.j2Nombre : b.j1Nombre;
        const oponenteTag = soyCreador ? b.j2Tag : b.j1Tag;
+       const oponenteLink = soyCreador ? b.j2SupercellLink : b.j1SupercellLink;
+       const oponenteTel = soyCreador ? b.j2Telefono : b.j1Telefono;
        const miTag = cachePerfilJugador ? cachePerfilJugador.tag : '';
        const miNombre = cachePerfilJugador ? cachePerfilJugador.nombreJuego : '';
 
-       if (oponenteId) {
-           const linkSC = `https://link.clashroyale.com/?action=add&id=${oponenteId}`;
-           supercellBtns = `
-               <div style='display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:4px;'>
-                   <button class='btn btn-blue btn-sm' onclick='copiarTexto("${oponenteId}", "ID de Supercell copiado")'>📋 Copiar ID</button>
-                   <button class='btn btn-green btn-sm' onclick='window.open("${linkSC}", "_blank")'>🔗 Agregar</button>
-                   <button class='btn btn-gold btn-sm' onclick='contactarOponente("${b.id}", "${miNombre}", "${miTag}", "${oponenteNombre}", "${oponenteTag}")'>📱 Contactar</button>
-               </div>
-           `;
-       }
-
-       if (!yaDeclaro) {
-         accion = `
-           <button class='btn btn-gold btn-sm' onclick='mostrarDeclararResultado(${b.id})'>Declarar Resultado</button>
-           ${supercellBtns}
-         `;
-       } else {
-         accion = `⏳ Esperando al oponente... ${supercellBtns}`;
-       }
-    } else if (b.estado === 'Pendiente de pago' && !b.j2Id && soyCreador) {
-       accion = '⏳ Esperando oponente...';
-    } else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
+       accion = `
+           <button class='btn btn-gold btn-block btn-sm' onclick='mostrarModalGestionBatalla(${b.id}, "${miNombre}", "${miTag}", "${oponenteNombre}", "${oponenteTag}", "${oponenteId}", "${oponenteLink}", "${oponenteTel}")'>
+               ⚙️ Gestionar Batalla
+           </button>
+       `;
+    } 
+    else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
       accion = `<span style='color:#FF4655; font-weight:bold;'>En revisión por admin</span>`;
-    } else if (b.estado === 'Finalizada') {
+    } 
+    else if (b.estado === 'Finalizada') {
       const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
       accion = soyGanador ? '🏆 Ganaste' : '😞 Perdiste';
       if (b.ganador === 'J1') ganadorDisplay = b.j1Nombre + ' 🏆';
@@ -816,19 +830,61 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ V1.55: FUNCIONES AUXILIARES PARA COPIAR Y CONTACTAR
-function copiarTexto(texto, mensaje) {
-    navigator.clipboard.writeText(texto).then(() => {
-        toast('✅ ' + mensaje);
-    }).catch(() => {
-        toast('Error al copiar', 'error');
-    });
+// ✅ V1.56: FUNCIONES DEL NUEVO MODAL DE GESTIÓN
+function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, opTel) {
+    selectedBatalla = { id, miNom, miT, opNom, opT, opId, opLink, opTel };
+    document.getElementById('modalGestionBatalla').classList.remove('hidden');
 }
 
-function contactarOponente(batallaId, miNombre, miTag, opNombre, opTag) {
-    const mensaje = `Hola! Soy ${miNombre} (Tag: ${miTag}). Estoy en la batalla #${batallaId} contra ${opNombre} (Tag: ${opTag}). Mi Supercell ID es ${cachePerfilJugador.supercellId || 'No definido'}. ¿Cuál es el tuyo para agregarnos y jugar?`;
-    const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
-    window.open(waLink, '_blank');
+function gestionDeclararResultado() {
+    closeModal('modalGestionBatalla');
+    mostrarDeclararResultado(selectedBatalla.id);
+}
+
+function gestionCopiarID() {
+    closeModal('modalGestionBatalla');
+    if(selectedBatalla.opId) {
+        copiarTexto(selectedBatalla.opId, 'ID de Supercell copiado');
+    } else {
+        toast('El oponente no tiene un Supercell ID registrado.', 'error');
+    }
+}
+
+function gestionAgregarSC() {
+    closeModal('modalGestionBatalla');
+    if(selectedBatalla.opLink) {
+        window.open(selectedBatalla.opLink, "_blank");
+    } else {
+        toast('El oponente no tiene un enlace de invitación registrado.', 'error');
+    }
+}
+
+function gestionContactar() {
+    closeModal('modalGestionBatalla');
+    if(selectedBatalla.opTel) {
+        const mensaje = `Hola! Soy ${selectedBatalla.miNom} (Tag: ${selectedBatalla.miT}). Estoy en la batalla #${selectedBatalla.id} contra ${selectedBatalla.opNom} (Tag: ${selectedBatalla.opT}). Mi Supercell ID es ${cachePerfilJugador.supercellId || 'No definido'}. ¿Cuál es el tuyo para agregarnos y jugar?`;
+        const waLink = `https://wa.me/${selectedBatalla.opTel}?text=${encodeURIComponent(mensaje)}`;
+        window.open(waLink, '_blank');
+    } else {
+        toast('El oponente no tiene un número de WhatsApp registrado.', 'error');
+    }
+}
+
+// ✅ V1.56: CANCELAR DESAFÍO DESDE EL BOTÓN DE LA LISTA
+async function cancelarBatalla(batallaId) {
+    if (!confirm('¿Estás seguro de que quieres cancelar este desafío? Recuperarás el dinero de inscripción.')) return;
+    const res = await apiCall({ action: 'cancelarBatalla', batallaId });
+    if (res.success) {
+        toast('Desafío cancelado. Tu dinero ha sido reembolsado.');
+        cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
+        cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
+        const todas = await apiCall({ action: 'getBatallas' });
+        cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
+        renderDesafios();
+        updateSidebarStatsJugador();
+    } else {
+        toast(res.error || 'Error al cancelar el desafío.', 'error');
+    }
 }
 
 function renderReferidos() {
@@ -1081,6 +1137,7 @@ function renderPerfil() {
       <div class='input-group'><label>Nombre en el juego</label><input id='perfilNombre' value='${p.nombreJuego || ''}'/></div>
       <div class='input-group'><label>Tag (#)</label><input id='perfilTag' value='${p.tag || ''}'/></div>
       <div class='input-group'><label>Supercell ID</label><input id='perfilSupercell' value='${p.supercellId || ''}'/></div>
+      <div class='input-group'><label>Enlace de invitación SC</label><input id='perfilSupercellLink' value='${p.supercellLink || ''}'/></div>
       <div class='input-group'><label>WhatsApp</label><input id='perfilTel' value='${p.telefono || ''}'/></div>
     </div>
 
@@ -1104,6 +1161,7 @@ async function guardarPerfil() {
     nombreJuego: document.getElementById('perfilNombre').value,
     tag: document.getElementById('perfilTag').value,
     supercellId: document.getElementById('perfilSupercell').value,
+    supercellLink: document.getElementById('perfilSupercellLink').value,
     telefono: document.getElementById('perfilTel').value,
     banco: document.getElementById('perfilBanco').value,
     telefonoPago: document.getElementById('perfilTelefonoPago').value,
