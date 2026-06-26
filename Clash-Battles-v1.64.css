@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.59.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.59: ABSOLUTA PARIDAD VISUAL Y DE EFECTOS ENTRE BOTONES RECARGAR Y RETIRAR */
+/* Clash-Battles-v1.64.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.64: FONDO DE ROMBOS INTERCALADOS (CLARO/OSCURO) EXACTO A CLASH ROYALE */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -24,11 +24,12 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Clash Royale', 'Inter', sans-serif; }
 
+/* ✅ V1.64: ROMBO CLARO (0.09) Y OSCURO (0.02) PERFECTAMENTE INTERCALADOS */
 body {
   margin: 0; padding: 0;
   background-color: #150621; 
   background-image: 
-    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='diamond' width='120' height='120' patternUnits='userSpaceOnUse'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30 Z' fill='rgba(255,255,255,0.08)' /%3E%3Cpath d='M90 60 L120 90 L90 120 L60 90 Z' fill='rgba(255,255,255,0.08)' /%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23diamond)' /%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 L40 20 L20 40 L0 20 Z' fill='rgba(255,255,255,0.09)' /%3E%3Cpath d='M0 0 L20 0 L10 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 0 L20 0 L30 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M0 40 L20 40 L10 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 40 L20 40 L30 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3C/svg%3E");
   display: flex; flex-direction: column; min-height: 100vh;
   color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
@@ -111,7 +112,7 @@ b, strong { font-weight: 700; }
 }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* ✅ V1.59: DISEÑO Y EFECTOS 100% IDÉNTICOS CON ALTURA FORZADA Y FLEXBOX CENTRADO */
+/* ✅ V1.59+: BOTONES CON ALTURA Y EFECTOS 100% SIMÉTRICOS */
 .btn-gold {
   padding: 13px !important; border-radius: 14px; font-weight: 700; font-size: 0.9rem;
   width: 100%; margin-top: 8px; height: 44px !important;
@@ -524,4 +525,31 @@ b, strong { font-weight: 700; }
     .vs-empty { font-size: 0.6rem !important; }
     .table-wrapper td .btn-sm { font-size: 0.6rem !important; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
+}
+/* ✅ DISEÑO PARA LAS PÁGINAS ESTÁTICAS (Aviso Legal, Contacto, etc.) */
+.page-content-wrapper {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: var(--bg-card);
+  border: 2px solid var(--gold-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
+  color: var(--gold);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.page-content-wrapper p, .page-content-wrapper li {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+.page-content-wrapper a {
+  color: var(--blue);
+  text-decoration: none;
+}
+.page-content-wrapper a:hover {
+  text-decoration: underline;
 }
