@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.55.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.55: FONDO DE ROMBOS CORREGIDO Y AJUSTE DE COLUMNAS EN TABLAS */
+/* Clash-Battles-v1.56.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.56: MISMO DISEÑO VISUAL - FONDO DE ROMBOS Y COLUMNAS CORREGIDAS */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -44,7 +44,6 @@ body {
 input, select, textarea, button { font-family: 'Clash Royale', 'Inter', sans-serif !important; }
 b, strong { font-weight: 700; }
 
-/* ✅ CORREGIDO: Fondo transparente para que se vean los rombos del body */
 .app-wrapper { 
   flex: 1; max-width: 1400px; margin: 0 auto; 
   background: transparent !important; 
@@ -239,7 +238,6 @@ b, strong { font-weight: 700; }
   th { background: rgba(255, 215, 0, 0.1); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; }
   tr:hover td { background: rgba(255, 215, 0, 0.05); }
   
-  /* ✅ AJUSTE DE PORCENTAJES: Col 2 = 20%, Col 8 = 10% */
   th:nth-child(1), td:nth-child(1) { width: 10%; }
   th:nth-child(2), td:nth-child(2) { width: 20%; }
   th:nth-child(3), td:nth-child(3) { width: 15%; }
