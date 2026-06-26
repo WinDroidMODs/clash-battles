@@ -1,6 +1,6 @@
-// Clash-Battles-v1.56.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.56: BOTÓN ÚNICO "GESTIONAR BATALLA", MODAL DE ACCIONES Y CANCELACIÓN DE DESAFÍOS
-const API = 'https://script.google.com/macros/s/AKfycbyfVnvSdnc9u-N4nKzqV0OMWyUI8BzdgH_IaW69ePYWL7wbOyqatACC4wTgs1gTvr69/exec';
+// Clash-Battles-v1.57.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.57: NUEVOS COLORES DE BALANCE Y ETIQUETAS EN EL PERFIL
+const API = 'https://script.google.com/macros/s/AKfycbxa-0IEw6xg2UmO7uJTou5fH2P7bP_VArDWfMP_Ak7eFO9TP07yNUPxec2DORjSxaiw/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -10,7 +10,7 @@ const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnO
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
 let modalConfirmCallback = null;
-let selectedBatalla = {}; // Para el modal de gestión
+let selectedBatalla = {};
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -56,7 +56,6 @@ async function login() {
   } else showAuthError(res.error);
 }
 
-// ✅ V1.56: REGISTRO CON CAMPOS OBLIGATORIOS
 async function register() {
   const data = {
     action: 'registro',
@@ -65,7 +64,7 @@ async function register() {
     nombreJuego: document.getElementById('regNombre').value.trim(),
     tag: document.getElementById('regTag').value.trim(),
     supercellId: document.getElementById('regSupercell').value.trim(),
-    supercellLink: document.getElementById('regSupercellLink').value.trim(), // NUEVO CAMPO
+    supercellLink: document.getElementById('regSupercellLink').value.trim(),
     telefono: document.getElementById('regTel').value.trim(),
     refId: localStorage.getItem('pendingRef') || ''
   };
@@ -710,7 +709,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-// ✅ V1.56: RENDERIZADO CON BOTÓN ÚNICO Y MODAL
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -780,7 +778,6 @@ function renderDesafios() {
     let ganadorDisplay = b.ganador || '-';
     let accion = '';
     
-    // ✅ V1.56: Lógica de botones y modal
     if (b.estado === 'Pendiente de pago' && !b.j2Id && b.j1Id != userId) {
        accion = `<button class='btn btn-blue btn-sm btn-block' onclick='mostrarModalUnion(${b.id})'>Aceptar Desafío</button>`;
     } 
@@ -830,7 +827,6 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ V1.56: FUNCIONES DEL NUEVO MODAL DE GESTIÓN
 function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, opTel) {
     selectedBatalla = { id, miNom, miT, opNom, opT, opId, opLink, opTel };
     document.getElementById('modalGestionBatalla').classList.remove('hidden');
@@ -870,7 +866,6 @@ function gestionContactar() {
     }
 }
 
-// ✅ V1.56: CANCELAR DESAFÍO DESDE EL BOTÓN DE LA LISTA
 async function cancelarBatalla(batallaId) {
     if (!confirm('¿Estás seguro de que quieres cancelar este desafío? Recuperarás el dinero de inscripción.')) return;
     const res = await apiCall({ action: 'cancelarBatalla', batallaId });
@@ -1098,7 +1093,7 @@ async function ejecutarCanje() {
     }
 }
 
-// ✅ V1.56: RENDER PERFIL CON CAMBIOS SOLICITADOS (ETIQUETAS Y COLORES)
+// ✅ V1.57: NUEVAS ETIQUETAS Y COLORES EN EL PERFIL
 function renderPerfil() {
   const p = cachePerfilJugador || {};
   const a = window.ajustes || {};
@@ -1118,12 +1113,12 @@ function renderPerfil() {
   document.getElementById('panel-perfil').innerHTML = `
     <div class='balance-card'>
       <div class='balance-top'>
-        <div class='balance-icon' style='background:var(--green); color:#1a1a2e;'>$</div>
+        <div class='balance-icon' style='background: var(--green); border: 2px solid var(--green-glow); box-shadow: 0 4px 0 #008a4a;'>$</div>
         <div class='balance-info'>
-          <div class='balance-label' style='color:#FFF;'>SALDO DISPONIBLE</div>
+          <div class='balance-label' style='color: var(--text);'>SALDO DISPONIBLE</div>
           <div class='balance-amounts'>
-            <span class='usd-amount' style='color:var(--green);'>$${usdBalance.toFixed(2)}</span>
-            <span class='bs-amount' style='color:var(--gold);'>Bs: ${formatVES(bsBalance)}</span>
+            <span class='usd-amount' style='color: var(--green);'>$${usdBalance.toFixed(2)}</span>
+            <span class='bs-amount' style='color: var(--gold);'>Bs: ${formatVES(bsBalance)}</span>
           </div>
         </div>
       </div>
