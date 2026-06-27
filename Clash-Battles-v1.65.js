@@ -1,6 +1,6 @@
 // Clash-Battles-v1.65.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.65: CORREGIDO EL FORMATO DE MONTOS EN BS CON SEPARADORES DE MILES Y DECIMALES
-const API = 'https://script.google.com/macros/s/AKfycbyHi3imF_nxVIPuG2aXIwy7GftdTxBDl9D8drWNGYbkgLoCIljjp-YhUxp90hHZQVuh/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwwYX6jG8jDuPGVjLOVaWhxS4IN6tzOtB1HV3dABs0Z-pkABClDHQBRlO9BX9-_OtH7/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
