@@ -1,6 +1,6 @@
-// Clash-Battles-v1.64.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.64: VERSIÓN ESTABLE CON FONDO DE ROMBOS CORREGIDO E INTERCALADO
-const API = 'https://script.google.com/macros/s/AKfycbwihxSUYXvCKbP0L4pYCBBkE3W7yHHEkr06WpPtvIUPSQQ1BBqp0RYK8XmuO28Aq8iS/exec';
+// Clash-Battles-v1.65.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.65: CORREGIDO EL FORMATO DE MONTOS EN BS CON SEPARADORES DE MILES Y DECIMALES
+const API = 'https://script.google.com/macros/s/AKfycbyHi3imF_nxVIPuG2aXIwy7GftdTxBDl9D8drWNGYbkgLoCIljjp-YhUxp90hHZQVuh/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -182,9 +182,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ✅ V1.65: Nueva función de formateo para Bs (corregido el punto y la coma)
 function formatVES(amount) {
     if (isNaN(amount)) return '0,00';
-    return new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+    // Aseguramos que sea número con 2 decimales
+    let val = Number(amount).toFixed(2);
+    let parts = val.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1];
+    // Agregamos puntos como separadores de miles (ej: 1.300)
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return integerPart + ',' + decimalPart;
 }
 
 function copiarTexto(texto, mensaje) {
