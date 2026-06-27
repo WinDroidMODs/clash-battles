@@ -27,9 +27,14 @@
 /* ✅ V1.64: ROMBO CLARO (0.09) Y OSCURO (0.02) PERFECTAMENTE INTERCALADOS */
 body {
   margin: 0; padding: 0;
-  background-color: #150621; 
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 L40 20 L20 40 L0 20 Z' fill='rgba(255,255,255,0.09)' /%3E%3Cpath d='M0 0 L20 0 L10 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 0 L20 0 L30 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M0 40 L20 40 L10 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 40 L20 40 L30 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3C/svg%3E");
+  background-color: #150621; /* Color base morado oscuro */
+  background-image:
+    /* Degradado suave de fondo (Morado brillante a Morado oscuro) */
+    linear-gradient(180deg, #3d1d62 0%, #150621 100%),
+    /* Patrón de tablero de ajedrez con rombos alternados (Claro / Oscuro) */
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- Rombos Claros (Morado brillante) --%3E%3Cpath d='M20 0 L40 20 L20 40 L0 20 Z' fill='%237042a6' stroke='%23a884d4' stroke-width='2' /%3E%3Cpath d='M60 40 L80 60 L60 80 L40 60 Z' fill='%237042a6' stroke='%23a884d4' stroke-width='2' /%3E%3C!-- Rombos Oscuros (Morado profundo) --%3E%3Cpath d='M60 0 L80 20 L60 40 L40 20 Z' fill='%232d1a48' stroke='%235a3985' stroke-width='2' /%3E%3Cpath d='M20 40 L40 60 L20 80 L0 60 Z' fill='%232d1a48' stroke='%235a3985' stroke-width='2' /%3E%3C/svg%3E");
+  background-size: auto, 80px 80px; /* El tamaño de la baldosa de 80x80 permite la alternancia perfecta */
+  
   display: flex; flex-direction: column; min-height: 100vh;
   color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
