@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.64.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.64: FONDO DE ROMBOS INTERCALADOS (CLARO/OSCURO) EXACTO A CLASH ROYALE */
+/* Clash-Battles-v1.65.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.65: BOTONES UNIFICADOS, BORDE BLANCO Y TAMAÑO REDUCIDO */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -112,41 +112,45 @@ b, strong { font-weight: 700; }
 }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* ✅ V1.59+: BOTONES CON ALTURA Y EFECTOS 100% SIMÉTRICOS */
-.btn-gold {
-  padding: 13px !important; border-radius: 14px; font-weight: 700; font-size: 0.9rem;
-  width: 100%; margin-top: 8px; height: 44px !important;
-  letter-spacing: 0.5px; cursor: pointer;
-  display: flex !important; align-items: center; justify-content: center;
+/* ✅ V1.65: NUEVO SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
+.btn {
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 2px solid #ffffff; /* ✅ Borde blanco igual para todos */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  letter-spacing: 0.5px;
+  height: 40px; /* Tamaño estándar reducido */
+  color: #2b1a2b;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25); /* Sombra negra uniforme para todos */
+  gap: 6px;
   line-height: normal;
-  background: linear-gradient(180deg, #FFD700, #D4AF37); color: #2b1a2b;
-  border: 2px solid #FFF5CC; text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-  box-shadow: 0 6px 0 #997A00; text-transform: uppercase; transition: all 0.1s;
 }
-.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #997A00; }
-.btn-gold:active { transform: translateY(4px); box-shadow: 0 2px 0 #997A00; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 
-.btn-green {
-  padding: 13px !important; border-radius: 14px; font-weight: 700; font-size: 0.9rem;
-  width: 100%; margin-top: 8px; height: 44px !important;
-  letter-spacing: 0.5px; cursor: pointer;
-  display: flex !important; align-items: center; justify-content: center;
-  line-height: normal;
-  background: linear-gradient(180deg, #00E676, #008a4a); color: #1a1a2e;
-  border: 2px solid #9effd0; text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-  box-shadow: 0 6px 0 #008a4a; text-transform: uppercase; transition: all 0.1s;
-}
-.btn-green:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #008a4a; }
-.btn-green:active { transform: translateY(4px); box-shadow: 0 2px 0 #008a4a; }
+/* Solo cambiamos el color de fondo */
+.btn-gold { background: linear-gradient(180deg, #FFD700, #D4AF37); }
+.btn-green { background: linear-gradient(180deg, #00E676, #008a4a); }
+.btn-blue { background: linear-gradient(180deg, #4F8EF7, #235fb5); }
+.btn-red { background: linear-gradient(180deg, #FF4655, #971f2d); }
 
-.btn-blue { background: var(--blue); color: white; border: 2px solid #9dbfff; box-shadow: 0 4px 0 #1e4a7a; }
-.btn-blue:hover { background: #6BA3FF; }
-.btn-blue:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e4a7a; }
-.btn-red { background: var(--red); color: white; border: 2px solid #ff9ba3; box-shadow: 0 4px 0 #971f2d; }
-.btn-red:active { transform: translateY(4px); box-shadow: 0 2px 0 #971f2d; }
-.btn { padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.1s; text-transform: uppercase; letter-spacing: 0.3px; }
-.btn-sm { padding: 6px 12px; font-size: 0.7rem; }
+/* Variantes de tamaño */
+.btn-sm { height: 34px; font-size: 0.7rem; padding: 0 12px; }
 .btn-block { width: 100%; }
+
+/* 📱 Ajustes específicos para móviles (más pequeños) */
+@media (max-width: 600px) {
+  .btn { height: 36px; font-size: 0.75rem; padding: 0 12px; }
+  .btn-sm { height: 30px; font-size: 0.65rem; padding: 0 10px; }
+}
 
 .auth-error { font-size: 0.8rem; margin-top: 10px; min-height: 18px; color: var(--red); }
 .hidden { display: none !important; }
@@ -525,31 +529,4 @@ b, strong { font-weight: 700; }
     .vs-empty { font-size: 0.6rem !important; }
     .table-wrapper td .btn-sm { font-size: 0.6rem !important; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
-}
-/* ✅ DISEÑO PARA LAS PÁGINAS ESTÁTICAS (Aviso Legal, Contacto, etc.) */
-.page-content-wrapper {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
-  background: var(--bg-card);
-  border: 2px solid var(--gold-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: var(--text);
-}
-.page-content-wrapper h1, .page-content-wrapper h2, .page-content-wrapper h3 {
-  color: var(--gold);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-.page-content-wrapper p, .page-content-wrapper li {
-  color: var(--text-secondary);
-  line-height: 1.8;
-  font-size: 0.95rem;
-}
-.page-content-wrapper a {
-  color: var(--blue);
-  text-decoration: none;
-}
-.page-content-wrapper a:hover {
-  text-decoration: underline;
 }
