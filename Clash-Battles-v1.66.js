@@ -1,6 +1,6 @@
-// Clash-Battles-v1.65.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.65: CORREGIDO EL FORMATO DE MONTOS EN BS CON SEPARADORES DE MILES Y DECIMALES
-const API = 'https://script.google.com/macros/s/AKfycbwwYX6jG8jDuPGVjLOVaWhxS4IN6tzOtB1HV3dABs0Z-pkABClDHQBRlO9BX9-_OtH7/exec';
+// Clash-Battles-v1.66.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.66: NUEVOS SONIDOS, GEMA EN HISTORIAL Y WHATSAPP DEL ADMIN EN AJUSTES
+const API = 'https://script.google.com/macros/s/AKfycbyMEWKJ1-wPRywpqvxaFrWbO0c7Q43-SRhKZOHCW1fxpkgCTk2_qGhH8DfFl0ewYSJs/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -41,22 +41,46 @@ async function apiCall(body) {
   return await r.json();
 }
 
+// ✅ V1.66: NUEVOS SONIDOS DE VIDEOJUEGO (Para darle vida a la app)
+function playSound(freq, duration, type='sine', vol=0.2) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = type;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+function playClick() { playSound(800, 0.08); } // Sonido de clic
+function playCoin() { playSound(1200, 0.15); setTimeout(()=>playSound(1600, 0.15), 100); } // Sonido de moneda
+function playSuccess() { playSound(523, 0.2); setTimeout(()=>playSound(659, 0.2), 150); setTimeout(()=>playSound(784, 0.3), 300); } // Acorde de victoria
+function playError() { playSound(300, 0.4, 'sawtooth', 0.15); } // Sonido de error
+
 async function login() {
+  playClick();
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value.trim();
   if (!email || !pass) return showAuthError('Completa todos los campos');
   const res = await apiCall({ action: 'login', email, password: pass });
   if (res.success) {
+    playSuccess();
     token = res.token; userId = res.userId; rol = res.rol; nombreJuego = res.nombreJuego;
     localStorage.setItem('token', token); localStorage.setItem('userId', userId);
     localStorage.setItem('rol', rol); localStorage.setItem('nombreJuego', nombreJuego);
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('appMain').classList.remove('hidden');
     initApp();
-  } else showAuthError(res.error);
+  } else {
+    playError();
+    showAuthError(res.error);
+  }
 }
 
 async function register() {
+  playClick();
   const data = {
     action: 'registro',
     email: document.getElementById('regEmail').value.trim(),
@@ -69,10 +93,12 @@ async function register() {
     refId: localStorage.getItem('pendingRef') || ''
   };
   if (!data.email || !data.password || !data.nombreJuego || !data.supercellId || !data.supercellLink || !data.telefono) {
+    playError();
     return showAuthError('Todos los campos son obligatorios para registrarte.');
   }
   const res = await apiCall(data);
   if (res.success) {
+    playSuccess();
     localStorage.removeItem('pendingRef');
     if (res.isReferral && res.refereeGems > 0) {
       document.getElementById('regGemsCount').textContent = res.refereeGems;
@@ -81,7 +107,10 @@ async function register() {
       toast('Cuenta creada. Inicia sesión.');
       switchAuthTab('login');
     }
-  } else showAuthError(res.error);
+  } else {
+    playError();
+    showAuthError(res.error);
+  }
 }
 
 function closeRegGemsModal() {
@@ -126,7 +155,8 @@ function toast(m, t='success') {
   const c = document.getElementById('toastContainer');
   const d = document.createElement('div');
   d.className = `toast ${t}`; d.textContent = m; c.appendChild(d);
-  playBeep(); setTimeout(() => d.remove(), 3000);
+  if(t === 'success') playCoin(); else if(t === 'error') playError();
+  setTimeout(() => d.remove(), 3000);
 }
 
 function toggleMenu() {
@@ -185,12 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ✅ V1.65: Nueva función de formateo para Bs (corregido el punto y la coma)
 function formatVES(amount) {
     if (isNaN(amount)) return '0,00';
-    // Aseguramos que sea número con 2 decimales
     let val = Number(amount).toFixed(2);
     let parts = val.split('.');
     let integerPart = parts[0];
     let decimalPart = parts[1];
-    // Agregamos puntos como separadores de miles (ej: 1.300)
     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return integerPart + ',' + decimalPart;
 }
@@ -575,6 +603,8 @@ function renderAjustes() {
       <div class='input-group'><label>Retiro máximo ($)</label><input id='ajMaxRetiro' value='${a.maxRetiro || 50}'/></div>
       <div class='input-group'><label>Mi Banco</label><select id='ajBanco'>${myBankOptions}</select></div>
       <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
+      <!-- ✅ V1.66: Nuevo campo WhatsApp Admin -->
+      <div class='input-group'><label>WhatsApp Admin (Para contacto)</label><input id='ajWAdmin' value='${a.adminWhatsApp || ''}' placeholder='+58 4121234567'/></div>
       <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
       <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
       <div class='input-group'><label>Tasa $ (Recargas) [Bs]</label><input id='ajTasaRecarga' value='${a.tasaRecarga || 0}'/></div>
@@ -590,6 +620,7 @@ function renderAjustes() {
 }
 
 async function guardarAjustes() {
+  playClick();
   const checkedBoxes = document.querySelectorAll('.bank-checkbox:checked');
   const selectedBanks = Array.from(checkedBoxes).map(el => el.value);
   
@@ -603,6 +634,7 @@ async function guardarAjustes() {
     maxRetiro: document.getElementById('ajMaxRetiro').value,
     pagoBanco: document.getElementById('ajBanco').value,
     pagoTelefono: document.getElementById('ajTel').value,
+    adminWhatsApp: document.getElementById('ajWAdmin').value, // ✅ V1.66: Guardamos el WhatsApp
     pagoCedula: document.getElementById('ajCedula').value,
     pagoCuenta: document.getElementById('ajCuenta').value,
     tasaRecarga: document.getElementById('ajTasaRecarga').value,
@@ -611,6 +643,7 @@ async function guardarAjustes() {
   };
   await apiCall({ action: 'saveAjustes', ajustes: a });
   window.ajustes = await apiCall({ action: 'getAjustes' });
+  playSuccess();
   toast('Ajustes guardados');
 }
 
@@ -643,6 +676,7 @@ async function initJugador() {
     renderMisRetiros();
     renderMiHistorial();
     renderPerfil();
+    renderReferidos();
   } catch (error) {
     console.error("Error cargando datos jugador:", error);
     toast("Error al cargar datos del jugador", "error");
@@ -940,7 +974,10 @@ function renderReferidos() {
                                 <td data-label="Nombre">${item.nombreJuego}</td>
                                 <td data-label="Supercell">${item.supercellId || 'N/A'}</td>
                                 <td data-label="Fecha">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
-                                <td data-label="Gemas">${item.gemsAwarded} 💎</td>
+                                <!-- ✅ V1.66: Reemplazado el emoji 💎 por la imagen de la gema -->
+                                <td data-label="Gemas">
+                                    ${item.gemsAwarded} <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain; vertical-align:middle;" />
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1071,7 +1108,6 @@ function actualizarCanjePreview() {
         gems = maxGems;
     }
     if (gems < 100 && gems > 0) {
-        // Solo muestra 0 si es menor a 100 pero no actualiza el valor
     }
     
     const montoUSD = gems / 100;
