@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.65.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.65: BOTONES UNIFICADOS, BORDE BLANCO Y TAMAÑO REDUCIDO */
+/* Clash-Battles-v1.66.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.66: BOTONES UNIFICADOS, BORDE BLANCO Y TAMAÑO REDUCIDO */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -112,7 +112,7 @@ b, strong { font-weight: 700; }
 }
 .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* ✅ V1.65: NUEVO SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
+/* ✅ V1.66: NUEVO SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
 .btn {
   padding: 0 16px;
   border-radius: 12px;
