@@ -1,6 +1,6 @@
 // Clash-Battles-v1.74.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.74: GESTIÓN DE BANEOS/ELIMINACIONES, TOP 3 GANADORES, PAGO DE RETIROS Y MODALES DE INFO
-const API = 'https://script.google.com/macros/s/AKfycbwDAI1abNvcfTMF66bjn9u3QdJasorShThU9CQTLYX4edTbZUPPFKAqGhnivwx6vfzZ/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxuNgMMuuu4v0oqKdfl_2PKEPpjX6ETI-qIpSMq_v2c-btpOTMW9thw5PfLgCWAFW6b/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -84,6 +84,13 @@ async function login() {
     if (res.banned) {
       playError();
       document.getElementById('motivoSuspensionDisplay').textContent = res.motivo || 'Comportamiento inadecuado.';
+      // ✅ Guardamos el WhatsApp del Admin en el propio modal si viene en la respuesta
+      const modal = document.getElementById('modalJugadorSuspendido');
+      if (res.adminWhatsApp) {
+        modal.setAttribute('data-admin-wa', res.adminWhatsApp);
+      } else {
+        modal.setAttribute('data-admin-wa', '');
+      }
       document.getElementById('modalJugadorSuspendido').classList.remove('hidden');
       localStorage.removeItem('token'); localStorage.removeItem('userId');
       localStorage.removeItem('rol'); localStorage.removeItem('nombreJuego');
@@ -95,11 +102,13 @@ async function login() {
 }
 
 function contactarAdminSuspension() {
-  const adminWA = window.ajustes && window.ajustes.adminWhatsApp ? window.ajustes.adminWhatsApp : '';
+  const modal = document.getElementById('modalJugadorSuspendido');
+  const adminWA = modal.getAttribute('data-admin-wa') || '';
   const motivo = document.getElementById('motivoSuspensionDisplay').textContent;
   if (adminWA) {
     const mensaje = `Hola Admin, mi cuenta fue suspendida por: ${motivo}. Solicito por favor una revisión de mi caso. Gracias.`;
     window.open(`https://wa.me/${adminWA}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    toast('📱 Abriendo WhatsApp para contacto.');
   } else {
     toast('No hay número de WhatsApp del Admin configurado.', 'error');
   }
@@ -487,12 +496,11 @@ async function declararGanadorAdmin(batallaId, jugador) {
   }
 }
 
-/* ✅ V1.74: RENDERIZADO DE USUARIOS ADMIN (FILTRADO PARA OCULTAR AL ADMIN) */
+/* ✅ RENDERIZADO DE USUARIOS ADMIN (FILTRADO PARA OCULTAR AL ADMIN) */
 function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Saldo</th><th>Acciones</th></tr></thead><tbody>`;
   users.forEach(u => {
-    // ✅ FILTRO PARA EXCLUIR AL ADMIN DE LA LISTA DE JUGADORES
     if (u.rol === 'admin') return;
     
     const isBanned = u.baneado === true;
@@ -505,7 +513,7 @@ function renderUsuariosAdmin(users) {
   document.getElementById('panel-jugadores').innerHTML = html;
 }
 
-/* ✅ V1.74: LÓGICA DE ELIMINAR JUGADOR */
+/* ✅ LÓGICA DE ELIMINAR JUGADOR */
 function mostrarModalDeleteUser(userId) {
   deleteUserTargetId = userId;
   document.getElementById('modalConfirmDeleteUser').classList.remove('hidden');
@@ -525,7 +533,7 @@ function executeDeleteUser(permanent) {
   });
 }
 
-/* ✅ V1.74: LÓGICA DE BANEAR / DESBANEAR JUGADOR */
+/* ✅ LÓGICA DE BANEAR / DESBANEAR JUGADOR */
 function mostrarModalBanUser(userId, isBanned) {
   if (isBanned) {
     // Desbanear
@@ -564,7 +572,7 @@ function executeBanUser() {
   });
 }
 
-/* ✅ V1.74: LÓGICA DE REGALAR GEMAS A TOP 3 */
+/* ✅ LÓGICA DE REGALAR GEMAS A TOP 3 */
 function mostrarModalRegalarGemas(userId, nombre, lugar) {
   regalarGemasTargetId = userId;
   document.getElementById('regalarGemasMsg').textContent = `Regalarás gemas a ${nombre} (${lugar}er Lugar).`;
@@ -607,7 +615,7 @@ function renderRecargasAdmin() {
   document.getElementById('panel-recargas').innerHTML = html;
 }
 
-/* ✅ V1.74: RENDERIZADO DE RETIROS ADMIN CON COMPROBANTE DE PAGO Y REFERENCIA */
+/* ✅ RENDERIZADO DE RETIROS ADMIN CON COMPROBANTE DE PAGO Y REFERENCIA */
 function renderRetirosAdmin() {
   const a = window.ajustes || {};
   const tasa = parseFloat(a.tasaRetiro || 0);
@@ -616,7 +624,6 @@ function renderRetirosAdmin() {
   cacheRetiros.forEach(r => {
     const montoUSD = parseFloat(r.monto || 0);
     const montoBS = montoUSD * tasa;
-    // Identificador único para este retiro en el DOM
     const fileId = `pagoFile_${r.id}`;
     const refId = `pagoRef_${r.id}`;
     
@@ -635,7 +642,7 @@ function renderRetirosAdmin() {
   document.getElementById('panel-retiros').innerHTML = html;
 }
 
-/* ✅ V1.74: LÓGICA PARA MARCAR RETIRO COMO PAGADO */
+/* ✅ LÓGICA PARA MARCAR RETIRO COMO PAGADO */
 async function marcarRetiroPagado(movimientoId, fileInputId, refInputId) {
   const fileInput = document.getElementById(fileInputId);
   const refInput = document.getElementById(refInputId);
