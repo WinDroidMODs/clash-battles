@@ -1,6 +1,6 @@
 // Clash-Battles-v1.74.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.74: GESTIÓN DE BANEOS/ELIMINACIONES, TOP 3 GANADORES, PAGO DE RETIROS Y MODALES DE INFO
-const API = 'https://script.google.com/macros/s/AKfycbyFcYp9-fyE4ViJPGHmW0GJ4NNbU3twnV4X8S3jkJAW_vtrE86vGFfmbed6bFdIxXk/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwDAI1abNvcfTMF66bjn9u3QdJasorShThU9CQTLYX4edTbZUPPFKAqGhnivwx6vfzZ/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -382,7 +382,6 @@ function updateBadges() {
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
-/* ✅ V1.74: RENDERIZADO DE TOP 3 GANADORES Y BATALLAS */
 function renderBatallasAdmin() {
   let batallas = cacheBatallasAdmin || [];
   let top3Html = `<div style='margin-bottom:20px;'>`;
@@ -488,11 +487,14 @@ async function declararGanadorAdmin(batallaId, jugador) {
   }
 }
 
-/* ✅ V1.74: RENDERIZADO DE USUARIOS ADMIN (SIN ROL, CON BOTONES DE BAN Y ELIMINAR) */
+/* ✅ V1.74: RENDERIZADO DE USUARIOS ADMIN (FILTRADO PARA OCULTAR AL ADMIN) */
 function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Saldo</th><th>Acciones</th></tr></thead><tbody>`;
   users.forEach(u => {
+    // ✅ FILTRO PARA EXCLUIR AL ADMIN DE LA LISTA DE JUGADORES
+    if (u.rol === 'admin') return;
+    
     const isBanned = u.baneado === true;
     html += `<tr><td data-label="ID:">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td><td data-label="Acciones" style='display:flex; gap:4px; flex-wrap:wrap;'>
       <button class='btn btn-red btn-sm' style='padding:2px 8px;' onclick='mostrarModalDeleteUser("${u.id}")'>✕</button>
@@ -504,7 +506,6 @@ function renderUsuariosAdmin(users) {
 }
 
 /* ✅ V1.74: LÓGICA DE ELIMINAR JUGADOR */
-let deleteUserPermanent = false;
 function mostrarModalDeleteUser(userId) {
   deleteUserTargetId = userId;
   document.getElementById('modalConfirmDeleteUser').classList.remove('hidden');
@@ -512,7 +513,7 @@ function mostrarModalDeleteUser(userId) {
 function executeDeleteUser(permanent) {
   const msg = permanent ? 'eliminar permanentemente' : 'eliminar (permitiendo re-registro)';
   if (!confirm(`¿Estás completamente seguro de ${msg} a este jugador?`)) return;
-  apiCall({ action: 'deleteUser', userId: deleteUserTargetId, permanent: permanent }).then(res => {
+  apiCall({ action: 'deleteUser', targetUserId: deleteUserTargetId, permanent: permanent }).then(res => {
     if (res.success) {
       toast('Usuario eliminado correctamente.');
       closeModal('modalConfirmDeleteUser');
@@ -525,12 +526,11 @@ function executeDeleteUser(permanent) {
 }
 
 /* ✅ V1.74: LÓGICA DE BANEAR / DESBANEAR JUGADOR */
-let banUserTargetId = null;
 function mostrarModalBanUser(userId, isBanned) {
   if (isBanned) {
     // Desbanear
     if (!confirm('¿Estás seguro de que quieres desbanear a este jugador?')) return;
-    apiCall({ action: 'unbanUser', userId: userId }).then(res => {
+    apiCall({ action: 'unbanUser', targetUserId: userId }).then(res => {
       if (res.success) {
         toast('Jugador desbaneado exitosamente.');
         cacheUsuarios = null;
@@ -552,7 +552,7 @@ function executeBanUser() {
     return toast('Debes escribir un motivo para la suspensión.', 'error');
   }
   if (!confirm('¿Estás seguro de que quieres suspender a este jugador?')) return;
-  apiCall({ action: 'banUser', userId: banUserTargetId, motivo: motivo }).then(res => {
+  apiCall({ action: 'banUser', targetUserId: banUserTargetId, motivo: motivo }).then(res => {
     if (res.success) {
       toast('Jugador suspendido exitosamente.');
       closeModal('modalBanUser');
@@ -565,7 +565,6 @@ function executeBanUser() {
 }
 
 /* ✅ V1.74: LÓGICA DE REGALAR GEMAS A TOP 3 */
-let regalarGemasTargetId = null;
 function mostrarModalRegalarGemas(userId, nombre, lugar) {
   regalarGemasTargetId = userId;
   document.getElementById('regalarGemasMsg').textContent = `Regalarás gemas a ${nombre} (${lugar}er Lugar).`;
@@ -578,7 +577,7 @@ function executeRegalarGemasTop3() {
     return toast('Ingresa una cantidad válida de gemas.', 'error');
   }
   if (!confirm(`¿Estás seguro de regalar ${cantidad} gemas a este jugador?`)) return;
-  apiCall({ action: 'regalarGemasAdmin', userId: regalarGemasTargetId, cantidad: cantidad }).then(res => {
+  apiCall({ action: 'regalarGemasAdmin', targetUserId: regalarGemasTargetId, cantidad: cantidad }).then(res => {
     if (res.success) {
       toast(`Se regalaron ${cantidad} gemas correctamente.`);
       closeModal('modalRegalarGemasTop3');
@@ -963,7 +962,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-/* ✅ V1.74: RENDERIZADO DE DESAFÍOS CON TOP 3 PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -1469,7 +1467,6 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
-/* ✅ V1.74: ENVÍO DE RECARGA CON VALIDACIONES DINÁMICAS (SEGÚN AJUSTES) */
 async function enviarRecarga() {
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
@@ -1570,7 +1567,6 @@ function retirarSaldoUI() {
   document.getElementById('modalRetiro').classList.remove('hidden');
 }
 
-/* ✅ V1.74: ENVÍO DE RETIRO CON VALIDACIONES DINÁMICAS Y BOTÓN DE ESTADO */
 async function enviarRetiro() {
   const monto = document.getElementById('montoRetiro').value;
   const perfil = cachePerfilJugador || {};
@@ -1626,7 +1622,6 @@ function renderMisRecargas() {
   document.getElementById('panel-misRecargas').innerHTML = html;
 }
 
-/* ✅ V1.74: RENDER DE MIS RETIROS CON COMPROBANTE DE PAGO DEL ADMIN */
 function renderMisRetiros() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th><th>Comprobante Pago</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
