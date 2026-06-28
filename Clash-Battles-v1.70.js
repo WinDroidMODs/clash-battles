@@ -1,6 +1,6 @@
-// Clash-Battles-v1.69.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.69: CORREGIDA LA SUBIDA DE IMÁGENES Y BLOQUEO DE BOTÓN DE RECARGA
-const API = 'https://script.google.com/macros/s/AKfycbxewyDxDMt8tAzZlKPbiw9Gdx3t_cBuC_2_TKmuAr-UW_Gujj3UZT6cM-KodBqxw9j3/exec';
+// Clash-Battles-v1.70.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.70: SISTEMA DE VALIDACIÓN POR IMAGEN EN RECARGAS (Anti-estafa)
+const API = 'https://script.google.com/macros/s/AKfycby6g2LBojwx1jcIg7Tsk9_SWdEOvYXlAscoyoLE3tddPFj6bE6bj57E_Zm6XnMm_kkk/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -41,21 +41,6 @@ async function apiCall(body) {
   return await r.json();
 }
 
-// ✅ V1.68: Nueva función para enviar archivos (Capturas de pago)
-async function apiCallWithFile(body, fileInputId) {
-  const formData = new FormData();
-  for (const key in body) {
-    formData.append(key, body[key]);
-  }
-  const fileInput = document.getElementById(fileInputId);
-  if (fileInput && fileInput.files && fileInput.files.length > 0) {
-    formData.append('captura', fileInput.files[0]);
-  }
-  const r = await fetch(API, { method: 'POST', body: formData });
-  return await r.json();
-}
-
-// ✅ V1.66: NUEVOS SONIDOS DE VIDEOJUEGO
 function playSound(freq, duration, type='sine', vol=0.2) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -68,10 +53,10 @@ function playSound(freq, duration, type='sine', vol=0.2) {
     osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
   } catch(e) {}
 }
-function playClick() { playSound(800, 0.08); } // Sonido de clic
-function playCoin() { playSound(1200, 0.15); setTimeout(()=>playSound(1600, 0.15), 100); } // Sonido de moneda
-function playSuccess() { playSound(523, 0.2); setTimeout(()=>playSound(659, 0.2), 150); setTimeout(()=>playSound(784, 0.3), 300); } // Acorde de victoria
-function playError() { playSound(300, 0.4, 'sawtooth', 0.15); } // Sonido de error
+function playClick() { playSound(800, 0.08); }
+function playCoin() { playSound(1200, 0.15); setTimeout(()=>playSound(1600, 0.15), 100); }
+function playSuccess() { playSound(523, 0.2); setTimeout(()=>playSound(659, 0.2), 150); setTimeout(()=>playSound(784, 0.3), 300); }
+function playError() { playSound(300, 0.4, 'sawtooth', 0.15); }
 
 async function login() {
   playClick();
@@ -226,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ✅ V1.65: Nueva función de formateo para Bs (corregido el punto y la coma)
 function formatVES(amount) {
     if (isNaN(amount)) return '0,00';
     let val = Number(amount).toFixed(2);
@@ -462,24 +446,13 @@ function renderUsuariosAdmin(users) {
   document.getElementById('panel-jugadores').innerHTML = html;
 }
 
+/* ✅ V1.70: RENDERIZADO DE RECARGAS CON BOTÓN PARA VER LA IMAGEN DEL COMPROBANTE */
 function renderRecargasAdmin() {
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia / Comprobante</th><th>Acciones</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Comprobante</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRecargas.forEach(r => {
-    let refTexto = r.referencia || '';
-    let imagenLink = '';
-    // ✅ V1.68: Detectamos si hay una imagen incrustada en la referencia
-    if (refTexto.includes(' | Imagen: ')) {
-      const parts = refTexto.split(' | Imagen: ');
-      refTexto = parts[0];
-      imagenLink = parts[1];
-    }
-    
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td>
-    <td data-label="Referencia">
-      ${refTexto} 
-      ${imagenLink ? `<br/><a href="${imagenLink}" target="_blank" style="color:var(--blue);font-size:0.7rem;">📸 Ver comprobante</a>` : ''}
-    </td>
-    <td data-label="Acciones">
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Comprobante">
+      ${r.comprobante ? `<button class='btn btn-blue btn-sm' onclick='window.open("${r.comprobante}", "_blank")'>🖼️ Ver</button>` : 'Sin imagen'}
+    </td><td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRecarga(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRecarga(${r.id})'>✗</button>
     </td></tr>`;
@@ -1001,7 +974,9 @@ function renderReferidos() {
                                 <td data-label="Nombre">${item.nombreJuego}</td>
                                 <td data-label="Supercell">${item.supercellId || 'N/A'}</td>
                                 <td data-label="Fecha">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
-                                <td data-label="Gemas">${item.gemsAwarded} <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain; vertical-align:middle;" /></td>
+                                <td data-label="Gemas">
+                                    ${item.gemsAwarded} <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain; vertical-align:middle;" />
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1261,39 +1236,40 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
-// ✅ V1.69: Función enviarRecarga con bloqueo/desbloqueo de botón y manejo de errores
+/* ✅ V1.70: ENVÍO DE RECARGA CON CONVERSIÓN DE IMAGEN A BASE64 */
 async function enviarRecarga() {
-  playClick();
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
+  const fileInput = document.getElementById('comprobanteFile');
+  
   if (!monto || !ref) return toast('Completa todos los campos', 'error');
-
-  // ✅ Deshabilitamos el botón y cambiamos el texto para evitar múltiples envíos
-  const btn = document.querySelector('#modalRecarga .btn-gold');
-  const originalText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Enviando...';
-
-  try {
-    const res = await apiCallWithFile(
-      { action: 'solicitarRecarga', monto, referencia: ref }, 
-      'capturaRecarga'
-    );
-    
-    if (res.success) {
-      toast('Solicitud enviada. El admin la verificará.');
-      closeModal('modalRecarga');
-    } else {
-      toast(res.error || 'Error al enviar la solicitud', 'error');
-    }
-  } catch (error) {
-    console.error('Error en el envío:', error);
-    toast('Hubo un error de conexión. Inténtalo de nuevo.', 'error');
-  } finally {
-    // ✅ Restauramos el botón al estado original
-    btn.disabled = false;
-    btn.textContent = originalText;
+  
+  let fileBase64 = '';
+  let fileType = '';
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    fileType = file.type;
+    fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  } else {
+    return toast('Debes subir una captura de pantalla del comprobante.', 'error');
   }
+
+  const res = await apiCall({ 
+    action: 'solicitarRecarga', 
+    monto, 
+    referencia: ref, 
+    fileBase64: fileBase64, 
+    fileType: fileType 
+  });
+  if (res.success) {
+    toast('Solicitud enviada. El admin la verificará.');
+    closeModal('modalRecarga');
+  } else toast(res.error, 'error');
 }
 
 function retirarSaldoUI() {
