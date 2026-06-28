@@ -41,16 +41,17 @@ async function apiCall(body) {
   return await r.json();
 }
 
-// ✅ V1.68: Nueva función para enviar archivos (Capturas de pago)
+// ✅ V1.68: Nueva función para enviar archivos (Corregida para enviar el JSON dentro de 'data')
 async function apiCallWithFile(body, fileInputId) {
   const formData = new FormData();
-  for (const key in body) {
-    formData.append(key, body[key]);
-  }
+  // El backend espera un solo campo llamado 'data' con el JSON stringificado
+  formData.append('data', JSON.stringify(body));
+  
   const fileInput = document.getElementById(fileInputId);
   if (fileInput && fileInput.files && fileInput.files.length > 0) {
     formData.append('captura', fileInput.files[0]);
   }
+  
   const r = await fetch(API, { method: 'POST', body: formData });
   return await r.json();
 }
@@ -1261,19 +1262,36 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
-// ✅ V1.68: Usamos la nueva función apiCallWithFile para enviar la captura
+// ✅ V1.68.1: CORRECCIÓN DE ENVÍO CON SONIDOS Y FEEDBACK VISUAL
 async function enviarRecarga() {
+  playClick();
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
   if (!monto || !ref) return toast('Completa todos los campos', 'error');
+  
+  // Deshabilitamos el botón para evitar múltiples clics y mostramos carga
+  const btn = document.querySelector('#modalRecarga .btn-gold');
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
   const res = await apiCallWithFile(
     { action: 'solicitarRecarga', monto, referencia: ref }, 
     'capturaRecarga'
   );
+
+  // Restauramos el botón
+  btn.disabled = false;
+  btn.textContent = textoOriginal;
+
   if (res.success) {
+    playSuccess();
     toast('Solicitud enviada. El admin la verificará.');
     closeModal('modalRecarga');
-  } else toast(res.error, 'error');
+  } else {
+    playError();
+    toast(res.error || 'Error al enviar la solicitud', 'error');
+  }
 }
 
 function retirarSaldoUI() {
