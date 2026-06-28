@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.69.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.69: CORREGIDA LA SUBIDA DE IMÁGENES Y BLOQUEO DE BOTÓN DE RECARGA */
+/* Clash-Battles-v1.70.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.70: SISTEMA DE VALIDACIÓN POR IMAGEN EN RECARGAS */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -104,21 +104,21 @@ b, strong { font-weight: 700; }
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-weight: 700; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.input-group input, .input-group select, .input-group textarea, .input-group input[type="file"] {
+.input-group input, .input-group select, .input-group textarea {
   width: 100%; padding: 12px 14px;
   background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px;
   color: var(--text); font-size: 0.9rem; transition: all 0.3s;
 }
-.input-group input:focus, .input-group select:focus, .input-group textarea:focus, .input-group input[type="file"]:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
-/* ✅ V1.66: NUEVO SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
+/* SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
 .btn {
   padding: 0 16px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
-  border: 2px solid #ffffff; /* ✅ Borde blanco igual para todos */
+  border: 2px solid #ffffff; /* Borde blanco igual para todos */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -135,17 +135,14 @@ b, strong { font-weight: 700; }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
 .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 
-/* Solo cambiamos el color de fondo */
 .btn-gold { background: linear-gradient(180deg, #FFD700, #D4AF37); }
 .btn-green { background: linear-gradient(180deg, #00E676, #008a4a); }
 .btn-blue { background: linear-gradient(180deg, #4F8EF7, #235fb5); }
 .btn-red { background: linear-gradient(180deg, #FF4655, #971f2d); }
 
-/* Variantes de tamaño */
 .btn-sm { height: 34px; font-size: 0.7rem; padding: 0 12px; }
 .btn-block { width: 100%; }
 
-/* 📱 Ajustes específicos para móviles (más pequeños) */
 @media (max-width: 600px) {
   .btn { height: 36px; font-size: 0.75rem; padding: 0 12px; }
   .btn-sm { height: 30px; font-size: 0.65rem; padding: 0 10px; }
