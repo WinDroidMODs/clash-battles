@@ -1,6 +1,6 @@
-// Clash-Battles-v1.76.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.76: MEJORAS EN RETIROS - REFERENCIA DE PAGO PARA JUGADORES Y MODAL ADMIN CON DATOS BANCARIOS
-const API = 'https://script.google.com/macros/s/AKfycbwCraj9BcQRU0DQzvr17LsW-NzRyr4d1V1tAPwlv2gWJiWtY_hcqTUT2fyFdAKb9E2-/exec';
+// Clash-Battles-v1.77.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.77: RANKING TOP 2, MODAL DE GEMAS CORREGIDO, DISPUTA CON SUBIDA DE IMAGEN Y VERIFICACIÓN ADMIN
+const API = 'https://script.google.com/macros/s/AKfycbzKpjj8dxyYSpZzf8wenMphHM16l8vsTg1TLBvk4TYgv2xObosuxFs3nuKB_SumsKxt/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -15,6 +15,10 @@ let selectedBatalla = {};
 let deleteUserTargetId = null;
 let isBanAction = false;
 let selectedRetiroPagar = null;
+
+// ✅ V1.77: Variables para la verificación de disputas
+let disputaVerBatallaId = null;
+let disputaVerCapturaUrl = null;
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -73,11 +77,14 @@ async function login() {
     token = res.token; userId = res.userId; rol = res.rol; nombreJuego = res.nombreJuego;
     localStorage.setItem('token', token); localStorage.setItem('userId', userId);
     localStorage.setItem('rol', rol); localStorage.setItem('nombreJuego', nombreJuego);
+    
+    // ✅ V1.77: Mostrar modal de gemas regaladas si es que el admin le regaló algo
     if (res.gemsRegaladas && res.gemsRegaladas > 0) {
       document.getElementById('gemsRegaladasCount').textContent = res.gemsRegaladas;
       document.getElementById('gemsRegaladasMotivo').textContent = res.motivoRegalo || 'por ser uno de los mejores jugadores.';
       document.getElementById('modalGemasRegaladas').classList.remove('hidden');
     }
+    
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('appMain').classList.remove('hidden');
     initApp();
@@ -391,15 +398,15 @@ function updateBadges() {
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
+/* ✅ V1.77: RANKING TOP 2 (SOLO ORO Y PLATA) */
 function renderBatallasAdmin() {
   let batallas = cacheBatallasAdmin || [];
   let top3Html = `<div style='margin-bottom:20px;'>`;
   if (cacheTopGanadores && cacheTopGanadores.length > 0) {
-    const medals = ['🥇 Oro', '🥈 Plata', '🥉 Bronce'];
+    const medals = ['🥇 Oro', '🥈 Plata'];
     top3Html += `<h4 style='color:var(--gold);'>🏆 Ranking de Ganadores</h4><div style='display:flex; gap:16px; flex-wrap:wrap;'>`;
-    cacheTopGanadores.forEach((user, index) => {
-      const isTop3 = index < 3;
-      if (!isTop3) return;
+    // Solo mostramos los primeros 2
+    cacheTopGanadores.slice(0, 2).forEach((user, index) => {
       const medal = medals[index];
       top3Html += `
         <div style='background:var(--bg-card); border:1px solid var(--gold-border); border-radius:12px; padding:16px; min-width:150px; text-align:center;'>
@@ -471,12 +478,15 @@ async function deleteAllFinalizadas() {
   });
 }
 
+/* ✅ V1.77: DISPUTAS CON BOTÓN "VERIFICAR" Y MODAL DE REVISIÓN */
 function renderDisputasAdmin(disputas) {
   let html = '';
   if (disputas.length > 0) {
     html += `<h4>Disputas pendientes por trampa</h4><div class='table-wrapper'><table><thead><tr><th>ID</th><th>J1</th><th>J2</th><th>Acción</th></tr></thead><tbody>`;
     disputas.forEach(b => {
-      html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción"><button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 1)'>J1 ganó</button> <button class='btn btn-blue btn-sm' onclick='declararGanadorAdmin(${b.id}, 2)'>J2 ganó</button></td></tr>`;
+      html += `<tr><td data-label="ID:">#${b.id}</td><td data-label="J1">${b.j1Nombre} (${b.j1Tag})</td><td data-label="J2">${b.j2Nombre} (${b.j2Tag})</td><td data-label="Acción">
+        <button class='btn btn-blue btn-sm' onclick='abrirVerificadorDisputa(${b.id}, "${b.j1Nombre}", "${b.j2Nombre}", "${b.comprobanteDisputa || ''}")'>🔍 Verificar</button>
+      </td></tr>`;
     });
     html += '</tbody></table></div>';
   } else {
@@ -485,14 +495,48 @@ function renderDisputasAdmin(disputas) {
   document.getElementById('panel-disputas').innerHTML = html;
 }
 
+/* ✅ V1.77: FUNCIÓN PARA ABRIR EL MODAL DE VERIFICACIÓN DE DISPUTA */
+function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaUrl) {
+  disputaVerBatallaId = batallaId;
+  disputaVerCapturaUrl = capturaUrl;
+  document.getElementById('disputaVerJ1').textContent = j1Nombre;
+  document.getElementById('disputaVerJ2').textContent = j2Nombre;
+  
+  // Si no hay captura, deshabilitar el botón de ver
+  const btnVer = document.getElementById('btnVerCapturaDisputa');
+  if (!capturaUrl) {
+    btnVer.disabled = true;
+    btnVer.textContent = 'Sin captura';
+  } else {
+    btnVer.disabled = false;
+    btnVer.textContent = '🖼️ Ver Captura de Pantalla';
+  }
+  
+  document.getElementById('modalVerificarDisputa').classList.remove('hidden');
+}
+
+/* ✅ V1.77: FUNCIÓN PARA VER LA CAPTURA DE PANTALLA DE LA DISPUTA */
+function verCapturaDisputa() {
+  if (disputaVerCapturaUrl) {
+    ampliar(disputaVerCapturaUrl);
+  } else {
+    toast('No hay captura de pantalla disponible.', 'error');
+  }
+}
+
+/* ✅ V1.77: DECLARAR GANADOR DESDE EL MODAL DE DISPUTA */
 async function declararGanadorAdmin(batallaId, jugador) {
+  if (!confirm(`¿Estás seguro de declarar ganador al Jugador ${jugador}?`)) return;
   const res = await apiCall({ action: 'declararGanador', batallaId, ganador: jugador });
   if (res.success) {
     toast('Ganador actualizado');
+    closeModal('modalVerificarDisputa');
     cacheBatallasAdmin = await apiCall({ action: 'getBatallas' });
     renderBatallasAdmin();
     renderDisputasAdmin(cacheBatallasAdmin.filter(b => b.estado === 'Disputa'));
     updateSidebarStatsAdmin();
+  } else {
+    toast(res.error || 'Error al declarar ganador', 'error');
   }
 }
 
@@ -609,7 +653,6 @@ function renderRecargasAdmin() {
   document.getElementById('panel-recargas').innerHTML = html;
 }
 
-/* ✅ V1.76: RENDERIZADO DE RETIROS ADMIN CON COLUMNA "DATOS JUGADOR" */
 function renderRetirosAdmin() {
   const a = window.ajustes || {};
   const tasa = parseFloat(a.tasaRetiro || 0);
@@ -628,7 +671,6 @@ function renderRetirosAdmin() {
   document.getElementById('panel-retiros').innerHTML = html;
 }
 
-/* ✅ V1.76: MODAL DE PAGO CON MONTO EN BS Y DATOS DEL JUGADOR */
 function mostrarModalPagarRetiro(retiroId) {
   selectedRetiroPagar = retiroId;
   const r = cacheRetiros.find(x => x.id == retiroId);
@@ -987,6 +1029,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
+/* ✅ V1.77: RANKING TOP 2 PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -997,11 +1040,9 @@ function renderDesafios() {
 
   let top3Html = `<div style='margin-bottom:20px;'>`;
   if (cacheTopGanadores && cacheTopGanadores.length > 0) {
-    const medals = ['🥇 Oro', '🥈 Plata', '🥉 Bronce'];
+    const medals = ['🥇 Oro', '🥈 Plata'];
     top3Html += `<h4 style='color:var(--gold);'>🏆 Ranking de Ganadores</h4><div style='display:flex; gap:16px; flex-wrap:wrap;'>`;
-    cacheTopGanadores.forEach((user, index) => {
-      const isTop3 = index < 3;
-      if (!isTop3) return;
+    cacheTopGanadores.slice(0, 2).forEach((user, index) => {
       const medal = medals[index];
       top3Html += `
         <div style='background:var(--bg-card); border:1px solid var(--gold-border); border-radius:12px; padding:16px; min-width:150px; text-align:center;'>
@@ -1647,7 +1688,6 @@ function renderMisRecargas() {
   document.getElementById('panel-misRecargas').innerHTML = html;
 }
 
-/* ✅ V1.76: MIS RETIROS MUESTRA LA REFERENCIA DE PAGO DEL ADMIN */
 function renderMisRetiros() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia Pago</th><th>Estado</th><th>Comprobante Pago</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
@@ -1703,23 +1743,44 @@ async function enviarDeclaracion(resultado) {
   }
 }
 
-function enviarPruebasDisputa() {
+/* ✅ V1.77: ENVÍO DE PRUEBAS DE DISPUTA CON SUBIDA DE IMAGEN */
+async function enviarPruebasDisputa() {
   const batallaId = document.getElementById('disputaBatallaId').textContent;
   const motivo = document.getElementById('disputaMotivo').value.trim();
+  const fileInput = document.getElementById('disputaFile');
   
   if (!motivo) {
     toast('Por favor, escribe el motivo por el que estás verificando.', 'error');
     return;
   }
-
-  const p = cachePerfilJugador || {};
-  const mensaje = `Motivo de verificación: ${motivo}\n\nDatos del jugador:\nNombre en el juego: ${p.nombreJuego || 'No definido'}\nTag: ${p.tag || 'No definido'}\nSupercell ID: ${p.supercellId || 'No definido'}\nTeléfono: ${p.telefono || 'No definido'}\n\nCaptura de pantalla adjunta de mi victoria 🏆 o derrota ❌: (el usuario debe colocar una imagen también en el mensaje o captura en WhatsApp)`;
-
-  const waLink = `https://wa.me/message/XFDNKJWMVY2VC1?text=${encodeURIComponent(mensaje)}`;
   
-  window.open(waLink, '_blank');
-  closeModal('modalDisputa');
-  toast('📩 Verificación enviada al Admin.');
+  let fileBase64 = '';
+  let fileType = '';
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    if (!file.type.startsWith('image/')) {
+      toast('El archivo debe ser una imagen (JPG, PNG).', 'error');
+      return;
+    }
+    fileType = file.type;
+    fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  } else {
+    toast('Debes subir una captura de pantalla de la batalla.', 'error');
+    return;
+  }
+
+  const res = await apiCall({ action: 'subirPruebaDisputa', batallaId, motivo, fileBase64, fileType });
+  if (res.success) {
+    toast('📩 Pruebas enviadas al Admin.');
+    closeModal('modalDisputa');
+  } else {
+    toast(res.error || 'Error al enviar las pruebas.', 'error');
+  }
 }
 
 function mostrarCrearBatallaAbierta() {
