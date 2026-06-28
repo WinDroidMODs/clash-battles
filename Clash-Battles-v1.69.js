@@ -1,6 +1,6 @@
-// Clash-Battles-v1.68.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.68: SUBIDA DE IMÁGENES PARA RECARGAS, LOGS DE AUDITORÍA Y SEGURIDAD REFORZADA
-const API = 'https://script.google.com/macros/s/AKfycbzsgThh42xePxzfYHanlGs6S0Et0Ibq0i4FBx6oVBajlDQyxcrJ3YEMokBxe-gF7XM7/exec';
+// Clash-Battles-v1.69.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.69: CORREGIDA LA SUBIDA DE IMÁGENES Y BLOQUEO DE BOTÓN DE RECARGA
+const API = 'https://script.google.com/macros/s/AKfycbxewyDxDMt8tAzZlKPbiw9Gdx3t_cBuC_2_TKmuAr-UW_Gujj3UZT6cM-KodBqxw9j3/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -41,17 +41,16 @@ async function apiCall(body) {
   return await r.json();
 }
 
-// ✅ V1.68: Nueva función para enviar archivos (Corregida para enviar el JSON dentro de 'data')
+// ✅ V1.68: Nueva función para enviar archivos (Capturas de pago)
 async function apiCallWithFile(body, fileInputId) {
   const formData = new FormData();
-  // El backend espera un solo campo llamado 'data' con el JSON stringificado
-  formData.append('data', JSON.stringify(body));
-  
+  for (const key in body) {
+    formData.append(key, body[key]);
+  }
   const fileInput = document.getElementById(fileInputId);
   if (fileInput && fileInput.files && fileInput.files.length > 0) {
     formData.append('captura', fileInput.files[0]);
   }
-  
   const r = await fetch(API, { method: 'POST', body: formData });
   return await r.json();
 }
@@ -1262,35 +1261,38 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
-// ✅ V1.68.1: CORRECCIÓN DE ENVÍO CON SONIDOS Y FEEDBACK VISUAL
+// ✅ V1.69: Función enviarRecarga con bloqueo/desbloqueo de botón y manejo de errores
 async function enviarRecarga() {
   playClick();
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
   if (!monto || !ref) return toast('Completa todos los campos', 'error');
-  
-  // Deshabilitamos el botón para evitar múltiples clics y mostramos carga
+
+  // ✅ Deshabilitamos el botón y cambiamos el texto para evitar múltiples envíos
   const btn = document.querySelector('#modalRecarga .btn-gold');
-  const textoOriginal = btn.textContent;
+  const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Enviando...';
 
-  const res = await apiCallWithFile(
-    { action: 'solicitarRecarga', monto, referencia: ref }, 
-    'capturaRecarga'
-  );
-
-  // Restauramos el botón
-  btn.disabled = false;
-  btn.textContent = textoOriginal;
-
-  if (res.success) {
-    playSuccess();
-    toast('Solicitud enviada. El admin la verificará.');
-    closeModal('modalRecarga');
-  } else {
-    playError();
-    toast(res.error || 'Error al enviar la solicitud', 'error');
+  try {
+    const res = await apiCallWithFile(
+      { action: 'solicitarRecarga', monto, referencia: ref }, 
+      'capturaRecarga'
+    );
+    
+    if (res.success) {
+      toast('Solicitud enviada. El admin la verificará.');
+      closeModal('modalRecarga');
+    } else {
+      toast(res.error || 'Error al enviar la solicitud', 'error');
+    }
+  } catch (error) {
+    console.error('Error en el envío:', error);
+    toast('Hubo un error de conexión. Inténtalo de nuevo.', 'error');
+  } finally {
+    // ✅ Restauramos el botón al estado original
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
 
