@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.67.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.67: FONDO DE ROMBOS 3D ESTILO CLASH ROYALE (MORADO) Y EFECTO BISELADO */
+/* Clash-Battles-v1.68.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.68: SUBIDA DE IMÁGENES PARA RECARGAS, LOGS DE AUDITORÍA Y SEGURIDAD REFORZADA */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -24,14 +24,11 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Clash Royale', 'Inter', sans-serif; }
 
-/* ✅ V1.67: FONDO MORADO CON DEGRADADO Y ROMBOS 3D CON BISELES (IDÉNTICO AL ESTILO DEL JUEGO) */
 body {
   margin: 0; padding: 0;
-  /* Fondo morado con degradado realista */
-  background: linear-gradient(180deg, #150621 0%, #23103a 50%, #3a1b55 100%);
-  /* Patrón de rombos 3D con biseles y brillos, tal como en Clash Royale */
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><defs><linearGradient id="diag" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="rgba(255,255,255,0.20)"/><stop offset="30%" stop-color="rgba(255,255,255,0.05)"/><stop offset="70%" stop-color="rgba(0,0,0,0.05)"/><stop offset="100%" stop-color="rgba(255,255,255,0.15)"/></linearGradient></defs><path d="M40 0 L80 40 L40 80 L0 40 Z" fill="url(%23diag)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/><path d="M0 0 L40 0 L20 20 Z" fill="rgba(255,255,255,0.10)"/><path d="M80 0 L40 0 L60 20 Z" fill="rgba(255,255,255,0.10)"/><path d="M0 80 L40 80 L20 60 Z" fill="rgba(0,0,0,0.05)"/><path d="M80 80 L40 80 L60 60 Z" fill="rgba(0,0,0,0.05)"/></svg>');
-  background-size: 80px 80px;
+  background-color: #150621; 
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 L40 20 L20 40 L0 20 Z' fill='rgba(255,255,255,0.09)' /%3E%3Cpath d='M0 0 L20 0 L10 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 0 L20 0 L30 10 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M0 40 L20 40 L10 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3Cpath d='M40 40 L20 40 L30 30 Z' fill='rgba(255,255,255,0.02)' /%3E%3C/svg%3E");
   display: flex; flex-direction: column; min-height: 100vh;
   color: var(--text); font-size: 15px; line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
@@ -107,12 +104,12 @@ b, strong { font-weight: 700; }
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-weight: 700; font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.input-group input, .input-group select, .input-group textarea {
+.input-group input, .input-group select, .input-group textarea, .input-group input[type="file"] {
   width: 100%; padding: 12px 14px;
   background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px;
   color: var(--text); font-size: 0.9rem; transition: all 0.3s;
 }
-.input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus, .input-group input[type="file"]:focus { border-color: var(--gold-border); box-shadow: 0 0 20px rgba(255,215,0,0.2); outline: none; background: rgba(255,255,255,0.08); }
 
 /* ✅ V1.66: NUEVO SISTEMA DE BOTONES (Borde blanco, efectos y tamaño reducido) */
 .btn {
