@@ -1,6 +1,6 @@
 // Clash-Battles-v1.70.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.70: SISTEMA DE VALIDACIÓN POR IMAGEN EN RECARGAS (Anti-estafa)
-const API = 'https://script.google.com/macros/s/AKfycby6g2LBojwx1jcIg7Tsk9_SWdEOvYXlAscoyoLE3tddPFj6bE6bj57E_Zm6XnMm_kkk/exec';
+const API = 'https://script.google.com/macros/s/AKfycbzXGgHc3DwZ-ktycTUUR1teC6xCliDGP4bLlNupZj190x3nHuN3EvSvdZbaji9n3a2d/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
