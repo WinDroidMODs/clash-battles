@@ -1,11 +1,11 @@
-// Clash-Battles-v1.77.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.77: RANKING TOP 2, MODAL DE GEMAS CORREGIDO, DISPUTA CON SUBIDA DE IMAGEN Y VERIFICACIÓN ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbzKpjj8dxyYSpZzf8wenMphHM16l8vsTg1TLBvk4TYgv2xObosuxFs3nuKB_SumsKxt/exec';
+// Clash-Battles-v1.78.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.78: CORREGIDO BOTÓN CANJEAR GEMAS Y DECLARAR RESULTADO. MODAL CANJE AGREGADO.
+const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
-let bannedReason = localStorage.getItem('bannedReason') || ''; // Para mostrar modal de suspensión
+let bannedReason = localStorage.getItem('bannedReason') || '';
 
 const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
@@ -16,7 +16,6 @@ let deleteUserTargetId = null;
 let isBanAction = false;
 let selectedRetiroPagar = null;
 
-// ✅ V1.77: Variables para la verificación de disputas
 let disputaVerBatallaId = null;
 let disputaVerCapturaUrl = null;
 
@@ -78,7 +77,6 @@ async function login() {
     localStorage.setItem('token', token); localStorage.setItem('userId', userId);
     localStorage.setItem('rol', rol); localStorage.setItem('nombreJuego', nombreJuego);
     
-    // ✅ V1.77: Mostrar modal de gemas regaladas si es que el admin le regaló algo
     if (res.gemsRegaladas && res.gemsRegaladas > 0) {
       document.getElementById('gemsRegaladasCount').textContent = res.gemsRegaladas;
       document.getElementById('gemsRegaladasMotivo').textContent = res.motivoRegalo || 'por ser uno de los mejores jugadores.';
@@ -398,14 +396,12 @@ function updateBadges() {
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
-/* ✅ V1.77: RANKING TOP 2 (SOLO ORO Y PLATA) */
 function renderBatallasAdmin() {
   let batallas = cacheBatallasAdmin || [];
   let top3Html = `<div style='margin-bottom:20px;'>`;
   if (cacheTopGanadores && cacheTopGanadores.length > 0) {
     const medals = ['🥇 Oro', '🥈 Plata'];
     top3Html += `<h4 style='color:var(--gold);'>🏆 Ranking de Ganadores</h4><div style='display:flex; gap:16px; flex-wrap:wrap;'>`;
-    // Solo mostramos los primeros 2
     cacheTopGanadores.slice(0, 2).forEach((user, index) => {
       const medal = medals[index];
       top3Html += `
@@ -478,7 +474,6 @@ async function deleteAllFinalizadas() {
   });
 }
 
-/* ✅ V1.77: DISPUTAS CON BOTÓN "VERIFICAR" Y MODAL DE REVISIÓN */
 function renderDisputasAdmin(disputas) {
   let html = '';
   if (disputas.length > 0) {
@@ -495,14 +490,12 @@ function renderDisputasAdmin(disputas) {
   document.getElementById('panel-disputas').innerHTML = html;
 }
 
-/* ✅ V1.77: FUNCIÓN PARA ABRIR EL MODAL DE VERIFICACIÓN DE DISPUTA */
 function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaUrl) {
   disputaVerBatallaId = batallaId;
   disputaVerCapturaUrl = capturaUrl;
   document.getElementById('disputaVerJ1').textContent = j1Nombre;
   document.getElementById('disputaVerJ2').textContent = j2Nombre;
   
-  // Si no hay captura, deshabilitar el botón de ver
   const btnVer = document.getElementById('btnVerCapturaDisputa');
   if (!capturaUrl) {
     btnVer.disabled = true;
@@ -515,7 +508,6 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaUrl) {
   document.getElementById('modalVerificarDisputa').classList.remove('hidden');
 }
 
-/* ✅ V1.77: FUNCIÓN PARA VER LA CAPTURA DE PANTALLA DE LA DISPUTA */
 function verCapturaDisputa() {
   if (disputaVerCapturaUrl) {
     ampliar(disputaVerCapturaUrl);
@@ -524,7 +516,6 @@ function verCapturaDisputa() {
   }
 }
 
-/* ✅ V1.77: DECLARAR GANADOR DESDE EL MODAL DE DISPUTA */
 async function declararGanadorAdmin(batallaId, jugador) {
   if (!confirm(`¿Estás seguro de declarar ganador al Jugador ${jugador}?`)) return;
   const res = await apiCall({ action: 'declararGanador', batallaId, ganador: jugador });
@@ -1029,7 +1020,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-/* ✅ V1.77: RANKING TOP 2 PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -1173,7 +1163,11 @@ function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, op
 
 function gestionDeclararResultado() {
     closeModal('modalGestionBatalla');
-    mostrarDeclararResultado(selectedBatalla.id);
+    if (selectedBatalla && selectedBatalla.id) {
+        mostrarDeclararResultado(selectedBatalla.id);
+    } else {
+        toast('Error: No se pudo obtener el ID de la batalla.', 'error');
+    }
 }
 
 function gestionCopiarID() {
@@ -1221,6 +1215,7 @@ async function cancelarBatalla(batallaId) {
     }
 }
 
+/* ✅ V1.78: BOTÓN DE CANJEAR GEMAS ACTUALIZADO (SOLO DICE "Canjear Gemas" CON ICONO) */
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -1245,7 +1240,7 @@ function renderReferidos() {
         canjeBlock = `
             <div style='margin-top:16px; text-align:center;'>
                 <button class='btn btn-gold btn-block' onclick='mostrarModalCanje()' style='display:flex; align-items:center; justify-content:center; gap:8px;'>
-                    Canjear Gemas <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" /> por USD
+                    <img src="${ICON_GEMA}" alt="Gema" style="height:20px; width:20px; object-fit:contain;" /> Canjear Gemas
                 </button>
             </div>
         `;
@@ -1381,6 +1376,7 @@ function compartirEnlace() {
     }
 }
 
+/* ✅ V1.78: FUNCIONES PARA EL MODAL DE CANJE DE GEMAS */
 function mostrarModalCanje() {
     const gemasActuales = parseInt(cachePerfilJugador.gemas || 0);
     document.getElementById('canjeGemasActual').textContent = gemasActuales;
@@ -1402,8 +1398,6 @@ function actualizarCanjePreview() {
     if (gems > maxGems) {
         input.value = maxGems;
         gems = maxGems;
-    }
-    if (gems < 100 && gems > 0) {
     }
     
     const montoUSD = gems / 100;
@@ -1743,7 +1737,6 @@ async function enviarDeclaracion(resultado) {
   }
 }
 
-/* ✅ V1.77: ENVÍO DE PRUEBAS DE DISPUTA CON SUBIDA DE IMAGEN */
 async function enviarPruebasDisputa() {
   const batallaId = document.getElementById('disputaBatallaId').textContent;
   const motivo = document.getElementById('disputaMotivo').value.trim();
