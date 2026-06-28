@@ -1,6 +1,6 @@
-// Clash-Battles-v1.74.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.74: GESTIÓN DE BANEOS/ELIMINACIONES, TOP 3 GANADORES, PAGO DE RETIROS Y MODALES DE INFO
-const API = 'https://script.google.com/macros/s/AKfycbxuNgMMuuu4v0oqKdfl_2PKEPpjX6ETI-qIpSMq_v2c-btpOTMW9thw5PfLgCWAFW6b/exec';
+// Clash-Battles-v1.75.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.75: NUEVO MODAL DE PAGO DE RETIROS, BOTÓN "PAGAR" Y ELIMINADA COLUMNA COMPROBANTE EN LISTA
+const API = 'https://script.google.com/macros/s/AKfycbxheALQOEKyVwBNH5VkQPi8UVHf-ymsR_8YtN12apfliHqRH2VEsZ4WgRYu9fuq9x0J/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -14,6 +14,7 @@ let modalConfirmCallback = null;
 let selectedBatalla = {};
 let deleteUserTargetId = null;
 let isBanAction = false;
+let selectedRetiroPagar = null; // ✅ V1.75: Variable para el modal de pago de retiros
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -84,7 +85,6 @@ async function login() {
     if (res.banned) {
       playError();
       document.getElementById('motivoSuspensionDisplay').textContent = res.motivo || 'Comportamiento inadecuado.';
-      // ✅ Guardamos el WhatsApp del Admin en el propio modal si viene en la respuesta
       const modal = document.getElementById('modalJugadorSuspendido');
       if (res.adminWhatsApp) {
         modal.setAttribute('data-admin-wa', res.adminWhatsApp);
@@ -496,7 +496,6 @@ async function declararGanadorAdmin(batallaId, jugador) {
   }
 }
 
-/* ✅ RENDERIZADO DE USUARIOS ADMIN (FILTRADO PARA OCULTAR AL ADMIN) */
 function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Saldo</th><th>Acciones</th></tr></thead><tbody>`;
@@ -513,7 +512,6 @@ function renderUsuariosAdmin(users) {
   document.getElementById('panel-jugadores').innerHTML = html;
 }
 
-/* ✅ LÓGICA DE ELIMINAR JUGADOR */
 function mostrarModalDeleteUser(userId) {
   deleteUserTargetId = userId;
   document.getElementById('modalConfirmDeleteUser').classList.remove('hidden');
@@ -533,10 +531,8 @@ function executeDeleteUser(permanent) {
   });
 }
 
-/* ✅ LÓGICA DE BANEAR / DESBANEAR JUGADOR */
 function mostrarModalBanUser(userId, isBanned) {
   if (isBanned) {
-    // Desbanear
     if (!confirm('¿Estás seguro de que quieres desbanear a este jugador?')) return;
     apiCall({ action: 'unbanUser', targetUserId: userId }).then(res => {
       if (res.success) {
@@ -548,7 +544,6 @@ function mostrarModalBanUser(userId, isBanned) {
       }
     });
   } else {
-    // Banear
     banUserTargetId = userId;
     document.getElementById('modalBanUser').classList.remove('hidden');
     document.getElementById('banMotivoInput').value = '';
@@ -572,7 +567,6 @@ function executeBanUser() {
   });
 }
 
-/* ✅ LÓGICA DE REGALAR GEMAS A TOP 3 */
 function mostrarModalRegalarGemas(userId, nombre, lugar) {
   regalarGemasTargetId = userId;
   document.getElementById('regalarGemasMsg').textContent = `Regalarás gemas a ${nombre} (${lugar}er Lugar).`;
@@ -615,26 +609,18 @@ function renderRecargasAdmin() {
   document.getElementById('panel-recargas').innerHTML = html;
 }
 
-/* ✅ RENDERIZADO DE RETIROS ADMIN CON COMPROBANTE DE PAGO Y REFERENCIA */
+/* ✅ V1.75: RENDERIZADO DE RETIROS ADMIN CON BOTÓN "PAGAR" (ELIMINADA COLUMNA COMPROBANTE) */
 function renderRetirosAdmin() {
   const a = window.ajustes || {};
   const tasa = parseFloat(a.tasaRetiro || 0);
   
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto (USD)</th><th>Monto (Bs)</th><th>Referencia</th><th>Comprobante Pago</th><th>Acciones</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto (USD)</th><th>Monto (Bs)</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRetiros.forEach(r => {
     const montoUSD = parseFloat(r.monto || 0);
     const montoBS = montoUSD * tasa;
-    const fileId = `pagoFile_${r.id}`;
-    const refId = `pagoRef_${r.id}`;
     
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto (USD)">$${montoUSD.toFixed(2)}</td><td data-label="Monto (Bs)">Bs ${formatVES(montoBS)}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Comprobante Pago">
-      ${r.comprobante_pago ? `<button class='btn btn-blue btn-sm' onclick='window.open("${r.comprobante_pago}", "_blank")'>🖼️ Ver</button>` : 'Sin imagen'}
-    </td><td data-label="Acciones">
-      <div style='display:flex; flex-direction:column; gap:4px;'>
-        <input type="file" id="${fileId}" accept="image/*" style="color:white; font-size:0.6rem; width:100%;"/>
-        <input type="text" id="${refId}" placeholder="Ref. pago" style="background:var(--bg-card); border:1px solid var(--border); border-radius:4px; color:white; padding:4px; width:100%; font-size:0.6rem;"/>
-        <button class='btn btn-green btn-sm' onclick='marcarRetiroPagado(${r.id}, "${fileId}", "${refId}")'>✓ Pagado</button>
-      </div>
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto (USD)">$${montoUSD.toFixed(2)}</td><td data-label="Monto (Bs)">Bs ${formatVES(montoBS)}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
+      <button class='btn btn-gold btn-sm' onclick='mostrarModalPagarRetiro(${r.id})'>Pagar</button>
     </td></tr>`;
   });
   html += '</tbody></table></div>';
@@ -642,12 +628,32 @@ function renderRetirosAdmin() {
   document.getElementById('panel-retiros').innerHTML = html;
 }
 
-/* ✅ LÓGICA PARA MARCAR RETIRO COMO PAGADO */
-async function marcarRetiroPagado(movimientoId, fileInputId, refInputId) {
-  const fileInput = document.getElementById(fileInputId);
-  const refInput = document.getElementById(refInputId);
-  const referenciaPago = refInput.value.trim();
+/* ✅ V1.75: LÓGICA DEL NUEVO MODAL DE PAGO DE RETIROS */
+function mostrarModalPagarRetiro(retiroId) {
+  selectedRetiroPagar = retiroId;
+  const r = cacheRetiros.find(x => x.id == retiroId);
+  if (!r) return toast('Error al cargar los datos del retiro.', 'error');
   
+  document.getElementById('pagarRetiroIdSpan').textContent = r.id;
+  document.getElementById('pagarRetiroUsuarioSpan').textContent = r.nombre;
+  document.getElementById('pagarRetiroMontoSpan').textContent = parseFloat(r.monto).toFixed(2);
+  
+  // Limpiar campos del modal
+  document.getElementById('pagarRetiroRef').value = '';
+  document.getElementById('pagarRetiroFile').value = '';
+  
+  document.getElementById('modalPagarRetiro').classList.remove('hidden');
+}
+
+async function ejecutarPagoRetiro() {
+  const id = selectedRetiroPagar;
+  if (!id) return toast('Error interno.', 'error');
+  
+  const refInput = document.getElementById('pagarRetiroRef');
+  const fileInput = document.getElementById('pagarRetiroFile');
+  const btn = document.getElementById('btnPagarRetiroConfirm');
+  
+  const referenciaPago = refInput.value.trim();
   if (!referenciaPago) {
     return toast('Debes ingresar la referencia del pago realizado.', 'error');
   }
@@ -670,16 +676,23 @@ async function marcarRetiroPagado(movimientoId, fileInputId, refInputId) {
     return toast('Debes subir una captura del comprobante de pago.', 'error');
   }
 
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+
   const res = await apiCall({ 
     action: 'marcarRetiroPagado', 
-    movimientoId, 
+    movimientoId: id, 
     referenciaPago, 
     fileBase64, 
     fileType 
   });
   
+  btn.disabled = false;
+  btn.textContent = 'Pagado';
+  
   if (res.success) {
     toast('Retiro marcado como pagado exitosamente.');
+    closeModal('modalPagarRetiro');
     const todosMovs = await apiCall({ action: 'getMovimientos' });
     cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
     pendingRetiros = cacheRetiros.length;
