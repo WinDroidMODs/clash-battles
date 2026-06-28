@@ -1,16 +1,19 @@
-// Clash-Battles-v1.72.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.72: VALIDACIONES ESTRICTAS, LIMPIEZA DE MODAL Y MONTO EN BS PARA ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbyDvvHQDwQH3iqxMGJ539lSkLPD1Lz3bpVcUz4_75O7-JIWV7KKJvqwS0O4Sot2CKMx/exec';
+// Clash-Battles-v1.74.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.74: GESTIÓN DE BANEOS/ELIMINACIONES, TOP 3 GANADORES, PAGO DE RETIROS Y MODALES DE INFO
+const API = 'https://script.google.com/macros/s/AKfycbyFcYp9-fyE4ViJPGHmW0GJ4NNbU3twnV4X8S3jkJAW_vtrE86vGFfmbed6bFdIxXk/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
 let nombreJuego = localStorage.getItem('nombreJuego') || '';
+let bannedReason = localStorage.getItem('bannedReason') || ''; // Para mostrar modal de suspensión
 
 const ICON_ORO = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnODwm3kUcNk8k3Vtsw1YhxzvMKIEBqG7WNqTc5wSzKDn-aSXNwTCcP0HMoWik_JyEAoiaq56RgeYJHRrFtTFwi_fMN0oxfaSrd7w2bH4B48TrH3r-ARJ7CK7j5nDdceoF2uaaHaDiRDm3Ubi8svaImJcF9zxNd76V9gD3ryxRYbJfwbmnK5dbhuQbBzup/s354/Oro.png';
 const ICON_GEMA = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRCySucB_t3YT0UaUciRujOZkdluzwwXLlUMcFk4pIktYi0zv-LKbUzN67IMr6uLA3jvYhai7GHSZdf3EMhN32tOAYOAJF985GFGVk4EfBor4X8503Ay_5xA1XExR2QPUv_4Tcs5B-Fj35f2ZIDIaO8ofLJoBzugx_mxh5PBfVPRjuvq2wM8X5RnlMANYz/s354/Gema.png';
 
 let modalConfirmCallback = null;
 let selectedBatalla = {};
+let deleteUserTargetId = null;
+let isBanAction = false;
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -69,13 +72,38 @@ async function login() {
     token = res.token; userId = res.userId; rol = res.rol; nombreJuego = res.nombreJuego;
     localStorage.setItem('token', token); localStorage.setItem('userId', userId);
     localStorage.setItem('rol', rol); localStorage.setItem('nombreJuego', nombreJuego);
+    if (res.gemsRegaladas && res.gemsRegaladas > 0) {
+      document.getElementById('gemsRegaladasCount').textContent = res.gemsRegaladas;
+      document.getElementById('gemsRegaladasMotivo').textContent = res.motivoRegalo || 'por ser uno de los mejores jugadores.';
+      document.getElementById('modalGemasRegaladas').classList.remove('hidden');
+    }
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('appMain').classList.remove('hidden');
     initApp();
   } else {
+    if (res.banned) {
+      playError();
+      document.getElementById('motivoSuspensionDisplay').textContent = res.motivo || 'Comportamiento inadecuado.';
+      document.getElementById('modalJugadorSuspendido').classList.remove('hidden');
+      localStorage.removeItem('token'); localStorage.removeItem('userId');
+      localStorage.removeItem('rol'); localStorage.removeItem('nombreJuego');
+      return;
+    }
     playError();
     showAuthError(res.error);
   }
+}
+
+function contactarAdminSuspension() {
+  const adminWA = window.ajustes && window.ajustes.adminWhatsApp ? window.ajustes.adminWhatsApp : '';
+  const motivo = document.getElementById('motivoSuspensionDisplay').textContent;
+  if (adminWA) {
+    const mensaje = `Hola Admin, mi cuenta fue suspendida por: ${motivo}. Solicito por favor una revisión de mi caso. Gracias.`;
+    window.open(`https://wa.me/${adminWA}?text=${encodeURIComponent(mensaje)}`, '_blank');
+  } else {
+    toast('No hay número de WhatsApp del Admin configurado.', 'error');
+  }
+  closeModal('modalJugadorSuspendido');
 }
 
 async function register() {
@@ -229,16 +257,15 @@ function copiarTexto(texto, mensaje) {
     });
 }
 
-function contactarOponente(batallaId, miNombre, miTag, opNombre, opTag, telefono) {
-    const mensaje = `Hola! Soy ${miNombre} (Tag: ${miTag}). Estoy en la batalla #${batallaId} contra ${opNombre} (Tag: ${opTag}). Mi Supercell ID es ${cachePerfilJugador.supercellId || 'No definido'}. ¿Cuál es el tuyo para agregarnos y jugar?`;
-    const waLink = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-    window.open(waLink, '_blank');
+function openInfoModal(modalId) {
+  document.getElementById(modalId).classList.remove('hidden');
 }
 
 let cacheBatallasAdmin = null, cacheUsuarios = null;
 let cacheRecargas = [], cacheRetiros = [], cacheMovimientosAdmin = [];
 let pendingRecargas = 0, pendingRetiros = 0;
 let cachePerfil = null;
+let cacheTopGanadores = [];
 
 async function initApp() {
   window.ajustes = await apiCall({ action: 'getAjustes' });
@@ -293,17 +320,19 @@ async function initApp() {
 
 async function initAdmin() {
   try {
-    const [perfil, gStats, batallas, usuarios, todosMovs] = await Promise.all([
+    const [perfil, gStats, batallas, usuarios, todosMovs, top3] = await Promise.all([
       apiCall({ action: 'getPerfil', userId }),
       apiCall({ action: 'getAdminStats' }),
       apiCall({ action: 'getBatallas' }),
       apiCall({ action: 'getUsuarios' }),
-      apiCall({ action: 'getMovimientos' })
+      apiCall({ action: 'getMovimientos' }),
+      apiCall({ action: 'getTopGanadores' })
     ]);
 
     cachePerfil = perfil;
     cacheBatallasAdmin = batallas;
     cacheUsuarios = usuarios;
+    cacheTopGanadores = top3;
     
     updateSidebarStatsAdmin(gStats);
 
@@ -353,10 +382,33 @@ function updateBadges() {
   if (badgeRet) { badgeRet.textContent = pendingRetiros; badgeRet.style.display = pendingRetiros > 0 ? 'inline' : 'none'; }
 }
 
-function renderBatallasAdmin(filtro = '') {
+/* ✅ V1.74: RENDERIZADO DE TOP 3 GANADORES Y BATALLAS */
+function renderBatallasAdmin() {
   let batallas = cacheBatallasAdmin || [];
-  if (filtro) batallas = batallas.filter(b => b.estado === filtro);
-  let html = `<div style='margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;'>
+  let top3Html = `<div style='margin-bottom:20px;'>`;
+  if (cacheTopGanadores && cacheTopGanadores.length > 0) {
+    const medals = ['🥇 Oro', '🥈 Plata', '🥉 Bronce'];
+    top3Html += `<h4 style='color:var(--gold);'>🏆 Ranking de Ganadores</h4><div style='display:flex; gap:16px; flex-wrap:wrap;'>`;
+    cacheTopGanadores.forEach((user, index) => {
+      const isTop3 = index < 3;
+      if (!isTop3) return;
+      const medal = medals[index];
+      top3Html += `
+        <div style='background:var(--bg-card); border:1px solid var(--gold-border); border-radius:12px; padding:16px; min-width:150px; text-align:center;'>
+          <div style='font-size:2rem;'>${medal.split(' ')[0]}</div>
+          <div style='font-weight:700;'>${user.nombre}</div>
+          <div style='color:var(--text-secondary); font-size:0.8rem;'>${user.wins} victorias</div>
+          <button class='btn btn-gold btn-sm' style='margin-top:8px;' onclick='mostrarModalRegalarGemas("${user.id}", "${user.nombre}", ${index+1})'>🎁 Regalar Gemas</button>
+        </div>
+      `;
+    });
+    top3Html += `</div>`;
+  } else {
+    top3Html += `<p style="color:var(--text-secondary);">Aún no hay suficientes batallas finalizadas para mostrar un ranking.</p>`;
+  }
+  top3Html += `</div>`;
+
+  let html = top3Html + `<div style='margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;'>
     <select onchange='renderBatallasAdmin(this.value)' style='padding:8px 12px; border-radius:8px; background:var(--bg-card); color:white; border:2px solid var(--gold-border);'>
       <option value=''>Todos</option>
       <option value='Pendiente de pago'>Pendiente de pago</option>
@@ -436,17 +488,106 @@ async function declararGanadorAdmin(batallaId, jugador) {
   }
 }
 
+/* ✅ V1.74: RENDERIZADO DE USUARIOS ADMIN (SIN ROL, CON BOTONES DE BAN Y ELIMINAR) */
 function renderUsuariosAdmin(users) {
   if (!users) users = cacheUsuarios || [];
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Rol</th><th>Saldo</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Email</th><th>Nombre</th><th>Tag</th><th>Supercell ID</th><th>Teléfono</th><th>Saldo</th><th>Acciones</th></tr></thead><tbody>`;
   users.forEach(u => {
-    html += `<tr><td data-label="ID:">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Rol">${u.rol}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td></tr>`;
+    const isBanned = u.baneado === true;
+    html += `<tr><td data-label="ID:">${u.id}</td><td data-label="Email">${u.email}</td><td data-label="Nombre">${u.nombreJuego}</td><td data-label="Tag">${u.tag}</td><td data-label="Supercell">${u.supercellId}</td><td data-label="Teléfono">${u.telefono}</td><td data-label="Saldo">$${parseFloat(u.saldo || 0).toFixed(2)}</td><td data-label="Acciones" style='display:flex; gap:4px; flex-wrap:wrap;'>
+      <button class='btn btn-red btn-sm' style='padding:2px 8px;' onclick='mostrarModalDeleteUser("${u.id}")'>✕</button>
+      <button class='btn ${isBanned ? "btn-green" : "btn-red"} btn-sm' style='padding:2px 8px;' onclick='mostrarModalBanUser("${u.id}", ${isBanned})'>${isBanned ? "Desbanear" : "Bam"}</button>
+    </td></tr>`;
   });
   html += '</tbody></table></div>';
   document.getElementById('panel-jugadores').innerHTML = html;
 }
 
-// ✅ V1.72: RENDERIZADO DE RECARGAS PARA ADMIN CON MONTO EN BS INCLUIDO
+/* ✅ V1.74: LÓGICA DE ELIMINAR JUGADOR */
+let deleteUserPermanent = false;
+function mostrarModalDeleteUser(userId) {
+  deleteUserTargetId = userId;
+  document.getElementById('modalConfirmDeleteUser').classList.remove('hidden');
+}
+function executeDeleteUser(permanent) {
+  const msg = permanent ? 'eliminar permanentemente' : 'eliminar (permitiendo re-registro)';
+  if (!confirm(`¿Estás completamente seguro de ${msg} a este jugador?`)) return;
+  apiCall({ action: 'deleteUser', userId: deleteUserTargetId, permanent: permanent }).then(res => {
+    if (res.success) {
+      toast('Usuario eliminado correctamente.');
+      closeModal('modalConfirmDeleteUser');
+      cacheUsuarios = null;
+      renderUsuariosAdmin();
+    } else {
+      toast(res.error || 'Error al eliminar', 'error');
+    }
+  });
+}
+
+/* ✅ V1.74: LÓGICA DE BANEAR / DESBANEAR JUGADOR */
+let banUserTargetId = null;
+function mostrarModalBanUser(userId, isBanned) {
+  if (isBanned) {
+    // Desbanear
+    if (!confirm('¿Estás seguro de que quieres desbanear a este jugador?')) return;
+    apiCall({ action: 'unbanUser', userId: userId }).then(res => {
+      if (res.success) {
+        toast('Jugador desbaneado exitosamente.');
+        cacheUsuarios = null;
+        renderUsuariosAdmin();
+      } else {
+        toast(res.error || 'Error al desbanear', 'error');
+      }
+    });
+  } else {
+    // Banear
+    banUserTargetId = userId;
+    document.getElementById('modalBanUser').classList.remove('hidden');
+    document.getElementById('banMotivoInput').value = '';
+  }
+}
+function executeBanUser() {
+  const motivo = document.getElementById('banMotivoInput').value.trim();
+  if (!motivo) {
+    return toast('Debes escribir un motivo para la suspensión.', 'error');
+  }
+  if (!confirm('¿Estás seguro de que quieres suspender a este jugador?')) return;
+  apiCall({ action: 'banUser', userId: banUserTargetId, motivo: motivo }).then(res => {
+    if (res.success) {
+      toast('Jugador suspendido exitosamente.');
+      closeModal('modalBanUser');
+      cacheUsuarios = null;
+      renderUsuariosAdmin();
+    } else {
+      toast(res.error || 'Error al banear', 'error');
+    }
+  });
+}
+
+/* ✅ V1.74: LÓGICA DE REGALAR GEMAS A TOP 3 */
+let regalarGemasTargetId = null;
+function mostrarModalRegalarGemas(userId, nombre, lugar) {
+  regalarGemasTargetId = userId;
+  document.getElementById('regalarGemasMsg').textContent = `Regalarás gemas a ${nombre} (${lugar}er Lugar).`;
+  document.getElementById('modalRegalarGemasTop3').classList.remove('hidden');
+  document.getElementById('cantidadGemasInput').value = '';
+}
+function executeRegalarGemasTop3() {
+  const cantidad = parseInt(document.getElementById('cantidadGemasInput').value);
+  if (!cantidad || cantidad < 1) {
+    return toast('Ingresa una cantidad válida de gemas.', 'error');
+  }
+  if (!confirm(`¿Estás seguro de regalar ${cantidad} gemas a este jugador?`)) return;
+  apiCall({ action: 'regalarGemasAdmin', userId: regalarGemasTargetId, cantidad: cantidad }).then(res => {
+    if (res.success) {
+      toast(`Se regalaron ${cantidad} gemas correctamente.`);
+      closeModal('modalRegalarGemasTop3');
+    } else {
+      toast(res.error || 'Error al regalar gemas', 'error');
+    }
+  });
+}
+
 function renderRecargasAdmin() {
   const a = window.ajustes || {};
   const tasa = parseFloat(a.tasaRecarga || 0);
@@ -467,12 +608,27 @@ function renderRecargasAdmin() {
   document.getElementById('panel-recargas').innerHTML = html;
 }
 
+/* ✅ V1.74: RENDERIZADO DE RETIROS ADMIN CON COMPROBANTE DE PAGO Y REFERENCIA */
 function renderRetirosAdmin() {
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
+  const a = window.ajustes || {};
+  const tasa = parseFloat(a.tasaRetiro || 0);
+  
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto (USD)</th><th>Monto (Bs)</th><th>Referencia</th><th>Comprobante Pago</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRetiros.forEach(r => {
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
-      <button class='btn btn-green btn-sm' onclick='verificarRetiro(${r.id})'>✓</button>
-      <button class='btn btn-red btn-sm' onclick='rechazarRetiro(${r.id})'>✗</button>
+    const montoUSD = parseFloat(r.monto || 0);
+    const montoBS = montoUSD * tasa;
+    // Identificador único para este retiro en el DOM
+    const fileId = `pagoFile_${r.id}`;
+    const refId = `pagoRef_${r.id}`;
+    
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto (USD)">$${montoUSD.toFixed(2)}</td><td data-label="Monto (Bs)">Bs ${formatVES(montoBS)}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Comprobante Pago">
+      ${r.comprobante_pago ? `<button class='btn btn-blue btn-sm' onclick='window.open("${r.comprobante_pago}", "_blank")'>🖼️ Ver</button>` : 'Sin imagen'}
+    </td><td data-label="Acciones">
+      <div style='display:flex; flex-direction:column; gap:4px;'>
+        <input type="file" id="${fileId}" accept="image/*" style="color:white; font-size:0.6rem; width:100%;"/>
+        <input type="text" id="${refId}" placeholder="Ref. pago" style="background:var(--bg-card); border:1px solid var(--border); border-radius:4px; color:white; padding:4px; width:100%; font-size:0.6rem;"/>
+        <button class='btn btn-green btn-sm' onclick='marcarRetiroPagado(${r.id}, "${fileId}", "${refId}")'>✓ Pagado</button>
+      </div>
     </td></tr>`;
   });
   html += '</tbody></table></div>';
@@ -480,10 +636,59 @@ function renderRetirosAdmin() {
   document.getElementById('panel-retiros').innerHTML = html;
 }
 
+/* ✅ V1.74: LÓGICA PARA MARCAR RETIRO COMO PAGADO */
+async function marcarRetiroPagado(movimientoId, fileInputId, refInputId) {
+  const fileInput = document.getElementById(fileInputId);
+  const refInput = document.getElementById(refInputId);
+  const referenciaPago = refInput.value.trim();
+  
+  if (!referenciaPago) {
+    return toast('Debes ingresar la referencia del pago realizado.', 'error');
+  }
+  
+  let fileBase64 = '';
+  let fileType = '';
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    if (!file.type.startsWith('image/')) {
+      return toast('El archivo debe ser una imagen.', 'error');
+    }
+    fileType = file.type;
+    fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  } else {
+    return toast('Debes subir una captura del comprobante de pago.', 'error');
+  }
+
+  const res = await apiCall({ 
+    action: 'marcarRetiroPagado', 
+    movimientoId, 
+    referenciaPago, 
+    fileBase64, 
+    fileType 
+  });
+  
+  if (res.success) {
+    toast('Retiro marcado como pagado exitosamente.');
+    const todosMovs = await apiCall({ action: 'getMovimientos' });
+    cacheRetiros = todosMovs.filter(m => m.tipo === 'Retiro' && m.estado === 'Pendiente');
+    pendingRetiros = cacheRetiros.length;
+    updateBadges();
+    renderRetirosAdmin();
+    updateSidebarStatsAdmin();
+  } else {
+    toast(res.error || 'Error al marcar pago', 'error');
+  }
+}
+
 function renderMovimientosAdmin() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMovimientosAdmin.forEach(m => {
-    const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    const badge = m.estado === 'Verificado' || m.estado === 'Pagado' ? 'badge-done' : 'badge-review';
     html += `<tr><td data-label="ID:">#${m.id}</td><td data-label="Usuario">${m.nombre} (${m.tag})</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
@@ -658,17 +863,19 @@ let cacheReferidosList = [];
 
 async function initJugador() {
   try {
-    const [perfil, misBatallas, todas, todosMovs, referidos] = await Promise.all([
+    const [perfil, misBatallas, todas, todosMovs, referidos, top3] = await Promise.all([
       apiCall({ action: 'getPerfil', userId }),
       apiCall({ action: 'getMisBatallas', userId }),
       apiCall({ action: 'getBatallas' }),
       apiCall({ action: 'getMovimientos' }),
-      apiCall({ action: 'getReferidosList', userId })
+      apiCall({ action: 'getReferidosList', userId }),
+      apiCall({ action: 'getTopGanadores' })
     ]);
 
     cachePerfilJugador = perfil;
     cacheMisBatallas = misBatallas;
     cacheReferidosList = referidos;
+    cacheTopGanadores = top3;
     updateSidebarStatsJugador(perfil, misBatallas);
 
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
@@ -756,6 +963,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
+/* ✅ V1.74: RENDERIZADO DE DESAFÍOS CON TOP 3 PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -764,7 +972,27 @@ function renderDesafios() {
   all = all.filter(b => { if (uniqueIds.has(b.id)) return false; uniqueIds.add(b.id); return true; });
   all.sort((a,b) => b.id - a.id);
 
-  let html = `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
+  let top3Html = `<div style='margin-bottom:20px;'>`;
+  if (cacheTopGanadores && cacheTopGanadores.length > 0) {
+    const medals = ['🥇 Oro', '🥈 Plata', '🥉 Bronce'];
+    top3Html += `<h4 style='color:var(--gold);'>🏆 Ranking de Ganadores</h4><div style='display:flex; gap:16px; flex-wrap:wrap;'>`;
+    cacheTopGanadores.forEach((user, index) => {
+      const isTop3 = index < 3;
+      if (!isTop3) return;
+      const medal = medals[index];
+      top3Html += `
+        <div style='background:var(--bg-card); border:1px solid var(--gold-border); border-radius:12px; padding:16px; min-width:150px; text-align:center;'>
+          <div style='font-size:2rem;'>${medal.split(' ')[0]}</div>
+          <div style='font-weight:700;'>${user.nombre}</div>
+          <div style='color:var(--text-secondary); font-size:0.8rem;'>${user.wins} victorias</div>
+        </div>
+      `;
+    });
+    top3Html += `</div>`;
+  }
+  top3Html += `</div>`;
+
+  let html = top3Html + `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
     <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
   </div>
   <div class='table-wrapper'><table><thead><tr>
@@ -1241,37 +1469,46 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
-// ✅ V1.72: ENVÍO DE RECARGA CON VALIDACIONES ESTRICTAS Y REINICIO DE CAMPOS
+/* ✅ V1.74: ENVÍO DE RECARGA CON VALIDACIONES DINÁMICAS (SEGÚN AJUSTES) */
 async function enviarRecarga() {
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
   const fileInput = document.getElementById('comprobanteFile');
   const btn = document.getElementById('btnEnviarComprobante');
+  const a = window.ajustes || {};
+  const min = parseFloat(a.minRecarga || 2);
+  const max = parseFloat(a.maxRecarga || 50);
   
-  // Validación 1: Monto
-  if (!monto || isNaN(monto) || parseFloat(monto) < 2) {
-    return toast('Ingresa un monto válido (mínimo $2).', 'error');
+  if (!monto) {
+    return toast('Debes rellenar todos los campos obligatorios.', 'error');
   }
   
-  // Validación 2: Referencia numérica
-  if (!ref || !/^\d+$/.test(ref)) {
+  if (isNaN(monto) || parseFloat(monto) < min) {
+    return toast(`El monto mínimo es $${min}.`, 'error');
+  }
+  if (parseFloat(monto) > max) {
+    return toast(`El monto máximo es $${max}.`, 'error');
+  }
+  
+  if (!ref) {
+    return toast('Debes rellenar todos los campos obligatorios.', 'error');
+  }
+  if (!/^\d+$/.test(ref)) {
     return toast('La referencia debe contener solo números.', 'error');
   }
   
-  // Validación 3: Archivo
   if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-    return toast('Debes seleccionar una captura de pantalla.', 'error');
+    return toast('Debes rellenar todos los campos obligatorios.', 'error');
   }
   
   const file = fileInput.files[0];
   if (!file.type.startsWith('image/')) {
     return toast('El archivo debe ser una imagen (JPG, PNG).', 'error');
   }
-  if (file.size > 10 * 1024 * 1024) { // 10MB máximo
+  if (file.size > 10 * 1024 * 1024) {
     return toast('La imagen no debe superar los 10 MB.', 'error');
   }
   
-  // Estado "Enviando..."
   btn.disabled = true;
   btn.textContent = 'Enviando...';
   
@@ -1292,15 +1529,12 @@ async function enviarRecarga() {
     fileType: fileType 
   });
   
-  // Restaurar botón
   btn.disabled = false;
   btn.textContent = 'Enviar Comprobante';
   
   if (res.success) {
     toast('Comprobante enviado. El admin lo verificará.');
     closeModal('modalRecarga');
-    
-    // Limpiar todos los campos del modal
     document.getElementById('montoRecarga').value = '';
     document.getElementById('refRecarga').value = '';
     document.getElementById('comprobanteFile').value = '';
@@ -1309,11 +1543,6 @@ async function enviarRecarga() {
   } else {
     toast(res.error, 'error');
   }
-}
-
-// ✅ V1.72: FUNCIÓN PARA ABRIR EL MODAL DE INFORMACIÓN
-function openInfoModal() {
-  document.getElementById('modalInfoRecarga').classList.remove('hidden');
 }
 
 function retirarSaldoUI() {
@@ -1341,22 +1570,49 @@ function retirarSaldoUI() {
   document.getElementById('modalRetiro').classList.remove('hidden');
 }
 
+/* ✅ V1.74: ENVÍO DE RETIRO CON VALIDACIONES DINÁMICAS Y BOTÓN DE ESTADO */
 async function enviarRetiro() {
   const monto = document.getElementById('montoRetiro').value;
   const perfil = cachePerfilJugador || {};
   const datos = [perfil.banco, perfil.telefonoPago, perfil.cedula, perfil.cuenta].filter(Boolean).join(' - ');
+  const btn = document.getElementById('btnSolicitarRetiro');
+  const a = window.ajustes || {};
+  const min = parseFloat(a.minRetiro || 2);
+  const max = parseFloat(a.maxRetiro || 50);
   
-  if (!monto) return toast('Ingresa un monto válido', 'error');
-  if (!datos) return toast('Faltan tus datos bancarios en tu perfil.', 'error');
+  if (!monto) {
+    return toast('Debes rellenar todos los campos obligatorios.', 'error');
+  }
+  if (isNaN(monto) || parseFloat(monto) < min) {
+    return toast(`El monto mínimo es $${min}.`, 'error');
+  }
+  if (parseFloat(monto) > max) {
+    return toast(`El monto máximo es $${max}.`, 'error');
+  }
+  if (!datos) {
+    return toast('Faltan tus datos bancarios en tu perfil.', 'error');
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
   
   const res = await apiCall({ action: 'solicitarRetiro', monto, referencia: datos });
+  
+  btn.disabled = false;
+  btn.textContent = 'Solicitar retiro';
+  
   if (res.success) {
     toast('Solicitud de retiro enviada. El admin la procesará.');
     closeModal('modalRetiro');
+    document.getElementById('montoRetiro').value = '';
+    const bsSpan = document.getElementById('montoRetiroBs');
+    if(bsSpan) bsSpan.textContent = '0,00';
     cachePerfilJugador = await apiCall({ action: 'getPerfil', userId });
     renderPerfil();
     updateSidebarStatsJugador();
-  } else toast(res.error, 'error');
+  } else {
+    toast(res.error, 'error');
+  }
 }
 
 function renderMisRecargas() {
@@ -1370,11 +1626,15 @@ function renderMisRecargas() {
   document.getElementById('panel-misRecargas').innerHTML = html;
 }
 
+/* ✅ V1.74: RENDER DE MIS RETIROS CON COMPROBANTE DE PAGO DEL ADMIN */
 function renderMisRetiros() {
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th><th>Comprobante Pago</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
-    const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Verificado' ? 'badge-done' : 'badge-review';
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td></tr>`;
+    const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Pagado' ? 'badge-done' : 'badge-review';
+    const comprobantePago = r.comprobante_pago || '';
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td><td data-label="Comprobante Pago">
+      ${comprobantePago ? `<button class='btn btn-blue btn-sm' onclick='window.open("${comprobantePago}", "_blank")'>🖼️ Ver</button>` : 'Pendiente de pago'}
+    </td></tr>`;
   });
   html += '</tbody></table></div>';
   if (!cacheMisRetiros.length) html = '<p>No tienes retiros.</p>';
@@ -1384,7 +1644,7 @@ function renderMisRetiros() {
 function renderMiHistorial() {
   let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Tipo</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>`;
   cacheMiHistorial.forEach(m => {
-    const badge = m.estado === 'Verificado' ? 'badge-done' : 'badge-review';
+    const badge = m.estado === 'Verificado' || m.estado === 'Pagado' ? 'badge-done' : 'badge-review';
     html += `<tr><td data-label="ID:">#${m.id}</td><td data-label="Tipo">${m.tipo}</td><td data-label="Monto">$${m.monto}</td><td data-label="Referencia">${m.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${m.estado}</span></td></tr>`;
   });
   html += '</tbody></table></div>';
