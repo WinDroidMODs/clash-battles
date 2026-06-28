@@ -1,6 +1,6 @@
-// Clash-Battles-v1.75.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.75: NUEVO MODAL DE PAGO DE RETIROS, BOTÓN "PAGAR" Y ELIMINADA COLUMNA COMPROBANTE EN LISTA
-const API = 'https://script.google.com/macros/s/AKfycbxheALQOEKyVwBNH5VkQPi8UVHf-ymsR_8YtN12apfliHqRH2VEsZ4WgRYu9fuq9x0J/exec';
+// Clash-Battles-v1.76.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.76: MEJORAS EN RETIROS - REFERENCIA DE PAGO PARA JUGADORES Y MODAL ADMIN CON DATOS BANCARIOS
+const API = 'https://script.google.com/macros/s/AKfycbwCraj9BcQRU0DQzvr17LsW-NzRyr4d1V1tAPwlv2gWJiWtY_hcqTUT2fyFdAKb9E2-/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -14,7 +14,7 @@ let modalConfirmCallback = null;
 let selectedBatalla = {};
 let deleteUserTargetId = null;
 let isBanAction = false;
-let selectedRetiroPagar = null; // ✅ V1.75: Variable para el modal de pago de retiros
+let selectedRetiroPagar = null;
 
 function showConfirmModal(title, msg, callback) {
     document.getElementById('modalConfirmTitle').textContent = title;
@@ -609,17 +609,17 @@ function renderRecargasAdmin() {
   document.getElementById('panel-recargas').innerHTML = html;
 }
 
-/* ✅ V1.75: RENDERIZADO DE RETIROS ADMIN CON BOTÓN "PAGAR" (ELIMINADA COLUMNA COMPROBANTE) */
+/* ✅ V1.76: RENDERIZADO DE RETIROS ADMIN CON COLUMNA "DATOS JUGADOR" */
 function renderRetirosAdmin() {
   const a = window.ajustes || {};
   const tasa = parseFloat(a.tasaRetiro || 0);
   
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto (USD)</th><th>Monto (Bs)</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto (USD)</th><th>Monto (Bs)</th><th>Datos Jugador</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRetiros.forEach(r => {
     const montoUSD = parseFloat(r.monto || 0);
     const montoBS = montoUSD * tasa;
     
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto (USD)">$${montoUSD.toFixed(2)}</td><td data-label="Monto (Bs)">Bs ${formatVES(montoBS)}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto (USD)">$${montoUSD.toFixed(2)}</td><td data-label="Monto (Bs)">Bs ${formatVES(montoBS)}</td><td data-label="Datos Jugador">${r.referencia}</td><td data-label="Acciones">
       <button class='btn btn-gold btn-sm' onclick='mostrarModalPagarRetiro(${r.id})'>Pagar</button>
     </td></tr>`;
   });
@@ -628,20 +628,25 @@ function renderRetirosAdmin() {
   document.getElementById('panel-retiros').innerHTML = html;
 }
 
-/* ✅ V1.75: LÓGICA DEL NUEVO MODAL DE PAGO DE RETIROS */
+/* ✅ V1.76: MODAL DE PAGO CON MONTO EN BS Y DATOS DEL JUGADOR */
 function mostrarModalPagarRetiro(retiroId) {
   selectedRetiroPagar = retiroId;
   const r = cacheRetiros.find(x => x.id == retiroId);
   if (!r) return toast('Error al cargar los datos del retiro.', 'error');
-  
+
+  const a = window.ajustes || {};
+  const tasa = parseFloat(a.tasaRetiro || 0);
+  const montoUSD = parseFloat(r.monto || 0);
+  const montoBS = montoUSD * tasa;
+
   document.getElementById('pagarRetiroIdSpan').textContent = r.id;
   document.getElementById('pagarRetiroUsuarioSpan').textContent = r.nombre;
-  document.getElementById('pagarRetiroMontoSpan').textContent = parseFloat(r.monto).toFixed(2);
-  
-  // Limpiar campos del modal
+  document.getElementById('pagarRetiroMontoSpan').textContent = `$${montoUSD.toFixed(2)} (Bs ${formatVES(montoBS)})`;
+  document.getElementById('pagarRetiroDatosSpan').textContent = r.referencia;
+
   document.getElementById('pagarRetiroRef').value = '';
   document.getElementById('pagarRetiroFile').value = '';
-  
+
   document.getElementById('modalPagarRetiro').classList.remove('hidden');
 }
 
@@ -1642,12 +1647,14 @@ function renderMisRecargas() {
   document.getElementById('panel-misRecargas').innerHTML = html;
 }
 
+/* ✅ V1.76: MIS RETIROS MUESTRA LA REFERENCIA DE PAGO DEL ADMIN */
 function renderMisRetiros() {
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia</th><th>Estado</th><th>Comprobante Pago</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Monto</th><th>Referencia Pago</th><th>Estado</th><th>Comprobante Pago</th></tr></thead><tbody>`;
   cacheMisRetiros.forEach(r => {
     const badge = r.estado === 'Pendiente' ? 'badge-pending' : r.estado === 'Pagado' ? 'badge-done' : 'badge-review';
     const comprobantePago = r.comprobante_pago || '';
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td><td data-label="Comprobante Pago">
+    const referenciaPago = r.referencia_pago || 'Pendiente de pago';
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia Pago">${referenciaPago}</td><td data-label="Estado"><span class='badge ${badge}'>${r.estado}</span></td><td data-label="Comprobante Pago">
       ${comprobantePago ? `<button class='btn btn-blue btn-sm' onclick='window.open("${comprobantePago}", "_blank")'>🖼️ Ver</button>` : 'Pendiente de pago'}
     </td></tr>`;
   });
