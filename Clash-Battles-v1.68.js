@@ -1,6 +1,6 @@
-// Clash-Battles-v1.66.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.66: NUEVOS SONIDOS, GEMA EN HISTORIAL Y WHATSAPP DEL ADMIN EN AJUSTES
-const API = 'https://script.google.com/macros/s/AKfycbyMEWKJ1-wPRywpqvxaFrWbO0c7Q43-SRhKZOHCW1fxpkgCTk2_qGhH8DfFl0ewYSJs/exec';
+// Clash-Battles-v1.68.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.68: SUBIDA DE IMÁGENES PARA RECARGAS, LOGS DE AUDITORÍA Y SEGURIDAD REFORZADA
+const API = 'https://script.google.com/macros/s/AKfycbzsgThh42xePxzfYHanlGs6S0Et0Ibq0i4FBx6oVBajlDQyxcrJ3YEMokBxe-gF7XM7/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -41,7 +41,21 @@ async function apiCall(body) {
   return await r.json();
 }
 
-// ✅ V1.66: NUEVOS SONIDOS DE VIDEOJUEGO (Para darle vida a la app)
+// ✅ V1.68: Nueva función para enviar archivos (Capturas de pago)
+async function apiCallWithFile(body, fileInputId) {
+  const formData = new FormData();
+  for (const key in body) {
+    formData.append(key, body[key]);
+  }
+  const fileInput = document.getElementById(fileInputId);
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    formData.append('captura', fileInput.files[0]);
+  }
+  const r = await fetch(API, { method: 'POST', body: formData });
+  return await r.json();
+}
+
+// ✅ V1.66: NUEVOS SONIDOS DE VIDEOJUEGO
 function playSound(freq, duration, type='sine', vol=0.2) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -449,9 +463,23 @@ function renderUsuariosAdmin(users) {
 }
 
 function renderRecargasAdmin() {
-  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia</th><th>Acciones</th></tr></thead><tbody>`;
+  let html = `<div class='table-wrapper'><table><thead><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Referencia / Comprobante</th><th>Acciones</th></tr></thead><tbody>`;
   cacheRecargas.forEach(r => {
-    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td><td data-label="Referencia">${r.referencia}</td><td data-label="Acciones">
+    let refTexto = r.referencia || '';
+    let imagenLink = '';
+    // ✅ V1.68: Detectamos si hay una imagen incrustada en la referencia
+    if (refTexto.includes(' | Imagen: ')) {
+      const parts = refTexto.split(' | Imagen: ');
+      refTexto = parts[0];
+      imagenLink = parts[1];
+    }
+    
+    html += `<tr><td data-label="ID:">#${r.id}</td><td data-label="Usuario">${r.nombre} (${r.tag})</td><td data-label="Monto">$${r.monto}</td>
+    <td data-label="Referencia">
+      ${refTexto} 
+      ${imagenLink ? `<br/><a href="${imagenLink}" target="_blank" style="color:var(--blue);font-size:0.7rem;">📸 Ver comprobante</a>` : ''}
+    </td>
+    <td data-label="Acciones">
       <button class='btn btn-green btn-sm' onclick='verificarRecarga(${r.id})'>✓</button>
       <button class='btn btn-red btn-sm' onclick='rechazarRecarga(${r.id})'>✗</button>
     </td></tr>`;
@@ -603,7 +631,6 @@ function renderAjustes() {
       <div class='input-group'><label>Retiro máximo ($)</label><input id='ajMaxRetiro' value='${a.maxRetiro || 50}'/></div>
       <div class='input-group'><label>Mi Banco</label><select id='ajBanco'>${myBankOptions}</select></div>
       <div class='input-group'><label>Teléfono Pago</label><input id='ajTel' value='${a.pagoTelefono || ''}'/></div>
-      <!-- ✅ V1.66: Nuevo campo WhatsApp Admin -->
       <div class='input-group'><label>WhatsApp Admin (Para contacto)</label><input id='ajWAdmin' value='${a.adminWhatsApp || ''}' placeholder='+58 4121234567'/></div>
       <div class='input-group'><label>Cédula</label><input id='ajCedula' value='${a.pagoCedula || ''}'/></div>
       <div class='input-group'><label>Cuenta</label><input id='ajCuenta' value='${a.pagoCuenta || ''}'/></div>
@@ -634,7 +661,7 @@ async function guardarAjustes() {
     maxRetiro: document.getElementById('ajMaxRetiro').value,
     pagoBanco: document.getElementById('ajBanco').value,
     pagoTelefono: document.getElementById('ajTel').value,
-    adminWhatsApp: document.getElementById('ajWAdmin').value, // ✅ V1.66: Guardamos el WhatsApp
+    adminWhatsApp: document.getElementById('ajWAdmin').value,
     pagoCedula: document.getElementById('ajCedula').value,
     pagoCuenta: document.getElementById('ajCuenta').value,
     tasaRecarga: document.getElementById('ajTasaRecarga').value,
@@ -974,10 +1001,7 @@ function renderReferidos() {
                                 <td data-label="Nombre">${item.nombreJuego}</td>
                                 <td data-label="Supercell">${item.supercellId || 'N/A'}</td>
                                 <td data-label="Fecha">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
-                                <!-- ✅ V1.66: Reemplazado el emoji 💎 por la imagen de la gema -->
-                                <td data-label="Gemas">
-                                    ${item.gemsAwarded} <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain; vertical-align:middle;" />
-                                </td>
+                                <td data-label="Gemas">${item.gemsAwarded} <img src="${ICON_GEMA}" alt="Gema" style="height:16px; width:16px; object-fit:contain; vertical-align:middle;" /></td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1237,11 +1261,15 @@ function recargarSaldoUI() {
   document.getElementById('modalRecarga').classList.remove('hidden');
 }
 
+// ✅ V1.68: Usamos la nueva función apiCallWithFile para enviar la captura
 async function enviarRecarga() {
   const monto = document.getElementById('montoRecarga').value;
   const ref = document.getElementById('refRecarga').value.trim();
   if (!monto || !ref) return toast('Completa todos los campos', 'error');
-  const res = await apiCall({ action: 'solicitarRecarga', monto, referencia: ref });
+  const res = await apiCallWithFile(
+    { action: 'solicitarRecarga', monto, referencia: ref }, 
+    'capturaRecarga'
+  );
   if (res.success) {
     toast('Solicitud enviada. El admin la verificará.');
     closeModal('modalRecarga');
