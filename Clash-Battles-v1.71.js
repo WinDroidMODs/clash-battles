@@ -1,6 +1,6 @@
 // Clash-Battles-v1.71.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.71: VALIDACIONES ESTRICTAS EN RECARGA Y MONTO EN BS PARA EL ADMIN
-const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
+const API = 'https://script.google.com/macros/s/AKfycbze9C1URYMjiZESFL6PBbDS0EQw5BVVmWPu3jVyDw1WkxliSsgLF7HLWy3CgrHlS2Qx/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
