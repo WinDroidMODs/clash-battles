@@ -1,6 +1,6 @@
 // Clash-Battles-v1.78.js | Autor: Robinson Avila | By: WinDroidMODs
 // ✅ V1.78: CORREGIDO BOTÓN CANJEAR GEMAS Y DECLARAR RESULTADO. MODAL CANJE AGREGADO.
-const API = 'https://script.google.com/macros/s/AKfycbzRZPu2wH1FRq92I_VuRFv7088nJHLjHrM2cbTdWApZ_-w7r9Hy1Fx3EeF5L9lBqCao/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwXwn99H8laXWlYsTkKoZSShyBXwCftB2r0vlfCUUENi_Odf22sxQZCK-trC8K86yzF/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
