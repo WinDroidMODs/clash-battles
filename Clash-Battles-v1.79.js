@@ -1,6 +1,6 @@
-// Clash-Battles-v1.78.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.78: CORREGIDO BOTÓN CANJEAR GEMAS Y DECLARAR RESULTADO. MODAL CANJE AGREGADO.
-const API = 'https://script.google.com/macros/s/AKfycbwXwn99H8laXWlYsTkKoZSShyBXwCftB2r0vlfCUUENi_Odf22sxQZCK-trC8K86yzF/exec';
+// Clash-Battles-v1.79.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.79: FLUJO DE DISPUTA CORREGIDO (AMBOS JUGADORES VEN EL BOTÓN) Y OCULTACIÓN DEL BOTÓN DECLARAR TRAS VOTAR
+const API = 'https://script.google.com/macros/s/AKfycbxs-q41tF8-_myTyIsMbAy0OvMqBXBhKuKsqh4-QQR4VPvO84H79Cer7JBHn36A6Ukr/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -1020,6 +1020,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
+/* ✅ V1.79: RENDERIZADO DE DESAFÍOS CON LÓGICA DE DISPUTA Y OCULTACIÓN DE BOTÓN DECLARAR */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -1126,15 +1127,21 @@ function renderDesafios() {
        const oponenteTel = soyCreador ? b.j2Telefono : b.j1Telefono;
        const miTag = cachePerfilJugador ? cachePerfilJugador.tag : '';
        const miNombre = cachePerfilJugador ? cachePerfilJugador.nombreJuego : '';
+       const miDeclaracion = soyCreador ? b.declaracionJ1 : b.declaracionJ2;
 
        accion = `
-           <button class='btn btn-gold btn-block btn-sm' onclick='mostrarModalGestionBatalla(${b.id}, "${miNombre}", "${miTag}", "${oponenteNombre}", "${oponenteTag}", "${oponenteId}", "${oponenteLink}", "${oponenteTel}")'>
+           <button class='btn btn-gold btn-block btn-sm' onclick='mostrarModalGestionBatalla(${b.id}, "${miNombre}", "${miTag}", "${oponenteNombre}", "${oponenteTag}", "${oponenteId}", "${oponenteLink}", "${oponenteTel}", "${miDeclaracion}")'>
                ⚙️ Gestionar Batalla
            </button>
        `;
     } 
     else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
-      accion = `<span style='color:#FF4655; font-weight:bold;'>En revisión por admin</span>`;
+      accion = `
+        <div style='display:flex; flex-direction:column; gap:6px; width:100%;'>
+          <span style='color:#FF4655; font-weight:bold; text-align:center;'>En revisión por admin</span>
+          <button class='btn btn-red btn-sm btn-block' onclick='abrirModalDisputa(${b.id})'>🔍 Subir pruebas de disputa</button>
+        </div>
+      `;
     } 
     else if (b.estado === 'Finalizada') {
       const soyGanador = b.ganador === (soyCreador ? 'J1' : 'J2');
@@ -1156,9 +1163,17 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, opTel) {
-    selectedBatalla = { id, miNom, miT, opNom, opT, opId, opLink, opTel };
+/* ✅ V1.79: MOSTRAR MODAL GESTIÓN Y OCULTAR BOTÓN DECLARAR SI YA VOTÓ */
+function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, opTel, miDeclaracion) {
+    selectedBatalla = { id, miNom, miT, opNom, opT, opId, opLink, opTel, miDeclaracion };
     document.getElementById('modalGestionBatalla').classList.remove('hidden');
+    const btnDeclarar = document.getElementById('btnDeclararResultado');
+    // Si ya hizo una declaración, ocultamos el botón. Si no, lo mostramos.
+    if (miDeclaracion && miDeclaracion !== '') {
+        btnDeclarar.style.display = 'none';
+    } else {
+        btnDeclarar.style.display = 'flex'; // Usamos flex para mantener el estilo de botón
+    }
 }
 
 function gestionDeclararResultado() {
@@ -1215,7 +1230,6 @@ async function cancelarBatalla(batallaId) {
     }
 }
 
-/* ✅ V1.78: BOTÓN DE CANJEAR GEMAS ACTUALIZADO (SOLO DICE "Canjear Gemas" CON ICONO) */
 function renderReferidos() {
     const p = cachePerfilJugador || {};
     const gemas = parseInt(p.gemas || 0);
@@ -1376,7 +1390,15 @@ function compartirEnlace() {
     }
 }
 
-/* ✅ V1.78: FUNCIONES PARA EL MODAL DE CANJE DE GEMAS */
+/* ✅ V1.79: FUNCIÓN PARA ABRIR EL MODAL DE DISPUTA DESDE LA TABLA (PARA AMBOS JUGADORES) */
+function abrirModalDisputa(batallaId) {
+    document.getElementById('disputaBatallaId').textContent = batallaId;
+    document.getElementById('disputaMotivo').value = '';
+    document.getElementById('disputaFile').value = '';
+    document.getElementById('modalDisputa').classList.remove('hidden');
+}
+
+/* ✅ V1.79: FUNCIONES PARA EL MODAL DE CANJE DE GEMAS */
 function mostrarModalCanje() {
     const gemasActuales = parseInt(cachePerfilJugador.gemas || 0);
     document.getElementById('canjeGemasActual').textContent = gemasActuales;
@@ -1713,6 +1735,7 @@ function mostrarDeclararResultado(batallaId) {
   document.getElementById('modalDeclararResultado').classList.remove('hidden');
 }
 
+/* ✅ V1.79: ENVÍO DE DECLARACIÓN Y MANEJO DE DISPUTA (AMBOS JUGADORES) */
 async function enviarDeclaracion(resultado) {
   if (!batallaDeclaracionId) return;
   const res = await apiCall({ action: 'declararResultado', batallaId: batallaDeclaracionId, resultado });
@@ -1720,8 +1743,8 @@ async function enviarDeclaracion(resultado) {
   if (res.success) {
     if (res.estado === 'Disputa') {
       toast('⚠️ ¡Alerta de trampa detectada! Se ha abierto un proceso de verificación.', 'error');
-      document.getElementById('disputaBatallaId').textContent = batallaDeclaracionId;
-      document.getElementById('modalDisputa').classList.remove('hidden');
+      // ✅ V1.79: En lugar de solo actualizar el texto, abrimos el modal de disputa para que suba las pruebas.
+      abrirModalDisputa(batallaDeclaracionId);
     } else if (res.estado === 'Finalizada') {
       toast('🏆 Batalla finalizada. ¡Revisa tu saldo!');
     } else {
