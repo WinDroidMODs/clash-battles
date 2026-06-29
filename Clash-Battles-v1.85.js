@@ -1,5 +1,5 @@
 // Clash-Battles-v1.85.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.85: CORREGIDO BUG DE TOAST (AHORA MUESTRA EL ERROR SI NO HAY CAPTURA)
+// ✅ V1.85: CORREGIDO BUG DE TOAST Y CAPTURAS DE DISPUTA AHORA ABREN EN NUEVA PESTAÑA
 const API = 'https://script.google.com/macros/s/AKfycbwI7PT8HvZf8TZyPx4YRu5aE7xN6xqXTsnwatM8FV2GlpYfXEKloh0YY4acl3jcm8KO/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
@@ -231,7 +231,7 @@ function switchTab(tab, el) {
 
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-/* ✅ V1.85 CORREGIDO: Función ampliar con validación de elementos del DOM */
+/* ✅ V1.85 CORREGIDO: Función ampliar (ya no se usa para disputas, pero se mantiene para compatibilidad) */
 function ampliar(url) {
   const modal = document.getElementById('modalImagen');
   const img = document.getElementById('imagenGrande');
@@ -535,9 +535,10 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaJ1, captu
   document.getElementById('modalVerificarDisputa').classList.remove('hidden');
 }
 
+/* ✅ V1.85: CAPTURAS DE DISPUTA AHORA ABREN DIRECTAMENTE EN NUEVA PESTAÑA (SE ELIMINÓ EL MODAL INTERNO) */
 function verCapturaDisputaJ1() {
   if (disputaVerCapturaJ1 && disputaVerCapturaJ1.trim() !== '') {
-    ampliar(disputaVerCapturaJ1);
+    window.open(disputaVerCapturaJ1, '_blank');
   } else {
     toast('No hay captura de pantalla J1 disponible.', 'error');
   }
@@ -545,7 +546,7 @@ function verCapturaDisputaJ1() {
 
 function verCapturaDisputaJ2() {
   if (disputaVerCapturaJ2 && disputaVerCapturaJ2.trim() !== '') {
-    ampliar(disputaVerCapturaJ2);
+    window.open(disputaVerCapturaJ2, '_blank');
   } else {
     toast('No hay captura de pantalla J2 disponible.', 'error');
   }
