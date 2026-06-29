@@ -1,6 +1,6 @@
 // Clash-Battles-v1.85.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.85: DISPUTA - BOTÓN OCULTABLE PARA JUGADOR Y VERIFICACIÓN ADMIN CON DOS CAPTURAS Y MOTIVOS
-const API = 'https://script.google.com/macros/s/AKfycbzN5JShAzMT2BnBMwm_5ziMJ7IJkLBYb76PmGfiDLq6Lhgycqg5Kx14hRHAeN9bMN_W/exec';
+// ✅ V1.85: CORREGIDO BUG DE TOAST (AHORA MUESTRA EL ERROR SI NO HAY CAPTURA)
+const API = 'https://script.google.com/macros/s/AKfycbwI7PT8HvZf8TZyPx4YRu5aE7xN6xqXTsnwatM8FV2GlpYfXEKloh0YY4acl3jcm8KO/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -193,8 +193,13 @@ function playBeep() {
   } catch(e) {}
 }
 
+/* ✅ V1.85 CORREGIDO: Función toast con validación de contenedor */
 function toast(m, t='success') {
   const c = document.getElementById('toastContainer');
+  if (!c) {
+    console.error('Error: El contenedor toastContainer no existe en el DOM.');
+    return; // Evita que el sistema falle silenciosamente
+  }
   const d = document.createElement('div');
   d.className = `toast ${t}`; d.textContent = m; c.appendChild(d);
   if(t === 'success') playCoin(); else if(t === 'error') playError();
@@ -225,9 +230,17 @@ function switchTab(tab, el) {
 }
 
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+/* ✅ V1.85 CORREGIDO: Función ampliar con validación de elementos del DOM */
 function ampliar(url) {
-  document.getElementById('imagenGrande').src = url;
-  document.getElementById('modalImagen').classList.remove('hidden');
+  const modal = document.getElementById('modalImagen');
+  const img = document.getElementById('imagenGrande');
+  if (!modal || !img) {
+    toast('Error interno: no se encontró el visor de imágenes.', 'error');
+    return;
+  }
+  img.src = url;
+  modal.classList.remove('hidden');
 }
 
 function acceptCookies() {
@@ -475,6 +488,7 @@ async function deleteAllFinalizadas() {
   });
 }
 
+/* ✅ V1.85 CORREGIDO: Funciones de verificación de capturas y admin */
 function renderDisputasAdmin(disputas) {
   let html = '';
   if (disputas.length > 0) {
@@ -501,7 +515,7 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaJ1, captu
   document.getElementById('disputaVerMotivoJ2').textContent = motivoJ2 || 'No especificado';
   
   const btnVerJ1 = document.getElementById('btnVerCapturaJ1');
-  if (!capturaJ1) {
+  if (!capturaJ1 || capturaJ1.trim() === '') {
     btnVerJ1.disabled = true;
     btnVerJ1.textContent = 'Sin captura J1';
   } else {
@@ -510,7 +524,7 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaJ1, captu
   }
   
   const btnVerJ2 = document.getElementById('btnVerCapturaJ2');
-  if (!capturaJ2) {
+  if (!capturaJ2 || capturaJ2.trim() === '') {
     btnVerJ2.disabled = true;
     btnVerJ2.textContent = 'Sin captura J2';
   } else {
@@ -522,7 +536,7 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaJ1, captu
 }
 
 function verCapturaDisputaJ1() {
-  if (disputaVerCapturaJ1) {
+  if (disputaVerCapturaJ1 && disputaVerCapturaJ1.trim() !== '') {
     ampliar(disputaVerCapturaJ1);
   } else {
     toast('No hay captura de pantalla J1 disponible.', 'error');
@@ -530,7 +544,7 @@ function verCapturaDisputaJ1() {
 }
 
 function verCapturaDisputaJ2() {
-  if (disputaVerCapturaJ2) {
+  if (disputaVerCapturaJ2 && disputaVerCapturaJ2.trim() !== '') {
     ampliar(disputaVerCapturaJ2);
   } else {
     toast('No hay captura de pantalla J2 disponible.', 'error');
