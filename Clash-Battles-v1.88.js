@@ -1,6 +1,6 @@
-// Clash-Battles-v1.85.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.85: CORREGIDO BUG DE TOAST Y CAPTURAS DE DISPUTA AHORA ABREN EN NUEVA PESTAÑA
-const API = 'https://script.google.com/macros/s/AKfycbwI7PT8HvZf8TZyPx4YRu5aE7xN6xqXTsnwatM8FV2GlpYfXEKloh0YY4acl3jcm8KO/exec';
+// Clash-Battles-v1.88.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.88: AÑADIDO BOTÓN DE AYUDA Y MODAL DE REGLAS PARA JUGADORES
+const API = 'https://script.google.com/macros/s/AKfycbx2NQ_fCNJDu6Jq4NlGybG_IBkOw2GABW-rt4qbN6TobtIwDXtrQ2k8UGITb1xyfVI/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -193,12 +193,11 @@ function playBeep() {
   } catch(e) {}
 }
 
-/* ✅ V1.85 CORREGIDO: Función toast con validación de contenedor */
 function toast(m, t='success') {
   const c = document.getElementById('toastContainer');
   if (!c) {
     console.error('Error: El contenedor toastContainer no existe en el DOM.');
-    return; // Evita que el sistema falle silenciosamente
+    return;
   }
   const d = document.createElement('div');
   d.className = `toast ${t}`; d.textContent = m; c.appendChild(d);
@@ -231,7 +230,6 @@ function switchTab(tab, el) {
 
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-/* ✅ V1.85 CORREGIDO: Función ampliar (ya no se usa para disputas, pero se mantiene para compatibilidad) */
 function ampliar(url) {
   const modal = document.getElementById('modalImagen');
   const img = document.getElementById('imagenGrande');
@@ -488,7 +486,6 @@ async function deleteAllFinalizadas() {
   });
 }
 
-/* ✅ V1.85 CORREGIDO: Funciones de verificación de capturas y admin */
 function renderDisputasAdmin(disputas) {
   let html = '';
   if (disputas.length > 0) {
@@ -535,7 +532,6 @@ function abrirVerificadorDisputa(batallaId, j1Nombre, j2Nombre, capturaJ1, captu
   document.getElementById('modalVerificarDisputa').classList.remove('hidden');
 }
 
-/* ✅ V1.85: CAPTURAS DE DISPUTA AHORA ABREN DIRECTAMENTE EN NUEVA PESTAÑA (SE ELIMINÓ EL MODAL INTERNO) */
 function verCapturaDisputaJ1() {
   if (disputaVerCapturaJ1 && disputaVerCapturaJ1.trim() !== '') {
     window.open(disputaVerCapturaJ1, '_blank');
@@ -1056,7 +1052,7 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-/* ✅ V1.85: RENDERIZADO DE DESAFÍOS CON LÓGICA DE DISPUTA Y OCULTACIÓN DE BOTÓN DECLARAR */
+/* ✅ V1.88: AÑADIDO BOTÓN DE AYUDA Y MODAL DE REGLAS PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -1083,8 +1079,11 @@ function renderDesafios() {
   }
   top3Html += `</div>`;
 
+  // ✅ V1.88: Se agregó el botón de información (ayuda/reglas)
   let html = top3Html + `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
+    <button class='btn btn-blue btn-sm' onclick='actualizarDesafios()'><i class="fa-solid fa-rotate-right"></i> Actualizar desafíos</button>
     <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
+    <button class='modal-close-info' onclick='abrirModalReglas()' style='width:40px; height:40px; font-size:1.2rem; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:auto;'>i</button>
   </div>
   <div class='table-wrapper'><table><thead><tr>
     <th data-label="ID:">ID</th>
@@ -1172,7 +1171,6 @@ function renderDesafios() {
        `;
     } 
     else if (b.estado === 'Disputa' && (soyCreador || soyOponente)) {
-      // Determinar si el jugador ya subió sus pruebas
       let yaSubio = false;
       if (soyCreador) {
         yaSubio = b.j1ComprobanteDisputa && b.j1ComprobanteDisputa.length > 0;
@@ -1216,7 +1214,50 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-/* ✅ V1.85: MOSTRAR MODAL GESTIÓN Y OCULTAR BOTÓN DECLARAR SI YA VOTÓ */
+// ✅ V1.88: Función para abrir el modal de reglas
+function abrirModalReglas() {
+  document.getElementById('modalReglas').classList.remove('hidden');
+}
+
+// ✅ V1.88: Función para actualizar manualmente la lista de desafíos
+async function actualizarDesafios() {
+  const btn = document.querySelector('#panel-desafios .btn-blue');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
+  }
+
+  try {
+    const nuevasBatallas = await apiCall({ action: 'getBatallas' });
+    
+    const nuevasAbiertas = nuevasBatallas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
+    const nuevasMisBatallas = nuevasBatallas.filter(b => b.j1Id == userId || b.j2Id == userId);
+
+    const idsAbiertasActuales = (cacheBatallasAbiertas || []).map(b => b.id).sort().join(',');
+    const idsAbiertasNuevas = nuevasAbiertas.map(b => b.id).sort().join(',');
+    const idsMisActuales = (cacheMisBatallas || []).map(b => b.id).sort().join(',');
+    const idsMisNuevas = nuevasMisBatallas.map(b => b.id).sort().join(',');
+
+    if (idsAbiertasActuales !== idsAbiertasNuevas || idsMisActuales !== idsMisNuevas) {
+      cacheBatallasAbiertas = nuevasAbiertas;
+      cacheMisBatallas = nuevasMisBatallas;
+      renderDesafios();
+      updateSidebarStatsJugador();
+      toast('✅ Desafíos actualizados');
+    } else {
+      toast('ℹ️ No hay cambios nuevos en los desafíos');
+    }
+  } catch (error) {
+    console.error(error);
+    toast('Error al actualizar los desafíos', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Actualizar desafíos';
+    }
+  }
+}
+
 function mostrarModalGestionBatalla(id, miNom, miT, opNom, opT, opId, opLink, opTel, miDeclaracion) {
     selectedBatalla = { id, miNom, miT, opNom, opT, opId, opLink, opTel, miDeclaracion };
     document.getElementById('modalGestionBatalla').classList.remove('hidden');
@@ -1442,7 +1483,6 @@ function compartirEnlace() {
     }
 }
 
-/* ✅ V1.85: FUNCIÓN PARA ABRIR EL MODAL DE DISPUTA DESDE LA TABLA (PARA AMBOS JUGADORES) */
 function abrirModalDisputa(batallaId) {
     document.getElementById('disputaBatallaId').textContent = batallaId;
     document.getElementById('disputaMotivo').value = '';
@@ -1450,7 +1490,6 @@ function abrirModalDisputa(batallaId) {
     document.getElementById('modalDisputa').classList.remove('hidden');
 }
 
-/* ✅ V1.85: FUNCIONES PARA EL MODAL DE CANJE DE GEMAS */
 function mostrarModalCanje() {
     const gemasActuales = parseInt(cachePerfilJugador.gemas || 0);
     document.getElementById('canjeGemasActual').textContent = gemasActuales;
@@ -1787,7 +1826,6 @@ function mostrarDeclararResultado(batallaId) {
   document.getElementById('modalDeclararResultado').classList.remove('hidden');
 }
 
-/* ✅ V1.85: ENVÍO DE DECLARACIÓN Y MANEJO DE DISPUTA (AMBOS JUGADORES) */
 async function enviarDeclaracion(resultado) {
   if (!batallaDeclaracionId) return;
   const res = await apiCall({ action: 'declararResultado', batallaId: batallaDeclaracionId, resultado });
@@ -1845,7 +1883,6 @@ async function enviarPruebasDisputa() {
   if (res.success) {
     toast('📩 Pruebas enviadas al Admin.');
     closeModal('modalDisputa');
-    // Actualizar la tabla para ocultar el botón
     cacheMisBatallas = await apiCall({ action: 'getMisBatallas', userId });
     const todas = await apiCall({ action: 'getBatallas' });
     cacheBatallasAbiertas = todas.filter(b => b.estado === 'Pendiente de pago' && b.pagoJ1 && !b.j2Id);
