@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.88.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.88: AÑADIDO BOTÓN DE AYUDA Y MODAL DE REGLAS PARA JUGADORES */
+/* Clash-Battles-v1.89.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.89: AÑADIDO SOPORTE PARA PÁGINAS ESTÁTICAS Y MODO LECTURA */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -547,4 +547,84 @@ b, strong { font-weight: 700; }
     .vs-empty { font-size: 0.6rem !important; }
     .table-wrapper td .btn-sm { font-size: 0.6rem !important; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
+}
+
+/* ✅ V1.89: Estilos para modo lectura en páginas estáticas */
+body.is-page .app-header,
+body.is-page .sidebar,
+body.is-page .sidebar-overlay,
+body.is-page .main-content .hero-text,
+body.is-page .main-content .auth-container,
+body.is-page .main-content .landing-features,
+body.is-page .main-content #appMain,
+body.is-page .main-content .tab-panel,
+body.is-page .cookie-banner,
+body.is-page .whatsapp-float {
+    display: none !important;
+}
+
+body.is-page .main-content {
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 40px 20px;
+    padding-top: 20px;
+}
+
+body.is-page .main-content .post-body {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 30px;
+    border: 1px solid var(--gold-border);
+    box-shadow: var(--shadow);
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+body.is-page .main-content .post-body h1,
+body.is-page .main-content .post-body h2,
+body.is-page .main-content .post-body h3,
+body.is-page .main-content .post-body h4,
+body.is-page .main-content .post-body h5,
+body.is-page .main-content .post-body h6 {
+    color: var(--gold);
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+body.is-page .main-content .post-body p {
+    margin-bottom: 1em;
+}
+
+body.is-page .main-content .post-body ul,
+body.is-page .main-content .post-body ol {
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+body.is-page .main-content .post-body a {
+    color: var(--blue);
+    text-decoration: underline;
+}
+
+body.is-page .main-content .post-body a:hover {
+    color: var(--gold);
+}
+
+body.is-page .main-content .post-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: var(--radius-sm);
+}
+
+body.is-page .main-content .post-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+body.is-page .main-content .post-footer .btn {
+    background: var(--gold);
+    color: #2b1a2b;
 }
