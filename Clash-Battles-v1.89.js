@@ -1,6 +1,6 @@
-// Clash-Battles-v1.88.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.88: AÑADIDO BOTÓN DE AYUDA Y MODAL DE REGLAS PARA JUGADORES
-const API = 'https://script.google.com/macros/s/AKfycbx2NQ_fCNJDu6Jq4NlGybG_IBkOw2GABW-rt4qbN6TobtIwDXtrQ2k8UGITb1xyfVI/exec';
+// Clash-Battles-v1.89.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.89: AÑADIDO SOPORTE PARA PÁGINAS ESTÁTICAS Y MODO LECTURA
+const API = 'https://script.google.com/macros/s/AKfycbznL3diYw4IzlzrdLfjzOrwYyt6rI11wojuqLTOHa-X7jF-wU07FlnflUKPBVTgGNDQ/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -36,6 +36,10 @@ function executeModalConfirm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ✅ V1.89: Si es una página estática, no ejecutar la app
+    if (window.location.pathname.includes('/p/')) {
+        return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const refId = urlParams.get('ref');
     if (refId) {
@@ -1052,7 +1056,6 @@ async function updateSidebarStatsJugador(perfil = null, mis = null) {
   `;
 }
 
-/* ✅ V1.88: AÑADIDO BOTÓN DE AYUDA Y MODAL DE REGLAS PARA JUGADORES */
 function renderDesafios() {
   const misBatallas = cacheMisBatallas || [];
   const abiertas = cacheBatallasAbiertas || [];
@@ -1079,7 +1082,6 @@ function renderDesafios() {
   }
   top3Html += `</div>`;
 
-  // ✅ V1.88: Se agregó el botón de información (ayuda/reglas)
   let html = top3Html + `<div style='display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;'>
     <button class='btn btn-blue btn-sm' onclick='actualizarDesafios()'><i class="fa-solid fa-rotate-right"></i> Actualizar desafíos</button>
     <button class='btn btn-gold btn-sm' onclick='mostrarCrearBatallaAbierta()'><i class="fa-solid fa-plus"></i> Crear Desafío</button>
@@ -1214,12 +1216,10 @@ function renderDesafios() {
   document.getElementById('panel-desafios').innerHTML = html;
 }
 
-// ✅ V1.88: Función para abrir el modal de reglas
 function abrirModalReglas() {
   document.getElementById('modalReglas').classList.remove('hidden');
 }
 
-// ✅ V1.88: Función para actualizar manualmente la lista de desafíos
 async function actualizarDesafios() {
   const btn = document.querySelector('#panel-desafios .btn-blue');
   if (btn) {
@@ -1951,7 +1951,8 @@ function onTabSwitch(tab) {
   if (tab === 'perfil') renderPerfil();
 }
 
-if (token && rol) {
+// ✅ V1.89: No ejecutar la app si estamos en una página estática
+if (token && rol && !window.location.pathname.includes('/p/')) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('appMain').classList.remove('hidden');
