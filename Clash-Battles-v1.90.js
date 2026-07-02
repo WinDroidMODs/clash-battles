@@ -1,6 +1,6 @@
-// Clash-Battles-v1.89.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.89: AÑADIDO SOPORTE PARA PÁGINAS ESTÁTICAS Y MODO LECTURA
-const API = 'https://script.google.com/macros/s/AKfycbznL3diYw4IzlzrdLfjzOrwYyt6rI11wojuqLTOHa-X7jF-wU07FlnflUKPBVTgGNDQ/exec';
+// Clash-Battles-v1.90.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.90: CORREGIDA VISUALIZACIÓN DE PÁGINAS ESTÁTICAS Y MODO LECTURA
+const API = 'https://script.google.com/macros/s/AKfycbx8ED_aNsv9v2xGasQnEaekuINazt0MHPe7PwzJbRLyLVt90PNfF1u-G7gSgd5ls9rg/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -36,7 +36,7 @@ function executeModalConfirm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ✅ V1.89: Si es una página estática, no ejecutar la app
+    // ✅ V1.90: Si es una página estática, no ejecutar la app
     if (window.location.pathname.includes('/p/')) {
         return;
     }
@@ -1951,7 +1951,7 @@ function onTabSwitch(tab) {
   if (tab === 'perfil') renderPerfil();
 }
 
-// ✅ V1.89: No ejecutar la app si estamos en una página estática
+// ✅ V1.90: No ejecutar la app si estamos en una página estática
 if (token && rol && !window.location.pathname.includes('/p/')) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authBox').classList.add('hidden');
