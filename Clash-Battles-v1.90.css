@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.89.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.89: AÑADIDO SOPORTE PARA PÁGINAS ESTÁTICAS Y MODO LECTURA */
+/* Clash-Battles-v1.90.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.90: CORREGIDA VISUALIZACIÓN DE PÁGINAS ESTÁTICAS Y MODO LECTURA */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -549,7 +549,7 @@ b, strong { font-weight: 700; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
 }
 
-/* ✅ V1.89: Estilos para modo lectura en páginas estáticas */
+/* ✅ V1.90: Estilos para modo lectura en páginas estáticas */
 body.is-page .app-header,
 body.is-page .sidebar,
 body.is-page .sidebar-overlay,
@@ -570,7 +570,7 @@ body.is-page .main-content {
     padding-top: 20px;
 }
 
-body.is-page .main-content .post-body {
+body.is-page .main-content .article {
     background: var(--bg-card);
     border-radius: var(--radius);
     padding: 30px;
@@ -581,37 +581,34 @@ body.is-page .main-content .post-body {
     color: var(--text);
 }
 
-body.is-page .main-content .post-body h1,
-body.is-page .main-content .post-body h2,
-body.is-page .main-content .post-body h3,
-body.is-page .main-content .post-body h4,
-body.is-page .main-content .post-body h5,
-body.is-page .main-content .post-body h6 {
+body.is-page .main-content .article h1,
+body.is-page .main-content .article h2,
+body.is-page .main-content .article h3 {
     color: var(--gold);
     margin-top: 1.5em;
     margin-bottom: 0.5em;
 }
 
-body.is-page .main-content .post-body p {
+body.is-page .main-content .article p {
     margin-bottom: 1em;
 }
 
-body.is-page .main-content .post-body ul,
-body.is-page .main-content .post-body ol {
+body.is-page .main-content .article ul,
+body.is-page .main-content .article ol {
     margin-left: 1.5em;
     margin-bottom: 1em;
 }
 
-body.is-page .main-content .post-body a {
+body.is-page .main-content .article a {
     color: var(--blue);
     text-decoration: underline;
 }
 
-body.is-page .main-content .post-body a:hover {
+body.is-page .main-content .article a:hover {
     color: var(--gold);
 }
 
-body.is-page .main-content .post-body img {
+body.is-page .main-content .article img {
     max-width: 100%;
     height: auto;
     display: block;
