@@ -1,6 +1,6 @@
-// Clash-Battles-v1.91.js | Autor: Robinson Avila | By: WinDroidMODs
-// ✅ V1.91: DISEÑO DE LECTURA PARA PÁGINAS ESTÁTICAS (Aviso Legal, Privacidad, etc.)
-const API = 'https://script.google.com/macros/s/AKfycbyf9UX3VY7mptpgNu8EpXtJQ2L_aDMsTzbEYUzCoyPIImQtwhg1v9_5atGO9lbbHuXu/exec';
+// Clash-Battles-v1.93.js | Autor: Robinson Avila | By: WinDroidMODs
+// ✅ V1.93: AÑADIDOS MODALES LEGALES (Aviso Legal, Sobre Nosotros, Contacto, Política de Cookies, Política de Privacidad, Términos y Condiciones)
+const API = 'https://script.google.com/macros/s/AKfycby5PQbQMJXnPO3p6ZGCIv7v_Pf83VYKztsuqgXyCswDJo2JDrz8HJw8qRZxeGc-E_tE/exec';
 let token = localStorage.getItem('token') || '';
 let userId = localStorage.getItem('userId') || '';
 let rol = localStorage.getItem('rol') || '';
@@ -285,6 +285,26 @@ function copiarTexto(texto, mensaje) {
 
 function openInfoModal(modalId) {
   document.getElementById(modalId).classList.remove('hidden');
+}
+
+// ✅ V1.93: Funciones para abrir los nuevos modales legales
+function openAvisoLegal() {
+  document.getElementById('modalAvisoLegal').classList.remove('hidden');
+}
+function openSobreNosotros() {
+  document.getElementById('modalSobreNosotros').classList.remove('hidden');
+}
+function openContacto() {
+  document.getElementById('modalContacto').classList.remove('hidden');
+}
+function openPoliticaCookies() {
+  document.getElementById('modalPoliticaCookies').classList.remove('hidden');
+}
+function openPoliticaPrivacidad() {
+  document.getElementById('modalPoliticaPrivacidad').classList.remove('hidden');
+}
+function openTerminos() {
+  document.getElementById('modalTerminos').classList.remove('hidden');
 }
 
 let cacheBatallasAdmin = null, cacheUsuarios = null;
