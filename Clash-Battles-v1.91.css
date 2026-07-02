@@ -1,5 +1,5 @@
-/* Clash-Battles-v1.90.css | Autor: Robinson Avila | By: WinDroidMODs */
-/* ✅ V1.90: CORREGIDA VISUALIZACIÓN DE PÁGINAS ESTÁTICAS Y MODO LECTURA */
+/* Clash-Battles-v1.91.css | Autor: Robinson Avila | By: WinDroidMODs */
+/* ✅ V1.91: DISEÑO DE LECTURA PARA PÁGINAS ESTÁTICAS (Aviso Legal, Privacidad, etc.) */
 
 @font-face {
     font-family: 'Clash Royale';
@@ -549,79 +549,73 @@ b, strong { font-weight: 700; }
     .whatsapp-float { width: 50px; height: 50px; font-size: 26px; }
 }
 
-/* ✅ V1.90: Estilos para modo lectura en páginas estáticas */
+/* ===== V1.91: ESTILOS PARA PÁGINAS ESTÁTICAS ===== */
 body.is-page .app-header,
 body.is-page .sidebar,
 body.is-page .sidebar-overlay,
-body.is-page .main-content .hero-text,
-body.is-page .main-content .auth-container,
-body.is-page .main-content .landing-features,
-body.is-page .main-content #appMain,
-body.is-page .main-content .tab-panel,
-body.is-page .cookie-banner,
-body.is-page .whatsapp-float {
-    display: none !important;
+body.is-page #heroSection,
+body.is-page #authBox,
+body.is-page #featuresSection,
+body.is-page #appMain {
+  display: none !important;
 }
 
 body.is-page .main-content {
-    margin: 0 auto;
-    max-width: 800px;
-    padding: 40px 20px;
-    padding-top: 20px;
+  padding: 30px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  background: transparent;
 }
 
-body.is-page .main-content .article {
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    padding: 30px;
-    border: 1px solid var(--gold-border);
-    box-shadow: var(--shadow);
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--text);
+body.is-page .main-content .Blog .widget-content {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-border);
+  box-shadow: var(--shadow);
 }
 
-body.is-page .main-content .article h1,
-body.is-page .main-content .article h2,
-body.is-page .main-content .article h3 {
-    color: var(--gold);
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
+body.is-page .main-content .Blog .widget-content .post-body {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
 }
 
-body.is-page .main-content .article p {
-    margin-bottom: 1em;
+body.is-page .main-content .Blog .widget-content h1,
+body.is-page .main-content .Blog .widget-content h2,
+body.is-page .main-content .Blog .widget-content h3,
+body.is-page .main-content .Blog .widget-content h4 {
+  color: var(--gold);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
-body.is-page .main-content .article ul,
-body.is-page .main-content .article ol {
-    margin-left: 1.5em;
-    margin-bottom: 1em;
+body.is-page .main-content .Blog .widget-content a {
+  color: var(--blue);
+  text-decoration: underline;
 }
 
-body.is-page .main-content .article a {
-    color: var(--blue);
-    text-decoration: underline;
+body.is-page .main-content .Blog .widget-content p {
+  margin-bottom: 1rem;
 }
 
-body.is-page .main-content .article a:hover {
-    color: var(--gold);
+body.is-page .main-content .page-back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 700;
+  border: 1px solid var(--gold-border);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: background 0.3s;
 }
 
-body.is-page .main-content .article img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1em auto;
-    border-radius: var(--radius-sm);
+body.is-page .main-content .page-back-link:hover {
+  background: rgba(255, 215, 0, 0.1);
 }
 
-body.is-page .main-content .post-footer {
-    margin-top: 30px;
-    text-align: center;
-}
-
-body.is-page .main-content .post-footer .btn {
-    background: var(--gold);
-    color: #2b1a2b;
+body.is-page .footer {
+  display: block !important;
 }
